@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package GPBClass.Message;
+
+message PB_CollectInfo {
+    int32 node = 1; //所处节点编号
+    int32 unlockBet = 2; //解锁所需下注额
+    string collectType = 3; //收集类型(TotalBet|MachineItem)
+    repeated string collectItems = 4; //收集元素ID列表(如果是收集机台元素的话)
+    string boosters = 5; //拥有的Booster(json:{"I1401":5})
+    int64 avgBet = 6; //收集期间下注均值
+    int64 value = 7; //收集期间累积值
+    int64 progress = 8; //当前进度值
+    int64 target = 9; //所需总进度值
+    bool complete = 10; //是否完成收集
+}

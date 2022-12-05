@@ -1,0 +1,14 @@
+<div class="panel">
+    <div class="panel-head">我的信息</div>
+    <div class="panel-body">
+        <div class="form-control"><label>姓名：</label><span>{{$admin.realname}}</span></div>
+        <div class="form-control"><label>部门：</label><span>{{$admin.department}}</span></div>
+        <div class="form-control"><label>岗位：</label><span>{{$admin.post}}</span></div>
+        <div class="form-control"><label>号码：</label><span>{{$admin.mobile}}</span></div>
+        <div class="form-control"><label>邮箱：</label><span>{{$admin.email}}</span></div>
+    </div>
+    <div class="panel-footer">
+        <a href="/account/modify" class="btn btn-primary">修改信息</a>
+        <a href="/account/password" class="btn btn-primary">修改密码</a>
+    </div>
+</div>

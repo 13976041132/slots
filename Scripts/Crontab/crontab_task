@@ -1,0 +1,3 @@
+1 * * * * php /home/wwwroot/liveparty/Scripts/Crontab/run_by_hour.php
+* * * * * php /home/wwwroot/liveparty/Scripts/Crontab/run_by_minute.php
+* * * * * php /home/wwwroot/liveparty/Scripts/Crontab/online_stat.php

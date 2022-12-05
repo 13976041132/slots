@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package GPBClass.Message;
+
+message PB_FeatureWinInfo {
+    int64 featureWin = 1; //本次feature总赢得金币数
+    int64 coinsWin = 2; //本次spin当前总赢得金币数(包含paylineWin+featureWin)
+    int64 totalWin = 3; //当前总的totalWin
+    int32 winType = 4; //大奖类型(spinEnd=true时有值)
+    int32 adMultiple = 5; //广告加成倍数
+    bool spinEnd = 6; //本次spin是否结束
+    bool settled = 7; //是否结算
+}

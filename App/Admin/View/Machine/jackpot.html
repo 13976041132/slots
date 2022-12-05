@@ -1,0 +1,30 @@
+<table style="width: 1200px;">
+    <thead>
+    <tr>
+        <th>JackpotId</th>
+        <th>Jackpot名称</th>
+        <th>Target</th>
+        <th>激活所需<br>下注挡位范围</th>
+        <th>激活所需<br>资产余额范围</th>
+        <th>奖池金额<br>是否受下注额影响</th>
+        <th>最小奖励倍数</th>
+        <th>最大奖励倍数</th>
+        <th>奖池周期</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{foreach item=jackpot from=$jackpots}}
+    <tr>
+        <td>{{$jackpot.jackpotId}}</td>
+        <td>{{$jackpot.jackpotName}}</td>
+        <td>{{$jackpot.target}}</td>
+        <td>{{json_encode($jackpot.activeLevel)}}</td>
+        <td>{{json_encode($jackpot.activeBalance)}}</td>
+        <td>{{if $jackpot.awardByBet}}Y{{else}}N{{/if}}</td>
+        <td>{{number_format($jackpot.awardBegin)}}</td>
+        <td>{{number_format($jackpot.awardEnd)}}</td>
+        <td>{{$jackpot.duration}}</td>
+    </tr>
+    {{/foreach}}
+    </tbody>
+</table>

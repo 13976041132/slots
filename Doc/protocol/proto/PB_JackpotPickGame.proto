@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package GPBClass.Message;
+
+import "PB_FeatureWinInfo.proto";
+import "PB_JackpotPrize.proto";
+
+message PB_JackpotPickGame_Req {
+
+}
+
+message PB_JackpotPickGame_Res {
+    PB_FeatureWinInfo winInfo = 1; //结算信息
+    PB_JackpotPickResult pickResult = 2;// pick的结果
+    repeated PB_JackpotPrize jackpotPrizes = 3; //命中的jackpot的奖励信息
+}
+
+message PB_JackpotPickResult {
+    repeated string hitJackPots = 1; //命中的jackpot
+    repeated string pickCards = 2; //pick的卡片
+    int32 pickTimes = 3; //pick多少次
+    int32 hasWildBoost = 4; //是否pick到了wildBoost牌 0:否 1:是
+}

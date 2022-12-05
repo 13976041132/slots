@@ -1,0 +1,32 @@
+<div class="tool-box">
+    <a class="btn btn-middle btn-primary uploader" data-options="uploadUrl:'/config/uploadConfigFile?table=wheel',fileType:'csv'">更新转盘定义表</a>
+    <a class="btn btn-middle btn-primary uploader" data-options="uploadUrl:'/config/uploadConfigFile?table=wheel_item',fileType:'csv'">更新转盘元素表</a>
+</div>
+<table>
+    <thead>
+    <tr>
+        <th width="150">转盘ID</th>
+        <th width="100">机台ID</th>
+        <th width="150">转盘名称</th>
+        <th width="150">下层转盘ID</th>
+        <th width="150">操作</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    {{foreach key=wheelId item=wheel from=$wheels}}
+    <tr>
+        <td>{{$wheelId}}</td>
+        <td>{{$wheel.machineId}}</td>
+        <td>{{$wheel.wheelName}}</td>
+        <td>{{$wheel.nextWheelId}}</td>
+        <td>
+            <div class="btn-group">
+                <a class="btn" data-toggle="dialog" data-target="/config/wheelItems?wheelId={{$wheelId}}">转盘元素</a>
+            </div>
+        </td>
+        <td></td>
+    </tr>
+    {{/foreach}}
+    </tbody>
+</table>

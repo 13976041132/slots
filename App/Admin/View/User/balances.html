@@ -1,0 +1,74 @@
+<div class="tool-box">
+    <div class="navigator-box">
+        <a href="/user/index">用户数据</a> >> <span>余额波动</span>
+    </div>
+    <div class="search-box">
+        <form>
+            <label>用户</label>
+            <input name="uid" value="{{$REQUEST.uid}}" placeholder="UID" style="width: 100px;">
+            <input name="start" class="datetime" data-date-format="Y-m-d" value="{{$REQUEST.start}}" placeholder="开始时间" style="width: 100px;"/>
+            <span style="margin-right: 10px;">至</span>
+            <input name="end" class="datetime" data-date-format="Y-m-d" value="{{$REQUEST.end}}" placeholder="结束时间" style="width: 100px;"/>
+            <label>历史表</label>
+            <select name="table" data-value="{{$REQUEST.table}}">
+                <option value="">Default</option>
+                {{foreach item=table from=$tables}}
+                <option value="{{substr($table,10)}}">{{substr($table,10)}}</option>
+                {{/foreach}}
+            </select>
+            <a class="btn btn-primary" type="submit">查 看</a>
+        </form>
+    </div>
+</div>
+<div class="panel" data-title="用户[{{$REQUEST.uid}}]">
+    <div id="balance-chart" class="chart" style="height: 500px;"></div>
+</div>
+{{$pager->display()}}
+<script type="text/javascript">
+    (function () {
+        var balanceFormatter = function (value) {
+            if (value > 100000000) {
+                return number_format(value / 100000000, 2) + 'E';
+            } else if (value > 1000000) {
+                return number_format(value / 1000000, 2) + 'M';
+            } else if (value > 1000) {
+                return number_format(value / 1000, 2) + 'K';
+            } else {
+                return value;
+            }
+        };
+        var data = JSON.parse('{{json_encode($list)}}');
+        var plotLines = JSON.parse('{{json_encode($plotLines)}}');
+        var options = {};
+        options['title'] = {text: null};
+        options['legend'] = {enabled: false};
+        options['plotOptions'] = {series: {animation: false}};
+        options['tooltip'] = {formatter: function (){
+            return '<strong>余额：</strong>' + balanceFormatter(this.y) + ' ( ' + this.y + ' )'
+                + '<br><strong>机台</strong>：' + this.point.machineName
+                + '<br><strong>下注次序</strong>：' + this.point.betSeq;
+        }};
+        options['xAxis'] = {labels: {enabled: true}, plotLines: plotLines};
+        options['yAxis'] = {title: {text: "余额"}, labels: {formatter: function () {return balanceFormatter(this.value);}}};
+        options['series'] = [{
+            type: "line", name: "余额", data: data, events: {
+                click: function (e) {
+                    showBetDetail(e.point.id);
+                }
+            }
+        }];
+        showChart($('#balance-chart'), options);
+
+        function showBetDetail(id, action = '') {
+            $dialog = showDialog('中奖记录', '', {
+                url: '/game/betResult?id=' + id + '&table={{$REQUEST.table}}&action=' + action
+            });
+            $dialog.on('click', '.prev, .next', function (){
+                var id = $(this).attr('data-id');
+                var action = $(this).attr('data-action');
+                removeDialog($dialog);
+                showBetDetail(id, action);
+            });
+        }
+    })();
+</script>

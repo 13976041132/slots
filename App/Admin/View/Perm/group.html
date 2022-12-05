@@ -1,0 +1,33 @@
+<div class="tool-box">
+    <a class="btn btn-primary btn-middle" data-toggle="dialog" data-target="#form-create-group">创建分组</a>
+</div>
+<form id="form-create-group" action="/perm/createGroup" method="post" class="hide">
+    <div class="form-control">
+        <label style="width: 35px;">标 识</label><input name="id" type="text" required>
+    </div>
+    <div class="form-control">
+        <label style="width: 35px;">名 称</label><input name="name" type="text" required>
+    </div>
+</form>
+<table data-editable="true"
+       data-save-url="/perm/updateField?model=permGroup"
+       data-delete-url="/perm/deleteGroup">
+    <thead>
+    <tr>
+        <th width="150">标识</th>
+        <th width="150" data-key="name">名称</th>
+        <th width="150">操作</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    {{foreach item=group from=$groups}}
+    <tr data-id="{{$group.id}}">
+        <td>{{$group.id}}</td>
+        <td>{{$group.name}}</td>
+        <td><a class="btn btn-delete">删 除</a></td>
+        <td></td>
+    </tr>
+    {{/foreach}}
+    </tbody>
+</table>

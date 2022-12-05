@@ -1,0 +1,17 @@
+<div class="tool-box">
+    <div class="search-box">
+<!--        <a class="btn btn-primary ajax confirm" href="/config/refresh">刷新配置</a>-->
+        <a class="btn btn-primary" href="/system/operationLog?category=1">查看操作日志</a>
+    </div>
+</div>
+{{foreach key=group item=files from=$configFiles}}
+<div>{{$group}}</div>
+<ul style="margin-bottom: 20px;">
+    {{foreach key=name item=file from=$files}}
+    <li class="fl" style="margin-top: 10px; margin-right: 10px;">
+        {{assign var=mime value=end(explode('.', $file))}}
+        <a class="btn btn-small uploader" data-options="uploadUrl:'/config/uploadConfigFile?table={{$name}}',fileType:'{{$mime}}',fileDesc:'{{$file}}'">{{$file}}</a>
+    </li>
+    {{/foreach}}
+</ul>
+{{/foreach}}

@@ -1,0 +1,147 @@
+<div style="width: 1500px;">
+    <div style="text-align: center;height: 40px;">
+        <button>{{$featureId}}({{$featureGames[$featureId]['featureName']}}) 总赢取金币: <span style="color:blue">{{number_format($featureTotalWin)}}</span></button>
+    </div>
+        {{foreach key=stepIndex item=stepInfo from=$featureSteps}}
+    <div class="panel closeable" data-title="Step{{$stepInfo.step}}">
+        <table style="margin-bottom: 20px;">
+            <thead>
+            <tr>
+                {{if $stepInfo.results.wheelWin}}
+                <th>剩余SPIN次数</th>
+                <th>总SPIN次数</th>
+                {{/if}}
+                {{if $stepInfo.wheelId}}
+                <th>转盘</th>
+                <th>转盘中奖位置</th>
+                <th>中奖物品</th>
+                <th>中奖数量</th>
+                {{/if}}
+                {{if $stepInfo.elements.hitJackpot}}
+                <th>hitJackpot</th>
+                {{/if}}
+                {{if $stepInfo.results.collectInfo}}
+                <th>收集节点</th>
+                <th>收集类型</th>
+                <th>收集元素</th>
+                <th>平均Bet</th>
+                {{/if}}
+                {{if $stepInfo.results.prizes}}
+                <th>奖励物品</th>
+                <th>奖励值</th>
+                {{/if}}
+            </tr>
+            </thead>
+            <tr>
+                {{if $stepInfo.results.wheelWin}}
+                <td width="120">{{$stepInfo.results.times}}</td>
+                <td width="120">{{$stepInfo.results.totalTimes}}</td>
+                {{/if}}
+                {{if $stepInfo.wheelId}}
+                <td width="120">{{$stepInfo.wheelId}}{{if $wheelsInfo[$stepInfo.wheelId]}}({{$wheelsInfo[$stepInfo.wheelId]['wheelName']}}){{/if}}</td>
+                <td width="120">{{$stepInfo.results.wheelSpinResult.pos}}</td>
+                <td width="120">{{$wheelItems[$stepInfo.wheelId][$stepInfo.results.wheelSpinResult.pos - 1]['itemType']|default:'-'}}</td>
+                <td width="120">{{$wheelItems[$stepInfo.wheelId][$stepInfo.results.wheelSpinResult.pos - 1]['itemValue']|default:'-'}}</td>
+                {{/if}}
+                {{if $stepInfo.elements.hitJackpot}}
+                <td width="120">{{$stepInfo.elements.hitJackpot}}</td>
+                {{/if}}
+
+                {{if $stepInfo.results.collectInfo}}
+                <td width="120">{{$stepInfo.results.collectInfo.node}}</td>
+                <td width="120">{{$stepInfo.results.collectInfo.collectType}}</td>
+                <td width="120">
+                    {{foreach item=collectElementId from=$stepInfo.results.collectInfo.collectItems}}
+                    <span>{{$collectElementId}}</span>
+                    {{if $collectElementId < count($stepInfo.results.collectInfo.collectItems) - 1}}<br>{{/if}}
+                    {{/foreach}}
+                </td>
+                <td width="120">{{$stepInfo.results.collectInfo.avgBet}}</td>
+                {{else}}
+                <td width="120">
+                    {{foreach key=itemType item=itemValue from=$stepInfo.results.prizes}}
+                    {{if $itemType == ITEM_FREE_SPIN}}
+                    <span>Free Spin</span>
+                    {{elseif $itemType == ITEM_COINS}}
+                    <span>Coins</span>
+                    {{else}}
+                    <span>{{$itemType}}</span>
+                    {{/if}}
+                    {{if $itemType < count($stepInfo.results.prizes) - 1}}<br>{{/if}}
+                    {{/foreach}}
+                </td>
+                <td width="120">
+                    {{foreach key=itemType item=itemValue from=$stepInfo.results.prizes}}
+                    {{if $itemType == ITEM_FREE_SPIN}}
+                    <span>FeatureId: {{$itemValue.featureId}}; FreeSpin次数: {{$itemValue.times}}</span>
+                    {{else}}
+                    <span>{{$itemValue}}</span>
+                    {{/if}}
+                    {{if $itemValue < count($stepInfo.results.prizes) - 1}}<br>{{/if}}
+                    {{/foreach}}
+                </td>
+                {{/if}}
+            </tr>
+        </table>
+    </div>
+        {{/foreach}}
+</div>
+
+<script>
+    (function () {
+        var machinesItems = JSON.parse('{{json_encode($machinesItems)}}');
+        $('.hitResults').each(function () {
+            $(this).height($(this).prev().height()).css('overflow', 'auto');
+        });
+        $('tr.hitResult').click(function () {
+            var $tr = $(this);
+            var step = $tr.attr('data-step');
+            var routes = $tr.attr('data-routes');
+            var elements = $tr.attr('data-elements');
+            var miniSlotMachineId = $tr.attr('data-machineId');
+            var $box = $("#betResult-" + step);
+            $box.find('td').css('background', 'unset');
+            elements = elements.split(',');
+            if (routes) {
+                var canvas = document.getElementById('canvas-' + step);
+                canvas.width = $box.width();
+                canvas.height = $box.height();
+                var context = canvas.getContext('2d');
+                context.strokeStyle = 'red';
+                context.beginPath();
+                context.lineWidth = 2;
+                routes = routes.split(',');
+                var boxPos = $box.offset();
+                for (var col = 1; col <= routes.length; col++) {
+                    var row = routes[col - 1];
+                    var color = elements[col - 1] === '0' ? '#999999' : 'gold';
+                    var $td = $box.find('td[data-col=' + col + '][data-row=' + row + ']');
+                    $td.css('background', color);
+                    var pos = $td.offset();
+                    var posX = pos.left - boxPos.left + $td.width() / 2;
+                    var posY = pos.top - boxPos.top + $td.height() / 2;
+                    if (col === 1) {
+                        context.moveTo(posX, posY);
+                    } else {
+                        context.lineTo(posX, posY);
+                        context.moveTo(posX, posY);
+                    }
+                }
+                context.closePath();
+                context.stroke();
+            } else {
+                for (var col = 1; col <= elements.length; col++) {
+                    var elementId = elements[col - 1];
+                    if (elementId === '0') break;
+                    $box.find('td[data-col=' + col + '][data-element=' + elementId + ']').css('background', 'gold');
+                    for (var _elementId in machinesItems[miniSlotMachineId]) {
+                        if (machinesItems[miniSlotMachineId][_elementId]['iconType'] === '99') {
+                            $box.find('td[data-col=' + col + '][data-element=' + _elementId + ']').css('background', 'gold');
+                            $box.find('td[data-col=' + col + '][data-element-replaced=' + _elementId + ']').css('background', 'gold');
+                        }
+                    }
+                }
+            }
+        });
+    })();
+</script>

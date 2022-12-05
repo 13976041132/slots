@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package GPBClass.Message;
+
+import "PB_JackpotInfo.proto";
+
+message PB_InitJackpots_Req {
+
+}
+
+message PB_InitJackpots_Res {
+    repeated PB_JackpotInfo jackpots = 1; //jackpot列表
+}

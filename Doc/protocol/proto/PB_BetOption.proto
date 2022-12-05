@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package GPBClass.Message;
+
+message PB_BetOption {
+    int32 betMultiple = 1; //下注倍数
+    int64 totalBet = 2; //下注额
+}

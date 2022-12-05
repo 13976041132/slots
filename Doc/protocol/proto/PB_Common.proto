@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+package GPBClass.Enum;
+
+enum MSG_ID {
+    MSG_NULL = 0; //占位NULL
+    MSG_CHECK_APP_VERSION = 1001; //检查应用版本
+    MSG_CHECK_MODULE_VERSION = 1002; //检查模块版本
+    MSG_EVENT_REPORT = 1003; //事件上报
+    MSG_PING = 1004; //PING
+
+    MSG_USER_LOGIN = 2000; //用户登录
+    MSG_USER_BIND = 2001; //用户绑定
+    MSG_SET_USER_NICKNAME = 2002; //设置用户昵称
+    MSG_SET_USER_AVATAR = 2003; //设置用户头像
+
+    MSG_ENTER_MACHINE = 3001; //进入机台
+    MSG_EXIT_MACHINE = 3002; //退出机台
+    MSG_INIT_JACKPOTS = 3003; //机台jackpot初始化
+    MSG_SLOTS_BETTING = 3004; //机台下注
+    MSG_INIT_COLLECT_GAME = 3005; //机台收集初始化
+
+    MSG_RESUME_FREEGAME = 4001; //恢复FreeGame
+    MSG_RECOVER_LIGHTNING = 4002; //恢复Lightning
+    MSG_HOLD_AND_SPIN = 4003; //Hold&Spin
+    MSG_WHEEL_SPIN = 4004; //转盘SPIN
+
+    MSG_NTF_LEVEL_PRIZE = 7001; //等级奖励通知
+    MSG_NTF_JACKPOT_PRIZE = 7002; //Jackpot奖励通知()
+    MSG_NTF_COLLECT_PROGRESS = 7003; //收集进度通知
+}
+
+enum RET {
+    RET_SUCCESS = 0; //成功
+    RET_FAILED = 1; //失败
+    RET_SYSTEM_ERROR = 2; //系统错误
+
+    RET_CLIENT_TIMEOUT = 99; //客户端超时
+
+    RET_SYSTEM_MAINTAIN = 1001; //系统维护中
+    RET_VERSION_TOO_OLD = 1002; //版本过低
+    RET_REQUEST_TO_FREQUENT = 1003; //请求过于频繁
+
+    RET_SESSION_INVALID = 1011; //Session无效
+    RET_MSG_ID_INVALID = 1012; //MSG_ID无效
+    RET_MSG_IS_NULL = 1013; //MSG内容为空
+    RET_MSG_DECODE_FAILED = 1014; //MSG解码失败
+    RET_MSG_ENCODE_FAILED = 1015; //MSG编码失败
+
+    RET_TOKEN_INVALID = 1020; //Token无效
+    RET_ACCOUNT_NOT_EXIST = 1021; //账号不存在
+    RET_ACCOUNT_EXIST = 1022; //账号已经存在
+    RET_ACCOUNT_LEN_INVALID = 1023; //账号长度不符合要求
+    RET_PASSWORD_LEN_INVALID = 1024; //密码长度不符合要求
+    RET_PASSWORD_INCORRECT = 1025; //密码输入错误
+    RET_ACCOUNT_CREATE_FAILED = 1026; //账号创建失败
+    RET_ACCOUNT_FORBIDDEN = 1027; //账号禁止登录
+    RET_NICKNAME_IS_NULL = 1028; //昵称为空
+    RET_NICKNAME_TOO_LONG = 1029; //昵称太长
+    RET_ACCOUNT_BIND_REPEAT = 1030; //账号重复绑定
+
+    RET_LEVEL_NOT_ENOUGH = 1031; //等级不足
+    RET_COINS_NOT_ENOUGH = 1032; //金币不足
+    RET_DIAMOND_NOT_ENOUGH = 1033; //宝石不足
+    RET_ITEM_NOT_ENOUGH = 1034; //物品不足
+    RET_COINS_TOO_MUCH = 1035; //金币太多
+    RET_PROGRESS_NOT_ENOUGH = 1036; //进度不足
+
+    RET_MACHINE_NOT_EXIST = 1070; //机台不存在
+    RET_TOTAL_BET_INVALID = 1071; //下注倍率无效
+    RET_TOTAL_BET_DISABLED = 1072; //下注倍率未激活
+}
+
+enum PLATFORM {
+    PLATFORM_GUEST = 0; //游客
+    PLATFORM_FACEBOOK = 1; //Facebook
+    PLATFORM_APPLE = 3;//apple
+}
+
+enum PAY_CHANNEL {
+    PAY_CHANNEL_GOOGLE_PLAY = 0; //GOOGLE PLAY
+    PAY_CHANNEL_APPLE_STORE = 1; //APPLE STORE
+}
+
+
+enum ITEM_TYPE {
+    ITEM_TYPE_NULL = 0; //占位NULL
+    ITEM_TYPE_COINS = 1; //金币
+    ITEM_TYPE_CASH = 2; //Cash
+    ITEM_TYPE_EXP = 3; //经验
+    ITEM_TYPE_VIP_PTS = 4; //VIP积分
+    ITEM_TYPE_SPIN_PTS = 5; //SPIN积分
+    ITEM_TYPE_FREE_SPIN = 6; //FreeSpin
+    ITEM_TYPE_TASK_PTS = 7; //任务积分
+    ITEM_TYPE_FEATURE = 8; //Feature
+    ITEM_TYPE_WHEEL = 9; //Wheel
+    ITEM_TYPE_JACKPOT = 10; //jackpot
+}
+
+enum WIN_TYPE {
+    WIN_TYPE_NULL = 0; //占位NULL
+    WIN_TYPE_BIG_WIN = 1; //BIG WIN
+    WIN_TYPE_MEGA_WIN = 2; //MEGA WIN
+    WIN_TYPE_HUGE_WIN = 3; //HUGE WIN
+    WIN_TYPE_EPIC_WIN = 4; //EPIC WIN
+}
+
+enum BUFF {
+    NULL = 0; //占位NULL
+    VIP_TRIAL = 1; //体验VIP
+    VIP_BOOSTER = 2; //VIP加速
+    LEVEL_BURST = 3; //等级加速
+    SPIN_BURST = 4; //SPIN积分加速
+    COINS_BONUS = 5; //金币奖励
+    HOURLY_BONUS_BURST = 6; //小时奖励加速
+}

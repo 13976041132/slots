@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package GPBClass.Message;
+
+import "PB_SlotsElement.proto";
+
+message PB_RecoverLightning_Req {
+
+}
+
+message PB_RecoverLightning_Res {
+    int32 times = 1; //剩余spin次数
+    int32 collected = 2; //已收集的元素个数
+    int32 bigCol = 3; //大轴所在列(部分机台有效)
+    repeated PB_SlotsElement elements = 4; //已命中的元素列表
+}

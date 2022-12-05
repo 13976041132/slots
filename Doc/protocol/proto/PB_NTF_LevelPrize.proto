@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package GPBClass.Message;
+
+import "PB_PrizeInfo.proto";
+import "PB_BetOption.proto";
+
+message PB_NTF_LevelPrize_Res {
+    int64 exp = 1; //当前经验值
+    int32 level = 2; //当前等级
+    bool levelUp = 3; //是否升级
+    repeated PB_PrizeInfo prizes = 4; //奖励列表
+    repeated PB_BetOption betOptions = 5; //下注倍数选项，升级导致变动
+}

@@ -1,0 +1,40 @@
+<div class="nav-header">
+    <a href="{{$BASE_URL}}" target="_top">运营管理后台</a>
+</div>
+<div class="nav-body">
+    <ul class="nav-menu-1">
+        {{foreach item=menu1 from=$menus}}
+        {{if !$menu1.hidden}}
+        {{if !$menu1.permGroup || ($menu1.permGroup && in_array('/menu1/'|cat:strtolower($menu1.permGroup), $perms)) || $session.account == 'root'}}
+        <li data-uri="{{$menu1.uri}}">
+            <div>
+                <span class="material-icons">{{$menu1.icon}}</span>
+                <span>{{$menu1.name}}</span>
+                {{if $menu1.children}}
+                <div class="triangle">
+                    <span class="material-icons">arrow_drop_down</span>
+                </div>
+                {{/if}}
+            </div>
+            {{if $menu1.children}}
+            <ul class="nav-menu-2">
+                {{foreach item=menu2 from=$menu1.children}}
+                {{if !$menu2.hidden}}
+                {{if in_array('/menu2'|cat:strtolower($menu2.uri), $perms) || $session.account == 'root'}}
+                <li data-uri="{{$menu2.uri}}" data-pages="{{if $menu2.pages}}{{implode(',',$menu2.pages)}}{{/if}}">
+                    <span class="material-icons">chevron_right</span><span>{{$menu2.name}}</span>
+                </li>
+                {{/if}}
+                {{/if}}
+                {{/foreach}}
+            </ul>
+            {{/if}}
+        </li>
+        {{/if}}
+        {{/if}}
+        {{/foreach}}
+    </ul>
+</div>
+<div class="nav-footer">
+    <span class="material-icons">swap_horiz</span>
+</div>

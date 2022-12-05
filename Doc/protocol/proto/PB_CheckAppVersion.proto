@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package GPBClass.Message;
+
+message PB_CheckAppVersion_Req {
+    string bigVersion = 1; //大版本号
+    int32 smallVersion = 2; //小版本号
+}
+
+message PB_CheckAppVersion_Res {
+    string bigVersion = 1; //大版本号
+    int32 smallVersion = 2; //小版本号
+    string packageUrl = 3; //更新包地址
+    bool hasUpdate = 4; //是否有更新
+    bool forceUpdate = 5; //是否强制更新
+    string md5 = 6; //更新包MD5值
+}

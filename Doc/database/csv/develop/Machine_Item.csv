@@ -1,0 +1,14 @@
+ID,Element_Machine,Machine_Icon_Type,Detail_Descreption,Animation_Name,Is_Has_Show_Effect,Is_Out_Frame_On_Create,Font_Asset_Name,Sprite_Label_Name,IsBonusNoValue,Symbol_Type,Icon_Name,Sound,Size,Pay_Table_Scale,Cell_Row_Size
+10101,10001,2,水牛,ef_Hight1,False,False,,,,general,H1,,253|240,1,1
+10102,10001,2,老鹰,,,,,,,general,H2,,253|240,1,1
+10103,10001,2,老虎,,,,,,,general,H3,,253|240,1,1
+10104,10001,2,狼,,,,,,,general,H4,,253|240,1,1
+10105,10001,2,鹿,,,,,,,general,H5,,253|240,1,1
+10106,10001,1,A,,,,,,,general,A,,253|240,1,1
+10107,10001,1,K,,,,,,,general,K,,253|240,1,1
+10108,10001,1,Q,,,,,,,general,Q,,253|240,1,1
+10109,10001,1,J,,,,,,,general,J,,253|240,1,1
+10110,10001,1,10,,,,,,,general,10,,253|240,1,1
+10111,10001,1,9,,,,,,,general,9,,253|240,1,1
+19901,10001,99,Wild,ef_WILD,False,False,,,,wild,WILD,,,1,1
+19801,10001,98,Scatter,ef_SCATTER,False,False,,,,scatter,SCATTER,,,1,1

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package GPBClass.Message;
+
+message PB_SlotsLinePrize {
+    int64 coins = 1; //金币奖励
+    int32 multiple = 2; //倍数奖励
+}
+
+message PB_SlotsHitResult {
+    string lineId = 1; //中奖lineID
+    repeated int32 lineRoute = 2 [packed=true]; //中奖元素连线
+    repeated string elements = 3 ; //中奖元素列表
+    PB_SlotsLinePrize prizes = 4; //奖励列表
+}

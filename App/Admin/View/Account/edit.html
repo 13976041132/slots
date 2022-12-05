@@ -1,0 +1,53 @@
+<form id="form-create-account" action="/account/create" method="post">
+    <div class="form-control">
+        <label>登录账号</label><input name="account" minlength="4" maxlength="32"/>
+    </div>
+    <div class="form-control">
+        <label>登录密码</label><input name="password" minlength="6" maxlength="10"/>
+    </div>
+    <div class="form-control">
+        <label>真实姓名</label><input name="realname" data-type="chinese" minlength="2" maxlength="5"/>
+    </div>
+    <div class="form-control">
+        <label>所属部门</label>
+        <select name="department" required>
+            <option value="" selected hidden>请选择</option>
+            {{foreach key=department item=posts from=$structure}}
+            <option value="{{$department}}" data-posts="{{implode(',',$posts)}}">{{$department}}</option>
+            {{/foreach}}
+        </select>
+    </div>
+    <div class="form-control">
+        <label>工作岗位</label>
+        <select name="post" required>
+            <option value="" selected hidden>请选择</option>
+            <option value="">无</option>
+        </select>
+    </div>
+    <div class="form-control">
+        <label>联系电话</label><input name="mobile" data-type="mobile" maxlength="11"/>
+    </div>
+    <div class="form-control">
+        <label>电子邮箱</label><input name="email" data-type="email" maxlength="32"/>
+    </div>
+    <div class="form-control">
+        <label>账号状态</label>
+        <div class="radio"><input name="status" type="radio" value="1" checked/><label>正常</label></div>
+        <div class="radio"><input name="status" type="radio" value="0"/><label>禁用</label></div>
+    </div>
+</form>
+<script>
+    (function () {
+        $('#form-create-account').find('select[name=department]').bind('change', function () {
+            var posts = $(this).find('option:selected').attr('data-posts').split(',');
+            var options = '<option value="" selected hidden>请选择</option>';
+            for (var i = 0; i < posts.length; i++) {
+                options += '<option value="' + posts[i] + '">' + posts[i] + '</option>';
+            }
+            if (!posts.length) {
+                options += '<option value="">无</option>';
+            }
+            $('#form-create-account').find('select[name=post]').html(options);
+        });
+    })();
+</script>

@@ -1,0 +1,65 @@
+<div class="tool-box" style="text-align: center">
+    <div class="search-box" style="float: unset; display: inline-block;">
+        <form>
+            <input name="uid" maxlength="10" size="10" value="{{$REQUEST.uid}}" placeholder="UID">
+            <a class="btn btn-primary" type="submit">查 询</a>
+        </form>
+    </div>
+</div>
+{{if $userInfo}}
+<table>
+    <thead>
+    <tr align="center">
+        <th width="80">ID</th>
+        <th width="80">账户类型</th>
+        <th>昵称</th>
+        <th>等级</th>
+        <th>经验</th>
+        <th>VIP</th>
+        <th>VIP经验</th>
+        <th>金币</th>
+        <th>宝石</th>
+        <!--<th>充值额度</th>
+        <th>Spin次数</th>-->
+        <th>国家</th>
+        <th width="160">注册时间</th>
+        <th width="160">最后登录时间</th>
+        <th width="100">总登录天数</th>
+        <th width="100">连续登录天数</th>
+        <th width="80">状态</th>
+        <th width="100">其他</th>
+    </tr>
+    </thead>
+    <tr>
+        <td>{{$userInfo['id']}}</td>
+        <td>{{$userInfo['login_platform']}}</td>
+        <td>{{$userInfo['user_name']}}</td>
+        <td>{{$userInfo['level']}}</td>
+        <td>{{number_format($userInfo['curr_level_exp'])}}</td>
+        <td>{{$userInfo['vip_level']}}</td>
+        <td>{{number_format($userInfo['curr_vip_exp'])}}</td>
+        <td>{{number_format($userInfo['coin_balance'])}}</td>
+        <td>{{number_format($userInfo['gem_balance'])}}</td>
+        <!--<td>${{if $userInfo['recharge'] > 0}}{{number_format($userInfo['recharge'], 2)}}{{else}}0{{/if}}</td>
+        <td>{{number_format($userInfo['spinTimes'])}}</td>-->
+        <td>{{$userInfo['country']}}</td>
+        <td>{{date('Y-m-d H:i:s', $userInfo['create_time'] / 1000)}}</td>
+        <td>{{date('Y-m-d H:i:s', $userInfo['last_login_time'] / 1000)}}</td>
+        <td>{{$userInfo['login_days']}}天</td>
+        <td>{{$userInfo['continuous_login_days']}}天</td>
+        <td>{{if $userInfo['status'] == 1}}<font color="green">在线</font>{{else}}<font color="grey">离线</font>{{/if}}</td>
+        <td>
+            <div class="dropdown">
+                <span class="material-icons">more_horiz</span>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="btn btn-link" href="/user/balances?uid={{$userInfo.id}}" style="width: 100%;">余额波动</a>
+                    </li>
+                </ul>
+            </div>
+        </td>
+    </tr>
+</table>
+{{else}}
+<div style="height: 1px; background: #cccccc;"></div>
+{{/if}}

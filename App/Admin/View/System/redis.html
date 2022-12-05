@@ -1,0 +1,99 @@
+<div style="width: 40%; position: fixed; left: 0; top: 60px; bottom: 0; padding-left: 190px; padding-bottom: 10px;">
+    <div class="panel" style="height: 100%; margin: 0; overflow-y: auto;">
+        <div class="panel-head">Redis Server Status</div>
+        <div class="panel-body">
+            <div class="search-box" style="float: unset;">
+                <select id="redis-server-list">
+                    {{foreach key=key item=server from=$servers}}
+                    <option value="{{$key}}">[{{$key}}]{{$server.host}}:{{$server.port}}</option>
+                    {{/foreach}}
+                </select>
+                <select id="redis-server-section">
+                    <option value="server">Redis服务器信息</option>
+                    <option value="clients">已连接客户端信息</option>
+                    <option value="memory">内存信息</option>
+                    <option value="persistence">RDB和AOF的相关信息</option>
+                    <option value="stats">一般统计信息</option>
+                    <option value="replication">主/从复制信息</option>
+                    <option value="cpu">CPU计算量统计信息</option>
+                    <option value="commandstats">Redis命令统计信息</option>
+                    <option value="cluster">Redis集群信息</option>
+                    <option value="keyspace">数据库相关的统计信息</option>
+                </select>
+            </div>
+            <div id="redis-status-viewer" style="margin-top: 10px;">
+            </div>
+        </div>
+    </div>
+</div>
+<div style="width: 30%; position: fixed; left: 40%; top: 60px; bottom: 0; padding: 0 10px 10px;">
+    <div class="panel" style="height: 100%; margin: 0; overflow-y: auto;">
+        <div class="panel-head">Redis Keys</div>
+        <div class="panel-body">
+            <div class="search-box" style="float: unset;">
+                <input id="redis-keyword" maxlength="20" size="10" placeholder="UID/关键字">
+                <select id="redis-keyType">
+                    <option value="" disabled selected>--数据类型--</option>
+                    {{foreach key=keyType item=name from=$keyMap}}
+                    <option value="{{$keyType}}">{{$name}}</option>
+                    {{/foreach}}
+                </select>
+                <a id="redis-key-search" class="btn btn-primary">搜 索</a>
+            </div>
+            <ul id="keyList" style="margin-top: 10px;">
+            </ul>
+        </div>
+    </div>
+</div>
+<div style="width: 30%; position: fixed; left: 70%; top: 60px; bottom: 0; padding-right: 10px; padding-bottom: 10px;">
+    <div class="panel" style="height: 100%; margin: 0; overflow-y: auto;">
+        <div class="panel-head">Redis Data</div>
+        <div id="redis-data-viewer" class="panel-body"></div>
+    </div>
+</div>
+<script type="text/javascript">
+    (function () {
+        $("#redis-server-list").bind('change', showRedisServerStatus);
+        $("#redis-server-section").bind('change', showRedisServerStatus);
+        $("#redis-key-search").bind('click', showRedisKeys);
+        function showRedisServerStatus() {
+            var server = $("#redis-server-list").val();
+            var section = $("#redis-server-section").val();
+            if (!server) return;
+            ajaxRequest('/system/getRedisStatus', {server: server, section: section}, function (data) {
+                requirejs(JS_URL + '/jquery.json.js', function () {
+                    var jsonString = JSON.stringify(data);
+                    var jsonFormat  = new JSONFormat(jsonString).toString();
+                    $("#redis-status-viewer").html(jsonFormat);
+                });
+            });
+        }
+        function showRedisKeys() {
+            var server = $("#redis-server-list").val();
+            if (!server) return;
+            var keyword = $("#redis-keyword").val();
+            var keyType = $("#redis-keyType").val();
+            if (keyword === '' && keyType === '') return;
+            var params = {server: server, keyword: keyword, keyType: keyType};
+            ajaxRequest('/system/getRedisKeys', params, function (data) {
+                var $ul = $("#keyList");
+                $ul.html('');
+                for (var i = 0; i < data.length; i++) {
+                    $ul.append('<li><a class="btn btn-link">' + data[i] + '</a></li>');
+                }
+                $ul.find('a').bind('click', function () {
+                    showRedisData($(this).text());
+                });
+            });
+        }
+        function showRedisData(key) {
+            var server = $("#redis-server-list").val();
+            if (!server) return;
+            var params = {server: server, key: key};
+            ajaxRequest('/system/getRedisData', params, function (data) {
+                showJson($("#redis-data-viewer"), data);
+            });
+        }
+        showRedisServerStatus();
+    })();
+</script>

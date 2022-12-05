@@ -1,0 +1,28 @@
+<table>
+    <thead>
+    <tr>
+        <th width="150">RoomType</th>
+        <th width="150">Seq</th>
+        <th width="150">CollectType</th>
+        <th width="150">CollectItem</th>
+        <th width="150">Target</th>
+        <th width="150">RewardOptions</th>
+        <th width="150">ActiveBetLevel</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{foreach key=roomType item=_collects from=$collects}}
+    {{foreach key=seq item=collect from=$_collects}}
+    <tr>
+        <td>{{$roomType}}</td>
+        <td>{{$seq}}</td>
+        <td>{{$collect.collectType}}</td>
+        <td>{{$collect.collectItem}}</td>
+        <td>{{$collect.target}}</td>
+        <td>{{json_encode($collect.rewardOptions)}}</td>
+        <td>{{$collect.activeBetLevel}}</td>
+    </tr>
+    {{/foreach}}
+    {{/foreach}}
+    </tbody>
+</table>

@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package GPBClass.Message;
+
+message PB_PrizeInfo {
+    string itemId = 1; //物品ID
+    int32 type = 2; //物品类型
+    double count = 3; //物品数量
+    double balance = 4; //物品总数量(余额)
+}

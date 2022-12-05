@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package GPBClass.Message;
+
+message PB_FetchWheeItems_Req {
+    string wheelId = 1;
+}
+
+message PB_FetchWheeItems_Res {
+    repeated PB_FetchWheeItemInfo list = 1;
+}
+
+message PB_FetchWheeItemInfo {
+    string item = 1;
+    int32  pos = 2;
+    string value = 3;
+    int32  weight = 4;
+}

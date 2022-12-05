@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package GPBClass.Message;
+
+import "PB_RoleInfo.proto";
+
+message PB_UserLogin_Req {
+    string openid = 1; //平台用户的标识
+    string token = 2; //平台验证token
+    int32 platform = 3; //用户所属平台
+    string version = 4; //客户端版本号
+    string deviceId = 5; //设备ID
+    string deviceToken = 6; //设备Token
+    string idfa = 7; //广告追踪ID
+    string appsflyerId = 8; //appsflyerId
+}
+
+message PB_BuffInfo {
+    int32 buff = 1; //Buff类型
+    int64 expire = 2; //失效时间
+    string options = 3; //其他属性(json)
+}
+
+message PB_UserLogin_Res {
+    string sessionId = 1; //sessionId
+    PB_RoleInfo roleInfo = 2; //角色基本信息
+    repeated PB_BuffInfo buffs = 3; //Buff信息
+    int32 loginType = 4; //当前登录类型 0-普通登录 1-首次登录 2-今天首次登录
+    int32 systemTime = 5; //当前系统时间戳
+    int32 tomorrowTime = 6; //次日零点时间戳
+    int32 regTime = 7; //用户注册时间戳
+    int32 platform = 8; //用户账号平台类型
+    int32 loginDays = 9; //用户登录总天数
+    int32 regularContinuedLoginDays = 10; //用户常规连续登录天数
+    int32 adLevelLock = 11;//广告开放等级
+}

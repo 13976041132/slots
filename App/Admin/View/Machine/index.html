@@ -1,0 +1,36 @@
+<table>
+    <thead>
+    <tr>
+        <th width="80">机台ID</th>
+        <th>机台名称</th>
+        <th>总列数</th>
+        <th>总行数</th>
+        <th>大奖倍数</th>
+        <th>机台配置</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{foreach item=machine from=$list}}
+    <tr>
+        <td>{{$machine.machineId}}</td>
+        <td>{{$machine.name}}</td>
+        <td>{{$machine.cols}}</td>
+        <td>{{$machine.rows}}</td>
+        <td>{{$machine.winMultiples}}</td>
+        <td>
+            <div class="btn-group">
+                <a class="btn" data-toggle="dialog" data-target="/machine/bet?machineId={{$machine.machineId}}">下注选项</a>
+                <a class="btn" data-toggle="dialog" data-target="/machine/element?machineId={{$machine.machineId}}">机台元素</a>
+                <a class="btn" data-toggle="dialog" data-target="/machine/payline?machineId={{$machine.machineId}}">中奖线</a>
+                <a class="btn" data-toggle="dialog" data-target="/machine/paytable?machineId={{$machine.machineId}}">Paytable</a>
+                <a class="btn" data-toggle="dialog" data-target="/machine/feature?machineId={{$machine.machineId}}">Feature</a>
+                <a class="btn" data-toggle="dialog" data-target="/machine/sample?machineId={{$machine.machineId}}">轴样本</a>
+                <a class="btn" data-toggle="dialog" data-target="/machine/collect?machineId={{$machine.machineId}}">Collect</a>
+                <a class="btn" data-toggle="dialog" data-target="/machine/jackpot?machineId={{$machine.machineId}}">Jackpot</a>
+            </div>
+        </td>
+    </tr>
+    {{/foreach}}
+    </tbody>
+</table>
+{{$pager->display()}}

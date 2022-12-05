@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package GPBClass.Message;
+
+message PB_SetNickname_Req {
+    string nickname = 1; //用户昵称
+}
+
+message PB_SetNickname_Res {
+    string nickname = 1; //用户昵称
+}
+

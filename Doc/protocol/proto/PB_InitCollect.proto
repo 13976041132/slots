@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package GPBClass.Message;
+
+import "PB_CollectInfo.proto";
+
+message PB_InitCollect_Req {
+
+}
+
+message PB_InitCollect_Res {
+    PB_CollectInfo collectInfo = 1; //当前收集信息
+}

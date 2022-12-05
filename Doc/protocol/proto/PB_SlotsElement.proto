@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package GPBClass.Message;
+
+message PB_SlotsElement {
+    string elementId = 1; //元素ID
+    int32 col = 2; //元素所在列
+    int32 row = 3; //元素所在行
+    string value = 4; //附带值（可能包含多个值，逗号分隔）
+}

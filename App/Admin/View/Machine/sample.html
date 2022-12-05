@@ -1,0 +1,24 @@
+<table width="1200">
+    <thead>
+    <tr>
+        <th width="100">样本ID</th>
+        <th width="200">样本描述</th>
+        <th width="200">下注挡位区间</th>
+        <th width="200">是否用于新手玩家</th>
+        <th>特定feature下使用</th>
+        <th>样本元素</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{foreach item=sample from=$samples}}
+    <tr>
+        <td>{{$sample.sampleId}}</td>
+        <td>{{$sample.sampleDesc}}</td>
+        <td>{{json_encode($sample.betLevel)}}</td>
+        <td>{{$sample.novice}}</td>
+        <td>{{json_encode($sample.feature)}}</td>
+        <td><a class="btn-link" data-toggle="dialog" data-title="轴元素-{{$sample.machineId}}-{{$sample.sampleId}}" data-target="/machine/sampleItems?machineId={{$sample.machineId}}&sampleId={{$sample.sampleId}}">查看</a></td>
+    </tr>
+    {{/foreach}}
+    </tbody>
+</table>

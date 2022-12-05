@@ -1,0 +1,220 @@
+<style>
+    #fileContainer {
+        position: absolute; left: 300px; right: 0; top: 0; bottom: 30px; overflow-y: auto;
+    }
+    #fileContainer li {
+        text-align: center; float: left; margin: 10px; padding: 5px; position: relative;
+    }
+    #fileContainer li:hover, #fileContainer li.selected {
+        background: #f0f0f0;
+    }
+    #fileContainer .res-box {
+        width: 150px; height: 150px; vertical-align: middle; display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    #fileContainer .res-name {
+        width: 150px; height: 40px; word-break: break-all; overflow: hidden; display: flex; align-items: center; justify-content: center;
+    }
+    #fileContainer .res-box img {
+        max-width: 150px; max-height: 150px;
+    }
+    #fileContainer li:hover .btn-delete {
+        display: block;
+    }
+    #fileContainer .btn-delete {
+        position: absolute; right: 0; top: 0; cursor: pointer; display: none;
+    }
+    #dirSelector .dir {
+        line-height: 24px;
+    }
+    #dirSelector img {
+        vertical-align: middle;
+    }
+    #dirSelector .selected, #fileContainer .selected {
+        font-weight: bold;
+        color: orange;
+    }
+    #fileInfo {
+        height: 36px; line-height: 30px; position: absolute; left: 300px; right: 0; bottom: 0;
+        border-top: 1px solid #cccccc; padding: 2px 5px; background: #ffffff;
+    }
+    #loading {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(254, 254, 254, 0.3);
+        z-index: 100;
+        display: none;
+    }
+    #loading img {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 32px;
+        height: 32px;
+    }
+</style>
+<div class="panel" data-title="资源管理器">
+    <div style="position: relative;">
+        <div style="height: 34px; line-height: 34px; background: #ccc; position: absolute; left: 0; width: 60px; text-align: center;">当前目录</div>
+        <div id="path-value" style="height: 34px; line-height: 34px; border: 1px solid #ccc; position: absolute; left: 60px; right: 88px; padding-left: 5px;">/</div>
+        <a id="btn-upload" class="btn btn-middle btn-primary uploader fr" data-options="uploadUrl:'/resource/upload?path=/',multi:true">上传资源</a>
+        <div style="clear: both;"></div>
+    </div>
+    <div style="border: 1px solid #ccc; height: 600px; margin-top: 5px; position: relative;">
+        <div id="loading">
+            <img src="{{$IMG_URL}}/icons/loading.gif">
+        </div>
+        <div id="dirSelector" style="width: 300px; height: 100%; padding: 5px; border-right: 1px solid #ccc; display: inline-block; overflow: auto;">
+            <div>
+                <a class="btn btn-link dir selected" data-path="/">
+                    <span class="material-icons">folder</span>
+                    <span>Root</span>
+                </a>
+            </div>
+            <ul class="children" style="padding-left: 20px;"></ul>
+        </div>
+        <div id="fileContainer">
+            <ul></ul>
+        </div>
+        <div id="fileInfo"></div>
+    </div>
+</div>
+<script>
+    (function () {
+        requirejs('uploader.js', function () {
+            $("#btn-upload").uploader().setOptions({
+                'onUploaded': function (uploader, data) {
+                    initFiles(data, true);
+                }
+            });
+        });
+        function showDirTree(path) {
+            console.log('showDirTree:', path);
+            if (path !== '/' && path.slice(-1) === '/') {
+                path = path.slice(0, -1);
+            }
+            if ($("#path-value").text() !== path) {
+                $("#path-value").text(path);
+                $("#btn-upload").uploader().setUploadUrl('/resource/upload?path=' + path);
+            }
+            $('#loading').show();
+            ajaxRequest('/resource/dirScan', {path: path}, function (data) {
+                initDirs(data.dirs);
+                initFiles(data.files);
+                $('#loading').hide();
+            });
+
+        }
+        function getPath() {
+            var path = $("#path-value").text();
+            path = path + (path === '/' ? '' : '/');
+            return path;
+        }
+        function initDirs(dirs) {
+            var path = getPath();
+            var $ul = $(".dir[data-path='" + path + "']").parent().next();
+            $('.btn-create-dir').parent().remove();
+            $ul.html('');
+            for (var i = 0; i < dirs.length; i++) {
+                var _path = path + dirs[i] + '/';
+                $ul.append('<li><div><a class="btn btn-link dir" data-path="' + _path + '"><span class="material-icons">folder</span><span>' + dirs[i] + '</span></a></div><ul class="children" style="padding-left: 20px;"></ul></li>');
+            }
+            $ul.append('<li><a class="btn btn-link btn-create-dir"><span class="material-icons">create_new_folder</span><span>...</span></a></li>');
+            $ul.find('a.dir').click(onDirClicked);
+            $ul.find('.btn-create-dir').click(function () {
+                var content = '<form action="/resource/createDir?path=' + path + '"><div class="form-control"><label>目录名</label><input name="dir" required></div></form>';
+                showDialog('创建目录', content, {
+                    onSuccess: function () {
+                        showDirTree(getPath());
+                    }
+                });
+            });
+        }
+        function initFiles(files, append) {
+            var path = getPath();
+            var $ul = $("#fileContainer").find('ul');
+            $('#fileContainer').find('li.selected').removeClass('selected');
+            $('#fileInfo').html('');
+            if (!append) $ul.html('');
+            for (var i = 0; i < files.length; i++) {
+                var thumb = '';
+                var ext = files[i].split('.').pop().toLowerCase();
+                var url = '{{$RES_URL}}' + path + files[i] + '?_=' + (new Date().getTime());
+                if (ext === 'png' || ext === 'jpg' || ext === 'jpeg' || ext === 'gif' || ext === 'bmp') {
+                    thumb = url;
+                } else {
+                    thumb = '{{$IMG_URL}}/icons/file.png';
+                }
+                var fileId = (path + files[i]).replaceAll('\/', '_').replaceAll('\.', '_');
+                var $li = $('#' + fileId);
+                if ($li.length === 0) {
+                    $li = $('<li id="' + fileId + '"><div class="res-box"><img class="res-thumb" src="' + thumb + '"></div><div class="res-name">' + files[i] + '</div><a class="btn-delete"><img src="{{$IMG_URL}}/icons/del.png"></a></li>');
+                    $li.click(function () {
+                        onFileClicked($(this));
+                    });
+                    $li.find('.btn-delete').click(function (e) {
+                        onDeleteFile($(this).parents('li'));
+                    });
+                    $li.appendTo($ul);
+                } else {
+                    $li.find('.res-thumb').attr('src', thumb);
+                }
+                if (append) {
+                    $li.addClass('selected');
+                }
+            }
+        }
+        function onFileClicked($li) {
+            var path = getPath();
+            $('#fileContainer').find('li.selected').removeClass('selected');
+            $li.addClass('selected');
+            var filename = $li.find('.res-name').text();
+            var fileUrl = '{{$RES_URL}}' + path + filename;
+            var $fileInfo = $('#fileInfo');
+            $fileInfo.html('<span class="material-icons">info</span>');
+            $fileInfo.append('<span>资源路径：</span><span style="margin-right: 20px;">' + (path + filename) + '</span>');
+            $fileInfo.append('<span>资源链接：</span><a class="btn btn-link" href="' + fileUrl + '" target="_blank">' + fileUrl + '</a>');
+        }
+        function onDeleteFile($li) {
+            var path = getPath();
+            var filename = $li.find('.res-name').text();
+            showConfirm('确定要删除该资源吗？', function () {
+                ajaxRequest('/resource/deleteFile', {file: path + filename}, function() {
+                    $('#fileInfo').html('');
+                    $li.remove();
+                });
+            });
+        }
+        function onDirClicked() {
+            var path = $(this).data('path');
+            $("#dirSelector").find('.selected').removeClass('selected');
+            $(".dir[data-path='" + path + "']").addClass('selected');
+
+            $("#btn-delete-dir").remove();
+            if (path != '/') {
+                $(".dir[data-path='" + path + "']").after('<a id="btn-delete-dir" class="material-icons" style="float: right; font-size: 20px; margin: 2px; color: orange; cursor: pointer;">delete</a>');
+                $("#dirSelector").find('#btn-delete-dir').click(function () {
+                    onDeleteDir(path);
+                });
+            }
+
+            showDirTree(path);
+            $('#fileInfo').html('');
+        }
+        function onDeleteDir(path) {
+            showConfirm('确定要删除该目录吗？', function () {
+                ajaxRequest('/resource/deleteDir', {path: path}, function() {
+                    var $li = $(".dir[data-path='" + path + "']").parent().parent();
+                    $("#fileContainer").find('ul').html('');
+                    $('#fileInfo').html('');
+                    $li.parent().prev().find('.dir').click();
+                    $li.remove();
+                });
+            });
+        }
+        $("#dirSelector").find('a.dir').click(onDirClicked);
+        showDirTree('/');
+    })();
+</script>

@@ -1,0 +1,38 @@
+<table style="width: 1500px;">
+    <thead>
+    <tr>
+        <th>子机台</th>
+        <th>FeatureId</th>
+        <th>FeatureName</th>
+        <th>触发选项</th>
+        <th>触发Line</th>
+        <th>触发元素</th>
+        <th>触发元素个数</th>
+        <th>金币奖励</th>
+        <th>Freespin奖励</th>
+        <th>金币倍数奖励</th>
+        <th>元素奖励</th>
+        <th>元素奖励约束</th>
+        <th>优先级</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{foreach key=index item=feature from=$features}}
+    <tr>
+        <td>{{$feature.subMachine}}</td>
+        <td>{{$feature.featureId}}</td>
+        <td>{{$feature.featureName}}</td>
+        <td title="{{$feature.triggerOptions}}">{{$feature.triggerOptions|truncate:30:"..."}}</td>
+        <td>{{$feature.triggerLines}}</td>
+        <td title="{{$feature.triggerItems}}">{{$feature.triggerItems|truncate:13:"..."}}</td>
+        <td>{{$feature.triggerItemNum}}</td>
+        <td>{{$feature.coinsAward}}</td>
+        <td>{{$feature.freespinAward}}</td>
+        <td>{{$feature.multipleAward}}</td>
+        <td>{{$feature.itemAward}}</td>
+        <td title="{{$feature.itemAwardLimit}}">{{$feature.itemAwardLimit|truncate:30:"..."}}</td>
+        <td>{{$feature.priority}}</td>
+    </tr>
+    {{/foreach}}
+    </tbody>
+</table>
