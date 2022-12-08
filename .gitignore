@@ -3,3 +3,8 @@
 /Doc/database/csv/tmp
 /App/Admin/View/Compile/
 /App/GameMain/View/Compile/
+/Config/machine/*
+/Config/feature/*
+/Config/common/*
+/Config/tables-csv-md5-develop.php
+/Scripts/test.php
