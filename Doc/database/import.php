@@ -84,24 +84,4 @@ if ($target == ENV) {
     Bll::config()->clearConfigVersion();
 
     echo '配置文件已生成' . PHP_EOL;
-    echo PHP_EOL;
 }
-
-//删除转换生成的配置表,避免svn冲突
-$configureTables = Config::get('config-updateAble');
-$configs = [];
-
-foreach ($configureTables as $tables) {
-    $configs = array_merge($tables, array_values($tables));
-}
-
-$files = dir_scan($csvDir, false, true);
-
-foreach ($files as $file) {
-    if (in_array($file, $configs)) continue;
-    $sourceFile = $csvDir . '/' . $file;
-    unlink($sourceFile);
-}
-
-echo 'Done' . PHP_EOL;
-echo PHP_EOL;
