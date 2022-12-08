@@ -66,20 +66,6 @@ abstract class SlotsDecider extends SlotsFeature
     }
 
     /**
-     * 获取机台默认下注额
-     */
-    public function getDefaultBet()
-    {
-        $defaultBet = $this->gameInfo['defaultBet'];
-
-        if ($defaultBet) {
-            $defaultBet = $this->getNearByBet($defaultBet);
-        }
-
-        return $defaultBet;
-    }
-
-    /**
      * 获取机台推荐下注额
      */
     public function getSuggestBet()
@@ -120,36 +106,14 @@ abstract class SlotsDecider extends SlotsFeature
     }
 
     /**
-     * 获取当前使用的样本ID
-     */
-    public function getCurrSampleId()
-    {
-        $sampleId = $this->betContext['sampleId'];
-
-        if (!$sampleId) {
-            $sampleId = $this->getFeatureDetail('sampleId');
-            if (!$sampleId) {
-                $sampleId = $this->getReelSample();
-            }
-        }
-
-        return $sampleId;
-    }
-
-    /**
-     * 获取bonus元素替换配置
-     */
-    public function getBonusElementsReplaceConfig()
-    {
-        return [];
-    }
-
-    /**
      * 获取机台初始化元素
      */
-    public function getInitElements($featureId = '')
+    public function getInitElements()
     {
-        return [];
+        $elements = $this->getRandomElements();
+        $this->setElementsValue($elements);
+
+        return $this->elementsToList($elements);
     }
 
     /**
@@ -157,27 +121,32 @@ abstract class SlotsDecider extends SlotsFeature
      */
     public function getRandomElements()
     {
-        if ($this->betContext['feature']) {
-            if ($elements = $this->rollByFeature()) {
-                return $elements;
+        $featureName = 'Base';
+        if ($this->isFreeSpin()) {
+            $featureName = $this->getFeatureName($this->getCurrFeature());
+        }
+
+        if (!$this->elementReelWeights[$featureName]) {
+            Log::error("Machine item reel weights config  do not configure {$featureName}", 'slotsGame.log');
+            FF::throwException(Code::FAILED);
+        }
+
+        $elementReelWeights = $this->elementReelWeights[$featureName];
+        $sheetGroup = $this->getSheetGroup();
+
+        while (1) {
+            $elements = array();
+            foreach ($sheetGroup as $col => $sheets) {
+                foreach (array_keys($sheets) as $row) {
+                    $elements[$col][$row] = (string)Utils::randByRates($elementReelWeights[$row]);
+                }
+            }
+            if ($this->checkElements($elements)) {
+                break;
             }
         }
 
-        if (empty($this->betContext['sampleId'])) {
-            $sampleId = $this->getReelSample(false, $sampleGroup);
-            if (!$sampleId) {
-                Log::error("machineId: {$this->machineId}, betMultiple: {$this->betContext['betMultiple']}, betRatio: {$this->betContext['betRatio']}", 'sample.log');
-                FF::throwException(Code::SYSTEM_ERROR, "failed to find an available sample");
-            }
-            $this->betContext['sampleGroup'] = $sampleGroup;
-            $this->betContext['sampleId'] = $sampleId;
-        } else {
-            $sampleId = $this->betContext['sampleId'];
-        }
-
-        $this->initFeatureOptions();
-
-        return $this->rollByReelSample($sampleId);
+        return $elements;
     }
 
     /**
@@ -199,157 +168,11 @@ abstract class SlotsDecider extends SlotsFeature
     }
 
     /**
-     * 获取一个转轴样本
-     */
-    public function getReelSample($forNextSpin = false, &$sampleGroup = null, $featureId = '')
-    {
-        if (defined('TEST_SAMPLE_ID')) return TEST_SAMPLE_ID;
-
-        if ($forNextSpin) {
-            $currFeature = $this->gameInfo['featureId'];
-        } elseif (!$featureId) {
-            $currFeature = $this->betContext['feature'];
-        } else {
-            $currFeature = $featureId;
-        }
-
-        //指定了特定的feature专用轴
-        if ($currFeature && $sampleId = $this->getFeatureDetail('sampleId')) {
-            return $sampleId;
-        }
-
-        if (!$forNextSpin && !empty($this->betContext['preFeatures'])) {
-            $preFeature = $this->getActivatedFeature($this->betContext['preFeatures']);
-        } else {
-            $preFeature = '';
-        }
-
-        //分离出feature专用样本
-        $samplesForCommon = array();
-        $samplesForFeature = array();
-        $samplesForPreFeature = array();
-        $samplesForPreFeatureFurther = array();
-        $sampleGroups = Config::get('machine/reel-sample-groups', $this->machineId);
-
-        //当前使用的样本组
-        if (!$sampleGroup) {
-            $sampleGroup = $this->getReelSampleGroup();
-        }
-
-        if (empty($sampleGroups[$sampleGroup])) {
-            $sampleGroup = 'Normal';
-        }
-
-        $prefix = isset($this->reelSampleFilter['prefix']) ? $this->reelSampleFilter['prefix'] : 'S';
-        if ($forNextSpin) $prefix = 'S';
-
-        foreach ($sampleGroups[$sampleGroup] as $sampleId) {
-            $sample = $this->samples[$sampleId];
-            if (substr($sampleId, 0, strlen($prefix)) !== $prefix) {
-                continue;
-            }
-            if ($sample['betLevel']) { //适配下注档位
-                $betPercent = $this->calcBetPercent($this->getTotalBet());
-                if (!Utils::isValueMatched($betPercent, $sample['betLevel'])) {
-                    continue;
-                }
-            }
-
-            if (!empty($sample['options']) && !$this->matchSampleOptions($sample['options'])) {
-                continue;
-            }
-            if ($sample['feature']) {
-                if ($currFeature && in_array($currFeature, $sample['feature'])) {
-                    $samplesForFeature[] = $sample;
-                }
-                if ($preFeature && in_array($preFeature, $sample['feature'])) {
-                    $samplesForPreFeature[] = $sample;
-                }
-                if ($currFeature && $preFeature && in_array($currFeature . '>' . $preFeature, $sample['feature'])) {
-                    $samplesForPreFeatureFurther[] = $sample;
-                }
-            } else {
-                $samplesForCommon[] = $sample;
-            }
-        }
-
-        $samplesForPreFeature = $samplesForPreFeatureFurther ?: $samplesForPreFeature;
-        $samples = $samplesForPreFeature ?: ($samplesForFeature ?: $samplesForCommon);
-
-        if (!$samples) return '';
-
-        if (count($samples) > 1) {
-            $weights = array_column($samples, 'weight', 'sampleId');
-            $sampleId = Utils::randByRates($weights);
-        } else {
-            $sampleId = $samples[0]['sampleId'];
-        }
-
-        return $sampleId;
-    }
-
-    /**
      * 匹配样本适配选项
      */
     public function matchSampleOptions($options)
     {
         return true;
-    }
-
-    /**
-     * 按真轴样本方式转动老虎机
-     */
-    public function rollByReelSample($sampleId, $startPos = null, $replaceStack = true)
-    {
-        if (empty($this->sampleItems[$sampleId])) {
-            FF::throwException(Code::SYSTEM_ERROR, "SampleItem is miss for {$this->machineId}/{$sampleId}");
-        }
-
-        $sheetGroup = $this->getSheetGroup();
-        $sampleItems = &$this->sampleItems[$sampleId];
-
-        while (1) {
-            $elements = array();
-            $values = array();
-            foreach ($sheetGroup as $col => $sheets) {
-                if (is_string($sampleItems[$col])) {
-                    $sampleItems[$col] = explode(',', $sampleItems[$col]);
-                }
-                $count = count($sampleItems[$col]);
-                if ($startPos === null) {
-                    $pos = mt_rand(0, $count - 1);
-                } else {
-                    $pos = $startPos;
-                }
-                $elements[$col] = array();
-                foreach ($sheets as $row => $sheet) {
-                    $index = $pos + $row - 1;
-                    if ($index >= $count) {
-                        $index = $index - $count;
-                    }
-                    $elementId = (string)$sampleItems[$col][$index];
-                    $elements[$col][$row] = $elementId;
-                }
-            }
-            if ($this->checkElements($elements)) {
-                break;
-            }
-        }
-
-        if ($replaceStack) {
-            $this->gameInfo['stacks'] = array();
-            $this->elementValues = $values;
-        }
-
-        return $elements;
-    }
-
-    /**
-     * 特殊feature中分配转轴元素
-     */
-    protected function rollByFeature()
-    {
-        return array();
     }
 
     /**
@@ -487,31 +310,7 @@ abstract class SlotsDecider extends SlotsFeature
             return $this->bonusConfig[$key];
         }
 
-        //获取当前轴样本下的bonus配置组
-        $machineId = $this->machineId;
-        //TODO
-        if (!isset($sampleId)) {
-            throw new \Exception('SampleId is empty', Code::SYSTEM_ERROR);
-        }
-        $configs = Config::get('machine/bonus-value', "{$machineId}/{$sampleId}");
-        if (!$configs) {
-            throw new \Exception("Bonus value config for {$machineId}/{$sampleId} is missed", Code::SYSTEM_ERROR);
-        }
-
-        //根据当前下注额匹配对应的配置
-        $totalBetLevel = $this->getTotalBetIndex() + 1;
-        foreach ($configs as $config) {
-            if (empty($config['activeBetLevel']) || Utils::isValueMatched($totalBetLevel, $config['activeBetLevel'])) {
-                $this->bonusConfig = $config;
-                break;
-            }
-        }
-
-        if (!$this->bonusConfig) {
-            FF::throwException(Code::SYSTEM_ERROR, "Bonus value config for {$machineId}/{$sampleId}/{$totalBetLevel} is missed");
-        }
-
-        return $this->bonusConfig[$key];
+        return [];
     }
 
     /**
@@ -620,27 +419,4 @@ abstract class SlotsDecider extends SlotsFeature
 
         return $winType;
     }
-
-    public function getBetGear($totalBet)
-    {
-        $closestBet = $this->getClosestBet($totalBet);
-        $totalBets = array_values($this->betOptions);
-        $betGear = array_search($closestBet, $totalBets) + 1;
-
-        return $betGear;
-    }
-
-    /**
-     * 获取对应 WinType 的倍数值
-     */
-    public function getWinMultiByWinType($winType)
-    {
-        if ($winType <= 0) return 0;
-
-        $winMultiples = json_decode($this->machine['winMultiples'], true);
-
-        return isset($winMultiples[$winType - 1]) ? $winMultiples[$winType - 1] : max($winMultiples);
-    }
-
-
 }

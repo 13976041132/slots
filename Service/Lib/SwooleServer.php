@@ -19,7 +19,7 @@ class SwooleServer
     protected $buffer = array();
 
     /**
-     * @var \swoole_server
+     * @var
      */
     protected $server;
 
@@ -161,14 +161,12 @@ class SwooleServer
             } elseif ($data['event'] == 'Reload') {
                 $this->onReload();
             }
-        } elseif ($data['event'] == 'BindUser') {
-            $uid = $this->getUserId($data);
-            if ($uid) {
-                $this->server->bind($fd, $uid);
-                $this->onUserBind($fd, $uid);
-            }
         } else {
-            $task_id = $this->server->task($data);
+            $taskWorkerId = 0;
+            if (isset($data['data']['uid'])) {
+                $taskWorkerId = $data['data']['uid'] % $this->options['task_worker_num'];
+            }
+            $task_id = $this->server->task($data, $taskWorkerId);
             if ($task_id === false) {
                 echo 'dispatch task failed' . PHP_EOL;
                 print_r($this->server->stats());

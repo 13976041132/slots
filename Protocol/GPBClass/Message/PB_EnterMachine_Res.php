@@ -22,7 +22,7 @@ class PB_EnterMachine_Res extends \Google\Protobuf\Internal\Message
     /**
      *当前下注倍数
      *
-     * Generated from protobuf field <code>int32 betMultiple = 2;</code>
+     * Generated from protobuf field <code>int64 betMultiple = 2;</code>
      */
     private $betMultiple = 0;
     /**
@@ -50,11 +50,11 @@ class PB_EnterMachine_Res extends \Google\Protobuf\Internal\Message
      */
     private $coins = 0;
     /**
-     *用户gem余额
+     *用户diamond余额
      *
-     * Generated from protobuf field <code>int64 gem = 7;</code>
+     * Generated from protobuf field <code>int64 diamond = 7;</code>
      */
-    private $gem = 0;
+    private $diamond = 0;
     /**
      *feature信息
      *
@@ -138,8 +138,8 @@ class PB_EnterMachine_Res extends \Google\Protobuf\Internal\Message
     /**
      *当前下注倍数
      *
-     * Generated from protobuf field <code>int32 betMultiple = 2;</code>
-     * @return int
+     * Generated from protobuf field <code>int64 betMultiple = 2;</code>
+     * @return int|string
      */
     public function getBetMultiple()
     {
@@ -149,13 +149,13 @@ class PB_EnterMachine_Res extends \Google\Protobuf\Internal\Message
     /**
      *当前下注倍数
      *
-     * Generated from protobuf field <code>int32 betMultiple = 2;</code>
-     * @param int $var
+     * Generated from protobuf field <code>int64 betMultiple = 2;</code>
+     * @param int|string $var
      * @return $this
      */
     public function setBetMultiple($var)
     {
-        GPBUtil::checkInt32($var);
+        GPBUtil::checkInt64($var);
         $this->betMultiple = $var;
 
         return $this;
@@ -266,27 +266,27 @@ class PB_EnterMachine_Res extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     *用户gem余额
+     *用户diamond余额
      *
-     * Generated from protobuf field <code>int64 gem = 7;</code>
+     * Generated from protobuf field <code>int64 diamond = 7;</code>
      * @return int|string
      */
-    public function getGem()
+    public function getDiamond()
     {
-        return $this->gem;
+        return $this->diamond;
     }
 
     /**
-     *用户gem余额
+     *用户diamond余额
      *
-     * Generated from protobuf field <code>int64 gem = 7;</code>
+     * Generated from protobuf field <code>int64 diamond = 7;</code>
      * @param int|string $var
      * @return $this
      */
-    public function setGem($var)
+    public function setDiamond($var)
     {
         GPBUtil::checkInt64($var);
-        $this->gem = $var;
+        $this->diamond = $var;
 
         return $this;
     }

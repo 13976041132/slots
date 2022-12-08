@@ -23,8 +23,6 @@ CREATE TABLE IF NOT EXISTS `t_bet_log` (
   `betId` varchar(64)  DEFAULT NULL COMMENT '牌局id',
   `uid` int(10) unsigned NOT NULL COMMENT '用户ID',
   `machineId` int(10) NOT NULL COMMENT '机台ID',
-  `sampleTag` varchar(16) NOT NULL DEFAULT '' COMMENT '样本标签',
-  `sampleId` varchar(16) NOT NULL DEFAULT '' COMMENT '样本id',
   `betSeq` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '下注次序',
   `isNoviceProtect` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否新手保护期',
   `isIntervene` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否干预',

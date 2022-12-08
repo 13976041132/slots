@@ -8,8 +8,8 @@ namespace FF\Bll;
 use FF\Factory\Bll;
 use FF\Factory\MQ;
 use FF\Factory\Sdk;
-use FF\Service\Lib\SwooleClient;
 use FF\Service\Lib\Service;
+use FF\Service\Lib\SwooleClient;
 
 class AsyncTaskBll
 {
@@ -29,10 +29,7 @@ class AsyncTaskBll
     public function addTask($event, $data = array())
     {
         if (!Service::isRunning() && $this->client()->enabled()) {
-//            $this->client()->send($event, $data);
-            $message = array('event' => $event, 'data' => $data);
-            MQ::rabbitmq()->publish(EXCHANGE_ASYNC_TASK_RELAY, json_encode($message));
-
+            $this->client()->send($event, $data);
         } else {
             $this->dealTask($event, $data);
         }

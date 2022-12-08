@@ -28,36 +28,6 @@ CREATE TABLE IF NOT EXISTS `t_machine_item` (
   PRIMARY KEY (`machineId`,`elementId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='机台元素表';
 
-CREATE TABLE IF NOT EXISTS `t_sample` (
-  `machineId` int(10) NOT NULL COMMENT '机台ID',
-  `sampleId` varchar(16) NOT NULL COMMENT '样本ID',
-  `sampleDesc` varchar(32) NOT NULL COMMENT '样本描述',
-  `sampleGroup` varchar(255) NOT NULL DEFAULT '' COMMENT '样本组名称',
-  `betLevel` varchar(32) NOT NULL DEFAULT '[]' COMMENT '下注挡位区间',
-  `organic` char(1) NOT NULL DEFAULT '' COMMENT '是否只用于自然量用户',
-  `cash` varchar(32) NOT NULL DEFAULT '[]' COMMENT '适配的cash资产区间',
-  `feature` varchar(255) NOT NULL DEFAULT '' COMMENT '特定feature下使用',
-  `weight` int(10) UNSIGNED NOT NULL DEFAULT '1' COMMENT '样本权重',
-  PRIMARY KEY (`machineId`, `sampleId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='机台转轴样本表';
-
-CREATE TABLE IF NOT EXISTS `t_sample_items` (
-  `machineId` int(10) NOT NULL COMMENT '机台ID',
-  `sampleId` varchar(16) NOT NULL COMMENT '样本ID',
-  `reel` tinyint(1) UNSIGNED NOT NULL COMMENT '转轴编号',
-  `items` text COMMENT '元素列表',
-  PRIMARY KEY (`machineId`, `sampleId`, `reel`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='机台转轴元素配置表';
-
-CREATE TABLE IF NOT EXISTS `t_sample_ref` (
-  `machineId` int(10) NOT NULL COMMENT '机台ID',
-  `sampleId` varchar(16) NOT NULL COMMENT '样本ID',
-  `featureId` varchar(16) NOT NULL COMMENT 'featureID',
-  `triggerOptions` text COMMENT 'feature触发选项',
-  `itemAwardLimit` text COMMENT 'feature奖励元素限制',
-  PRIMARY KEY (`sampleId`, `featureId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='机台样本引用表';
-
 CREATE TABLE IF NOT EXISTS `t_payline` (
   `machineId` int(10) NOT NULL COMMENT '机台ID',
   `seq` int(10) UNSIGNED NOT NULL COMMENT 'line序号',
@@ -74,12 +44,12 @@ CREATE TABLE IF NOT EXISTS `t_paytable` (
   PRIMARY KEY (`resultId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='机台中奖组合表';
 
-CREATE TABLE IF NOT EXISTS `t_machine_reel_items` (
+CREATE TABLE IF NOT EXISTS `t_machine_item_reel_weights` (
   `machineId` int(10) NOT NULL COMMENT '机台ID',
   `featureName` varchar(32) NOT NULL DEFAULT '' COMMENT 'featureName',
   `elementId` varchar(16) NOT NULL COMMENT '元素ID',
   `reelWeights` varchar(255) NOT NULL COMMENT 'REEL的权重',
-  PRIMARY KEY (`machineId`,`elementId`)
+  PRIMARY KEY (`machineId`,`elementId`,`featureName`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='机台中奖组合表';
 
 CREATE TABLE IF NOT EXISTS `t_feature_game` (
@@ -87,9 +57,9 @@ CREATE TABLE IF NOT EXISTS `t_feature_game` (
   `featureId` varchar(16) NOT NULL COMMENT 'featureId',
   `featureName` varchar(32) NOT NULL DEFAULT '' COMMENT 'featureName',
   `triggerOnline` tinyint(1) UNSIGNED NOT NULL DEFAULT '0' COMMENT '是否只在line上触发',
-  `triggerLines` varchar(32) NOT NULL DEFAULT '' COMMENT '触发时所在line',
+  `triggerLines` varchar(64) NOT NULL DEFAULT '' COMMENT '触发时所在line',
   `triggerItems` varchar(255) NOT NULL DEFAULT '' COMMENT '触发时须包含元素(取其中一个)',
-  `triggerItemNum` varchar(4) NOT NULL DEFAULT '0' COMMENT '触发时须包含元素的个数',
+  `triggerItemNum` varchar(64) NOT NULL DEFAULT '0' COMMENT '触发时须包含元素的个数',
   `triggerOptions` text NOT NULL COMMENT '触发条件选项',
   `coinsAward` varchar(32) NOT NULL DEFAULT '0' COMMENT '金币奖励',
   `freespinAward` varchar(256) NOT NULL DEFAULT '0' COMMENT 'freespin奖励',

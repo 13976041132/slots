@@ -18,21 +18,14 @@ class LogBll
 
     private $logBuffer = array();
 
-    public function addBetLog($betId, $uid, $machineId, $level, $betSeq, $spinTimes, $betContext, $steps, $extra, $prizes, $settled, $balance, $version, $featureSteps = array())
+    public function addBetLog($betId, $uid, $machineId, $level, $betSeq, $betContext, $steps, $extra, $prizes, $settled, $balance, $version, $featureSteps = array())
     {
-        $sampleId = $betContext['sampleId'];
-        if (isset($betContext['sampleLibId'])) {
-            $sampleId = $betContext['sampleLibId'];
-        }
-
         $this->onLogEvent(self::LOG_TYPE_BETTING, array(
             'betId' => $betId,
             'uid' => $uid,
             'machineId' => $machineId,
             'totalSpinTimes' => $betSeq,
-            'spinTimes' => $spinTimes,
             'level' => $level,
-            'sampleId' => $sampleId,
             'betSeq' => $betSeq,
             'betContext' => $betContext,
             'steps' => $steps,

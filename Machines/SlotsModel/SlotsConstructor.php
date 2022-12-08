@@ -20,11 +20,9 @@ abstract class SlotsConstructor
     protected $machine;
     protected $machineItems;
     protected $sheetGroup;
-    protected $samples;
-    protected $sampleItems;
-    protected $sampleRef;
     protected $paylines;
     protected $paytable;
+    protected $elementReelWeights;
     protected $paytableGeneral;
     protected $paytableFreeSpin;
     protected $paytableGroups;
@@ -127,10 +125,7 @@ abstract class SlotsConstructor
         $this->machineItems = $config[MachineBll::DATA_MACHINE_ITEMS];
         $this->paylines = $config[MachineBll::DATA_PAYLINES];
         $this->paytable = $config[MachineBll::DATA_PAYTABLE];
-        $this->samples = $config[MachineBll::DATA_SAMPLES];
-
-        $this->sampleItems = $config[MachineBll::DATA_SAMPLE_ITEMS];
-        $this->sampleRef = $config[MachineBll::DATA_SAMPLE_REF];
+        $this->elementReelWeights = $config[MachineBll::DATA_ITEM_REEL_WEIGHTS];
         $this->featureGames = $config[MachineBll::DATA_FEATURE_GAMES];
         $this->featureGamesBak = $config[MachineBll::DATA_FEATURE_GAMES];
         $this->machineCollect = Bll::machine()->getMachineCollect($machineId);
@@ -176,7 +171,7 @@ abstract class SlotsConstructor
         if (!$this->analysisInfo) {
             if ($this->isVirtualMode) {
                 //在测试模式中,取用户数据作为分析数据
-                $this->analysisInfo = Bll::analysis()->initAnalysisInInTestMode($this->uid);
+                $this->analysisInfo = Bll::analysis()->initVirtualInfo($this->uid);
                 if (defined('IS_NOVICE') && !IS_NOVICE) {
                     $this->analysisInfo['noviceEnded'] = 1;
                 }
@@ -629,14 +624,14 @@ abstract class SlotsConstructor
      * 保存玩家游戏信息
      * 只对有变化的字段进行更新
      */
-    public function saveGameInfo($sync = false)
+    public function saveGameInfo()
     {
         if ($this->isVirtualMode) return;
 
         $changed = $this->getChangedData($this->gameInfo, $this->gameInfoBak);
 
         if ($changed) {
-            Bll::game()->updateGameInfo($this->uid, $this->machineId, $changed, $sync);
+            Bll::game()->updateGameInfo($this->uid, $this->machineId, $changed, true);
             $this->gameInfoBak = $this->gameInfo;
         }
     }
@@ -653,7 +648,6 @@ abstract class SlotsConstructor
 
         if ($changed) {
             Bll::analysis()->updateAnalysisInfo($this->uid, $this->analysisInfo);
-            Bll::analysis()->updateMachineSpinTimes($this->uid,$this->machineId, $this->gameInfo['spinTimes']);
 
             $this->analysisInfoBak = $this->analysisInfo;
         }

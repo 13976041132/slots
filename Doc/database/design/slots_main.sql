@@ -118,7 +118,6 @@ CREATE TABLE IF NOT EXISTS `t_analysis` (
   `jackpotTimes` int(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT '赢得jackpot次数',
   `totalCost` bigint(20) UNSIGNED NOT NULL DEFAULT '0' COMMENT '下注总额',
   `totalGained` bigint(20) UNSIGNED NOT NULL DEFAULT '0' COMMENT '中奖总额',
-  `sampleCount` int(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT '样本使用总个数',
   `noviceProgress` int(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT '新手样本总进度',
   `noviceEnded` tinyint(1) UNSIGNED NOT NULL DEFAULT '0' COMMENT '新手样本已结束',
   `avgBet` bigint(20) UNSIGNED NOT NULL DEFAULT '0' COMMENT '平均下注额',
@@ -143,7 +142,6 @@ CREATE TABLE IF NOT EXISTS `t_analysis` (
   `profitToday` bigint(20) NOT NULL DEFAULT '0' COMMENT '今日盈利',
   `reSpinFreeGameTimes` int(10) NOT NULL DEFAULT '0' COMMENT '重转 FreeGame 次数',
   `lastMachineId` int(10) NOT NULL COMMENT '最后所在机台ID',
-  `activityUsedBet` bigint(20) UNSIGNED DEFAULT '0' NULL COMMENT '活动bet值',
   PRIMARY KEY (`uid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='游戏统计数据表';
 

@@ -122,23 +122,6 @@ abstract class SlotsFeature extends SlotsJackpot
 
         $this->featureOptionsInit = true;
         $this->featureGames = $this->featureGamesBak;
-
-        if (!empty($this->betContext['sampleId'])) {
-            $sampleId = $this->betContext['sampleId'];
-        } else {
-            $sampleId = $this->getReelSample();
-        }
-
-        if (!isset($this->sampleRef[$sampleId])) return;
-
-        foreach ($this->sampleRef[$sampleId] as $featureId => $ref) {
-            if (!isset($this->featureGames[$featureId])) continue;
-            foreach (['triggerOptions', 'itemAwardLimit'] as $field) {
-                foreach ($ref[$field] as $key => $val) {
-                    $this->featureGames[$featureId][$field][$key] = $val;
-                }
-            }
-        }
     }
 
     /**
@@ -365,15 +348,6 @@ abstract class SlotsFeature extends SlotsJackpot
             }
         }
 
-        if (!empty($triggerOptions['unlockBetLevel'])) {
-            $betIndex = ceil($triggerOptions['unlockBetLevel'] * count($this->betOptions) / 100);
-            $unlockBet = $this->getTotalBetByIndex($betIndex);
-
-            if ($unlockBet > $this->getTotalBet()) {
-                return false;
-            }
-        }
-
         return true;
     }
 
@@ -384,76 +358,36 @@ abstract class SlotsFeature extends SlotsJackpot
     {
         $feature = $this->featureGames[$featureId];
         $triggerItems = $feature['triggerItems'];
-        $triggerItemNum = $feature['triggerItemNum'];
+        $triggerItemNums = explode('|', $feature['triggerItemNum']);
 
-        if (strpos($triggerItems, '/')) { //或模式，多个不同元素组合触发(不要求每个元素都出现)
-            $triggerItems = explode('/', $triggerItems);
-            $countMode = 'OR';
-        } elseif (strpos($triggerItems, '+')) { //与模式，多个不同元素组合触发(要求每个元素都出现)
-            $triggerItems = explode('+', $triggerItems);
-            $countMode = 'AND';
+        if (strpos($triggerItems, '|')) { //或模式，多个不同元素组合触发(不要求每个元素都出现)
+            $triggerItems = explode('|', $triggerItems);
         } else { //常规模式，单一元素触发
             $triggerItems = [$triggerItems];
-            $countMode = 'NORMAL';
         }
 
-        $triggerItemCounts = array();
-        $triggerOptions = $feature['triggerOptions'];
-        $continuous = !empty($triggerOptions['continuous']); //是否要求触发元素必须连续出现
-        $fromLeft = $continuous ? (isset($triggerOptions['fromLeft']) ? $triggerOptions['fromLeft'] : true) : false; //是否必须从第一列开始出现
-
-        //计算触发元素出现总个数
-        for ($col = 1; $col <= $this->machine['cols']; $col++) {
-            $appeared = array_intersect($triggerItems, array_values($elements[$col]));
-            if (!$appeared) {
-                if ($continuous) {
-                    if ($col == 1 && $fromLeft) return false;
-                    if ($triggerItemCounts) break;
-                }
-            } else {
-                $counts = array_count_values($elements[$col]);
-                foreach ($triggerItems as $elementId) {
-                    if (isset($counts[$elementId])) {
-                        if (empty($triggerOptions['countByCol'])) { //按元素出现个数计算
-                            $triggerItemCounts[$elementId] += $counts[$elementId];
-                        } else { //按元素出现的列数计算
-                            $triggerItemCounts[$elementId] += 1;
-                        }
-                    }
-                }
-            }
+        $elementsCount = $this->elementsCount($this->elementsToList($elements));
+        $triggerItemCount = 0;
+        foreach ($triggerItems as $triggerItem) {
+            $triggerItemCount += $elementsCount[$triggerItem] ?? 0;
         }
 
-        //与模式，多个不同元素组合触发，要求每个元素都出现
-        if ($countMode == 'AND' || $countMode == 'NORMAL') {
-            foreach ($triggerItems as $elementId) {
-                if (!isset($triggerItemCounts[$elementId])) {
-                    return false;
-                }
-            }
-        }
-
-        //根据元素出现数量判断是否触发了此feature
         $triggered = false;
-        $totalCount = array_sum($triggerItemCounts);
-        if (strpos($triggerItemNum, '+')) {
-            $triggerItemNum = substr($triggerItemNum, 0, -1);
-            if ($totalCount >= (int)$triggerItemNum) {
+
+        foreach ($triggerItemNums as $triggerItemNum) {
+            if (!Utils::isValueMatched($triggerItemCount, $triggerItemNum)) {
+                continue;
+            }
+
+            if ($this->getFeatureAwardFreeSpin($featureId, $feature, $triggerItemCount)) {
                 $triggered = true;
             }
-        } elseif ($totalCount == (int)$triggerItemNum) {
-            $triggered = true;
-        }
 
-        //元素数量满足时，还需按概率触发
-        if ($triggered && !empty($triggerOptions['ratio'])) {
-            if (!Utils::isHitByRate($triggerOptions['ratio'])) {
-                $triggered = false;
-            }
+            break;
         }
 
         if ($triggered) {
-            $this->featureData[$featureId]['triggerItemCount'] = $totalCount;
+            $this->featureData[$featureId]['triggerItemCount'] = $triggerItemCount;
         }
 
         return $triggered;
@@ -624,7 +558,7 @@ abstract class SlotsFeature extends SlotsJackpot
                 $itemCount = $this->featureData[$featureId]['triggerItemCount'];
                 $coins = $coins[$itemCount];
             }
-            $freespin = $this->getFeatureAwardFreeSpin($featureId, $feature, $elements);
+            $freespin = $this->getFeatureAwardFreeSpin($featureId, $feature);
             $prizes['coins'] += $coins * $this->getBetMultiple();
             $prizes['freespin'] += $freespin;
             $prizes['multiple'] *= max(1, $feature['multipleAward']);
@@ -964,7 +898,7 @@ abstract class SlotsFeature extends SlotsJackpot
     /**
      * 初始化feature所用的下注额
      */
-    public function initFeatureTotalBet($featureId)
+    public function initFeatureTotalBet()
     {
         return $this->getTotalBet();
     }
@@ -976,7 +910,7 @@ abstract class SlotsFeature extends SlotsJackpot
     {
         Log::info("onFreeGameTriggered, featureId = {$featureId}, times = {$times}", 'slotsGame.log');
 
-        $totalBet = $this->initFeatureTotalBet($featureId);
+        $totalBet = $this->initFeatureTotalBet();
 
         $this->setFeature($featureId, $featureDetail, $totalBet);
 
@@ -1178,30 +1112,6 @@ abstract class SlotsFeature extends SlotsJackpot
     }
 
     /**
-     * 当用户选择FreeSpin模式时的逻辑
-     */
-    public function onChooseFreespin($choosed)
-    {
-        $featureId = $this->getCurrFeature();
-        $triggerOptions = $this->getTriggerOptions($featureId);
-
-        if (empty($triggerOptions['numSpin'][$choosed - 1])) {
-            FF::throwException(Code::FAILED);
-        }
-
-        $sampleId = $triggerOptions['sampleId'][$choosed - 1];
-        $times = $triggerOptions['numSpin'][$choosed - 1];
-
-        $featureDetail = array('choosed' => $choosed, 'sampleId' => $sampleId);
-
-        $this->setFeatureDetail($featureDetail);
-        $this->setFeatureActivated();
-        $this->initFreespin($times);
-
-        return $times;
-    }
-
-    /**
      * 当用户选择Feature模式时的逻辑
      */
     public function onChooseFeature($choosed)
@@ -1227,15 +1137,7 @@ abstract class SlotsFeature extends SlotsJackpot
      */
     public function getFreespinInitTimes($featureId)
     {
-        $times = $this->featureGames[$featureId]['freespinAward'];
-
-        if (!is_array($times) || empty($this->featureData[$featureId]['triggerItemCount'])) {
-            return is_array($times) ? reset($times) : (int)$times;
-        }
-
-        $itemCount = $this->featureData[$featureId]['triggerItemCount'];
-
-        return $times[$itemCount] ?? array_last($times);
+        return $this->getFeatureAwardFreeSpin($featureId, $this->featureGames[$featureId]);
     }
 
     /**
@@ -1651,13 +1553,29 @@ abstract class SlotsFeature extends SlotsJackpot
     /**
      * 获取 feature 的 freeSpin 奖励
      */
-    public function getFeatureAwardFreeSpin($featureId, $featureCfg, $elements)
+    public function getFeatureAwardFreeSpin($featureId, $featureCfg, $itemCount = null)
     {
-        $freeSpin = $featureCfg['freespinAward'];
-        if (is_array($freeSpin)) {
+        if (is_null($itemCount)) {
             $itemCount = $this->featureData[$featureId]['triggerItemCount'];
-            $freeSpin = $freeSpin[$itemCount];
         }
+
+        if ($this->getCurrFeature() != $featureId) {
+            $freeSpin = $featureCfg['freespinAward'];
+        } else {
+            $freeSpin = $featureCfg['extraTimes'];
+        }
+
+        $triggerItemNum = $featureCfg['triggerItemNum'];
+        if (strripos($freeSpin, '|')) {
+            $freeSpin = explode('|', $freeSpin);
+            $triggerItemNum = explode('|', $triggerItemNum);
+        }
+
+        if (is_array($freeSpin)) {
+            $index = array_search($itemCount, $triggerItemNum) !== false ?: count($freeSpin) - 1;
+            $freeSpin = $freeSpin[$index] ?? array_last($freeSpin);
+        }
+
         return $freeSpin;
     }
 

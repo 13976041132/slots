@@ -97,8 +97,8 @@ class UserController extends BaseController
         Bll::user()->setSessionId($uid, $sessionId);
 
         //等级进度与vip进度
-        $userInfo['levelProgress'] = Bll::user()->getLevelProgress($userInfo['level'], $userInfo['exp']);
-        $userInfo['vipProgress'] = Bll::user()->getVipProgress($userInfo['vip'], $userInfo['vipPts']);
+//        $userInfo['levelProgress'] = Bll::user()->getLevelProgress($userInfo['level'], $userInfo['exp']);
+//        $userInfo['vipProgress'] = Bll::user()->getVipProgress($userInfo['vip'], $userInfo['vipPts']);
 
         $data = array();
         $data['sessionId'] = $sessionId;

@@ -168,7 +168,7 @@ abstract class SlotsHitResult extends SlotsConstructor
 
         $resultId = $this->getMatchedResult($elements);
 
-        return $resultId ? $resultId : false;
+        return $resultId ?  : false;
     }
 
     /**

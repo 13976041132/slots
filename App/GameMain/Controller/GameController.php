@@ -7,6 +7,7 @@ namespace FF\App\GameMain\Controller;
 
 use FF\Factory\Bll;
 use FF\Framework\Core\FF;
+use FF\Framework\Utils\Log;
 use FF\Machines\SlotsModel\MachineCollectionTrait;
 use FF\Machines\SlotsModel\SlotsMachine;
 use GPBClass\Enum\MSG_ID;
@@ -89,14 +90,12 @@ class GameController extends BaseController
     private function getRunOptions()
     {
         $winType = $this->getParam('winType', false, 0);
-        $sampleGroup = $this->getParam('sampleGroup', false);
         $feature = $this->getParam('feature', false);
         $clear = $this->getParam('clear', false);
         $hit = $this->getParam('hit', false);
-        $sampleLibId = $this->getParam('sampleLibId', false);
         $otherOptions = $this->getParam('options', false);
 
-        if ($winType || $sampleGroup || $feature || $clear || $hit) {
+        if ($winType || $feature || $clear || $hit) {
             $machineObj = $this->getMachineObj();
             if ($clear) {
                 $machineObj->clearFeature(true);
@@ -110,9 +109,7 @@ class GameController extends BaseController
             $options['winType'] = $winType;
             $hit = true;
         }
-        if ($sampleGroup) {
-            $options['sampleGroup'] = $sampleGroup;
-        }
+
         if ($feature) {
             $options['features'] = array_filter(explode(',', $feature));
         }
@@ -123,10 +120,6 @@ class GameController extends BaseController
             $options['otherOptions'] = json_decode($otherOptions, true);
         }
 
-        if ($sampleLibId) {
-            $options['sampleLibId'] = $sampleLibId;
-        }
-
         return $options;
     }
 
@@ -135,8 +128,9 @@ class GameController extends BaseController
      */
     public function slotsBetting()
     {
+        $lastSpinTime = Bll::session()->get('spinTime') ?? 0;
         //防止存在同个账号并发
-        if (Bll::session()->get('isSpinning')) {
+        if (Bll::session()->get('isSpinning') && $lastSpinTime > time() - 3) {
             FF::throwException(RET::FAILED, 'player spin  disable, Because spin is not over yet');
         }
 
@@ -145,7 +139,7 @@ class GameController extends BaseController
             FF::throwException(RET::FAILED, 'machine is not unlocked');
         }
 
-        Bll::session()->save(['isSpinning' => true]);
+        Bll::session()->save(['isSpinning' => true, 'spinTime' => time()]);
 
         try {
             $totalBet = $this->getParam('totalBet', false, 0);
@@ -157,6 +151,11 @@ class GameController extends BaseController
 
         } catch (\Exception $ex) {
             Bll::session()->save(['isSpinning' => false]);
+            Log::error(['uid' => Bll::session()->get('uid'),
+                'code' => $ex->getCode(), 'message' => $ex->getMessage(),
+                'file' => $ex->getFile(), 'line' => $ex->getLine()
+            ], 'slotsGame.log');
+
             FF::throwException($ex->getCode(), $ex->getMessage());
         }
     }

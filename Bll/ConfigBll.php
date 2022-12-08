@@ -162,13 +162,10 @@ class ConfigBll
     {
         $dataTypes = [
             MachineBll::DATA_MACHINE_ITEMS,
-            MachineBll::DATA_SAMPLES,
-            MachineBll::DATA_SAMPLE_ITEMS,
-            MachineBll::DATA_SAMPLE_REF,
             MachineBll::DATA_PAYLINES,
             MachineBll::DATA_PAYTABLE,
             MachineBll::DATA_FEATURE_GAMES,
-            MachineBll::DATA_REEL_ITEMS,
+            MachineBll::DATA_ITEM_REEL_WEIGHTS,
         ];
 
         $machineData = Bll::machine()->getSourceData($machineId, MachineBll::DATA_MACHINE);
@@ -262,29 +259,6 @@ class ConfigBll
         ksort($config);
 
         $this->createConfigFile('machine/jackpots', $config, $version);
-    }
-
-    public function initBonusValueConfig($sourceFile, $version = '')
-    {
-        $config = array();
-        $data = Utils::loadCsv($sourceFile);
-
-        foreach ($data as $row) {
-            $machineId = $row['Machine_Id'];
-            $sampleIds = explode(',', $row['Sample_Id']);
-            foreach ($sampleIds as $sampleId) {
-                $config[$machineId][$sampleId][] = array(
-                    'activeBetLevel' => json_decode($row['Active_Bet_Level'], true),
-                    'bonusHitRates' => array(
-                        0 => $row['Near_Miss_Value'],
-                        1 => $row['Hit_Value'],
-                        2 => $row['Value_In_Lightning'],
-                    ),
-                );
-            }
-        }
-
-        $this->createConfigFile('machine/bonus-value', $config, $version);
     }
 
     public function initInterveneConfig($sourceFile)
@@ -496,33 +470,6 @@ class ConfigBll
         $this->createConfigFile('common/ad_reward', $config);
     }
 
-    public function initHoldAndSpinNewConfig($sourceFile, $version = '')
-    {
-        $config = array();
-        $data = Utils::loadCsv($sourceFile);
-
-        $dropBonusNums = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        foreach ($data as $row) {
-            $machineId = $row['Machine_Id'];
-            $bonusNum = (int)$row['Bonus_Num'];
-            $weight = [];
-            foreach ($dropBonusNums as $val) {
-                if ($row[$val] == 0) continue;
-                $weight[$val] = $row[$val];
-            }
-
-            $bonusElements = $this->parseValue($row['Bonus_Elements']);
-            $config[$machineId][$bonusNum][] = array(
-                'bonusElements' => $bonusElements[$bonusNum] ?? $bonusElements,
-                'timesDropWeight' => $this->parseValue($row['Drop_Weight']),
-                'sampleIds' => $row['Sample_Ids'] ? explode(',', $row['Sample_Ids']) : [],
-                'weight' => $weight
-            );
-        }
-
-        $this->createConfigFile('feature/hold-and-spin-new', $config, $version);
-    }
-
     protected function getInitConfigSql($table, $machineId)
     {
         $sqls = null;
@@ -538,8 +485,8 @@ class ConfigBll
             case 'feature_game':
                 $sqls = $this->getInitFeatureGameSql($sourceTable);
                 break;
-            case 'machine_reel_items':
-                $sqls = $this->getInitMachineReelItemsSql($sourceTable);
+            case 'machine_item_reel_weights':
+                $sqls = $this->getInitMachineItemReelWeightsSql($sourceTable);
                 break;
             default:
                 break;
@@ -548,9 +495,12 @@ class ConfigBll
         return $sqls;
     }
 
-    private function getInitMachineReelItemsSql($sourceTable)
+    private function getInitMachineItemReelWeightsSql($sourceTable)
     {
-        return array("UPDATE `{$sourceTable}` SET Weight = REPLACE(Weight, '|', ',')");
+        return array(
+            "UPDATE `{$sourceTable}` SET Weight = REPLACE(Weight, '|', ',')",
+            "UPDATE `{$sourceTable}` SET Feature_Name = 'Base' WHERE Feature_Name = ''",
+        );
     }
 
     private function getInitPaylineSql($sourceTable)

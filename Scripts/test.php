@@ -6,7 +6,13 @@ use FF\Factory\Bll;
 
 include_once __DIR__ . '/common.php';
 
-$machineObj = Bll::machine()->getMachineInstance(10004, 102);
+$machineObj = Bll::machine()->getMachineInstance(10004, 10001);
+$times = 1;
+while(true){
+    $result = $machineObj->run(0);
+    if($times > 100) break;
+    $times++;
+}
 
 $result = $machineObj->run(0);
 

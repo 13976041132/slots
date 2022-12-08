@@ -18,13 +18,10 @@ class MachineBll
 {
     const DATA_MACHINE = 'Machine';
     const DATA_MACHINE_ITEMS = 'MachineItems';
-    const DATA_SAMPLES = 'Samples';
-    const DATA_SAMPLE_REF = 'SampleRef';
-    const DATA_SAMPLE_ITEMS = 'SampleItems';
     const DATA_PAYLINES = 'Paylines';
     const DATA_PAYTABLE = 'Paytable';
     const DATA_FEATURE_GAMES = 'FeatureGames';
-    const DATA_REEL_ITEMS = 'ReelItems';
+    const DATA_ITEM_REEL_WEIGHTS = 'ElementReelWeights';
 
     private $machineBetOptions = array();
 
@@ -71,6 +68,8 @@ class MachineBll
             case self::DATA_MACHINE:
                 $data = Model::machine()->getOne($machineId);
                 $data['options'] = (array)json_decode($data['options'], true);
+                $data['unlockLevel'] = max(1, (int)$data['unlockLevel']);
+                $data['winMultiples'] = $data['winMultiples'] ?: '[]';
                 break;
             case self::DATA_MACHINE_ITEMS:
                 $items = Model::machineItem()->getItems($machineId);
@@ -79,39 +78,6 @@ class MachineBll
                 }
                 $data = $items ? array_column($items, null, 'elementId') : array();
                 ksort($data);
-                break;
-            case self::DATA_SAMPLES:
-                $data = Model::sample()->getSamples($machineId);
-                foreach ($data as &$sample) {
-                    $sample['betLevel'] = Bll::config()->parseValue($sample['betLevel']);
-                    $sample['cash'] = Bll::config()->parseValue($sample['cash']);
-                    $sample['feature'] = $sample['feature'] ? explode(',', $sample['feature']) : array();
-                }
-                $data = array_column($data, null, 'sampleId');
-                break;
-            case self::DATA_SAMPLE_ITEMS:
-                $list = Model::sampleItems()->getItems($machineId);
-                foreach ($list as $row) {
-                    $sampleId = $row['sampleId'];
-                    $sampleItems = explode(',', $row['items']);
-                    foreach ($sampleItems as $key => $elementId) {
-                        if ($elementId === '') unset($sampleItems[$key]);
-                    }
-                    $sampleItems = array_values($sampleItems);
-                    $sampleItems = implode(',', $sampleItems);
-                    if (!isset($data[$sampleId])) $data[$sampleId] = array();
-                    $data[$sampleId][$row['reel']] = $sampleItems;
-                }
-                break;
-            case self::DATA_SAMPLE_REF:
-                $list = Model::sampleRef()->getAll($machineId);
-                foreach ($list as $row) {
-                    $sampleId = $row['sampleId'];
-                    $row['triggerOptions'] = (array)json_decode($row['triggerOptions'], true);
-                    $row['itemAwardLimit'] = (array)json_decode($row['itemAwardLimit'], true);
-                    if (!isset($data[$sampleId])) $data[$sampleId] = array();
-                    $data[$sampleId][$row['featureId']] = $row;
-                }
                 break;
             case self::DATA_PAYLINES:
                 $lines = Model::payline()->getAllLine($machineId);
@@ -135,7 +101,7 @@ class MachineBll
             case self::DATA_FEATURE_GAMES:
                 $features = Model::featureGame()->getAll($machineId);
                 foreach ($features as &$feature) {
-                    $feature['triggerLines'] = explode(',', str_replace(' ', '', $feature['triggerLines']));
+                    $feature['triggerLines'] = [];
                     $feature['triggerOptions'] = (array)json_decode($feature['triggerOptions'], true);
                     $feature['coinsAward'] = Bll::config()->parseValue($feature['coinsAward']);
                     $feature['freespinAward'] = Bll::config()->parseValue($feature['freespinAward']);
@@ -144,6 +110,17 @@ class MachineBll
                 }
                 $data = $features ? array_column($features, null, 'featureId') : array();
                 ksort($data);
+                break;
+            case self::DATA_ITEM_REEL_WEIGHTS:
+                $reelItems = Model::machineReelItemsWeight()->getAll($machineId);
+                $machineInfo = Model::machine()->getOne($machineId);
+                $cols = $machineInfo['cols'] ?? 0;
+                foreach ($reelItems as $reelItem) {
+                    $reelWeights = explode(',', $reelItem['reelWeights']);
+                    for ($col = 1; $col <= $cols; $col++) {
+                        $data[$reelItem['featureName']][$col][$reelItem['elementId']] = (int)($reelWeights[$col - 1] ?? 0);
+                    }
+                }
                 break;
             default:
                 break;
@@ -160,11 +137,6 @@ class MachineBll
     public function getMachineItems($machineId)
     {
         return $this->getConfigData($machineId, self::DATA_MACHINE_ITEMS);
-    }
-
-    public function getSamples($machineId)
-    {
-        return $this->getConfigData($machineId, self::DATA_SAMPLES);
     }
 
     public function getPaylines($machineId)

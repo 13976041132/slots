@@ -89,10 +89,9 @@ class MachineBetBll extends UserAdapterBll
         $level = $level ?: $this->getUserInfo($uid, 'level');
 
         foreach ($betOptions as $option) {
-
-            if ($option['unlockLevel'] > $level) {
-                continue;
-            }
+//            if ($option['unlockLevel'] > $level) {
+//                continue;
+//            }
 
             // expiredLevel 为 0 表示没有过期限制
             if ($option['expiredLevel'] != 0 && $option['expiredLevel'] <= $level && !defined('TEST_ID')) {

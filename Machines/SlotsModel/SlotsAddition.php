@@ -161,8 +161,6 @@ abstract class SlotsAddition extends SlotsIntervene
         $this->featureWinStat($prizes);
         $this->betResultStats($settled);
         $this->wildStats($resultSteps);
-
-        Bll::slotsTest()->coinAwardStats($prizes);
     }
 
     public function betResultStats($settled)

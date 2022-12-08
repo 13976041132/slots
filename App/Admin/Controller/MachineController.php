@@ -95,20 +95,6 @@ class MachineController extends BaseController
     }
 
     /**
-     * 查看机台轴样本配置
-     */
-    public function sample()
-    {
-        $machineId = $this->getParam('machineId');
-
-        $samples = Bll::machine()->getSourceData($machineId, MachineBll::DATA_SAMPLES);
-
-        $data['samples'] = $samples;
-
-        $this->display('sample.html', $data);
-    }
-
-    /**
      * 查看机台收集配置
      */
     public function collect()
@@ -183,31 +169,5 @@ class MachineController extends BaseController
         $features = array_values(array_unique($features));
 
         return $features;
-    }
-
-    /**
-     * 查看机台轴样本元素列表
-     */
-    public function sampleItems()
-    {
-        $machineId = $this->getParam('machineId');
-        $sampleId = $this->getParam('sampleId');
-        $samples = Bll::machine()->getSourceData($machineId, MachineBll::DATA_SAMPLE_ITEMS);
-
-        $data['colNum'] = $samples[$sampleId] ? count($samples[$sampleId]) : 0;
-        $sampleItems = array();
-        if ($samples[$sampleId]) {
-            foreach ($samples[$sampleId] as $col => $itemsStr) {
-                $items = explode(',', $itemsStr);
-                foreach ($items as $index => $elementId) {
-                    $sampleItems[$index][$col] = $elementId;
-                }
-            }
-        }
-        $data['sampleItems'] = $sampleItems;
-        $data['machineId'] = $machineId;
-        $data['machineItems'] = Bll::machine()->getMachineItems($machineId);
-
-        $this->display('sampleItems.html', $data);
     }
 }

@@ -41,9 +41,6 @@ const EVENT_SETTLEMENT = 'Settlement';
 const EVENT_USER_STATUS = 'UserStatus';
 const VIP_MIN_LEVEL = 1;
 
-const EXCHANGE_ASYNC_TASK_RELAY = 'asyncTaskRelay';
-
-
 if (!defined('SWOOLE_SOCK_SYNC')) {
     define('SWOOLE_SOCK_SYNC', '');
 }

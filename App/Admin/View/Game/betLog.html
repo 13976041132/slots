@@ -57,8 +57,6 @@
         <th>中奖结果</th>
         <th>新手保护</th>
         <th>干预类型</th>
-        <th>样本标签</th>
-        <th>样本ID</th>
         <th>下注次序</th>
         <th>下注额</th>
         <th>下注比</th>
@@ -82,8 +80,6 @@
         <td><a class="btn-link btn-detail" data-id={{$log.id}}>查看</a></td>
         <td>{{if $log.isNoviceProtect}}Y{{else}}N{{/if}}</td>
         <td>{{$log.interveneType|default:'-'}}{{if $log.interveneNo}}({{$log.interveneNo}}){{/if}}</td>
-        <td>{{$log.sampleTag}}</td>
-        <td>{{$log.sampleId}}</td>
         <td>{{$log.betSeq}}</td>
         <td>{{if $log.totalBet < 100000}}{{$log.totalBet}}{{elseif $log.totalBet < 1000000}}{{$log.totalBet/1000}}K{{elseif $log.totalBet < 1000000000}}{{$log.totalBet/1000000}}M{{else}}{{$log.totalBet/1000000000}}B{{/if}}</td>
         <td>{{number_format($log.betRatio)}}</td>

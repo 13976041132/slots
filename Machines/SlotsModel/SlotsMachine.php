@@ -90,7 +90,7 @@ class SlotsMachine extends SlotsAddition
 
         $result = $this->rolling();
 
-        if($this->isVirtualMode) {
+        if (!$this->isVirtualMode) {
             $this->saveAnalysisInfo();
             $this->saveGameInfo();
         }
@@ -191,7 +191,7 @@ class SlotsMachine extends SlotsAddition
                 $this->betContext['betRaise'] = $betRaise;
                 $this->betContext['lastBet'] = $lastBet;
             }
-            $this->updateBetTimes($totalBet, $lastBet);
+//            $this->updateBetTimes($totalBet, $lastBet);
             $this->updateAvgBet($totalBet);
             $this->updateJackpotAddition();
             if ($totalBet == $maxBet && $maxBet != $minBet) {
@@ -347,21 +347,10 @@ class SlotsMachine extends SlotsAddition
      */
     protected function makeRollingSteps($retry = 0)
     {
-        $this->step = 1;
-        $this->elementValues = null;
-        $this->stepElements = array();
-        $this->featureWinInfo = array();
+        $this->resetBuffer();
         $rollingSteps = array();
-
         //生成随机轴元素
         $elements = $this->getRandomElements();
-
-        // 存在 winType 和 winMulti 要求时
-        if ((!empty($this->runOptions['winType']) || !empty($this->runOptions['winMulti']))) {
-            // 生成中奖牌面，去除预触发掉落的feature
-            $elements = $this->makeReelElementsWithWinMultiple($elements);
-        }
-
         //ReSpin时会锁定轴元素
         $elementsLocked = $this->getFeatureDetail('elementsLocked');
         if ($elementsLocked) {
@@ -440,15 +429,15 @@ class SlotsMachine extends SlotsAddition
             $this->step++;
         }
 
-        //当指定了中奖倍数时，进行中奖倍数检查
-        if (!defined('TEST_ID') && isset($this->runOptions['winType']) || isset($this->runOptions['winMulti'])) {
-            $isValid = $this->checkWinTargetResult();
-            if (!$isValid && $this->checkRetryTimes($retry, -6)) {
-                return false;
-            }
-        }
-
         return $rollingSteps;
+    }
+
+    protected function resetBuffer()
+    {
+        $this->step = 1;
+        $this->elementValues = null;
+        $this->stepElements = array();
+        $this->featureWinInfo = array();
     }
 
     /**
@@ -457,7 +446,7 @@ class SlotsMachine extends SlotsAddition
     protected function checkRetryTimes($retry, $code)
     {
         if (!$this->isVirtualMode && $retry > 1000) {
-            Log::info("stop retry after 1000 times, code = {$code}",'slotsGame.log');
+            Log::info("stop retry after 1000 times, code = {$code}", 'slotsGame.log');
             return false;
         }
         if ($this->isVirtualMode && $retry > 5000) {
@@ -465,7 +454,7 @@ class SlotsMachine extends SlotsAddition
         }
 
         if ($retry && $retry % 100 == 0) {
-            Log::info("retry = {$retry}, code = {$code}, runOptions = " . json_encode($this->runOptions),'slotsGame.log');
+            Log::info("retry = {$retry}, code = {$code}, runOptions = " . json_encode($this->runOptions), 'slotsGame.log');
         }
 
         //恢复TotalWin
@@ -515,13 +504,8 @@ class SlotsMachine extends SlotsAddition
      */
     protected function preTriggerFeature()
     {
-        $sampleId = $this->getReelSample();
-        $this->betContext['sampleId'] = $sampleId;
-
         $preFeatures = $this->getPreTriggerFeature();
         $this->betContext['preFeatures'] = $preFeatures;
-
-        unset($this->betContext['sampleId']);
         $this->featureOptionsInit = false;
 
         $this->checkPreFeature();
@@ -669,10 +653,6 @@ class SlotsMachine extends SlotsAddition
             $prizes['jackpotWin'] += $jackpotPrize['coins'];
         }
 
-        if (defined('TEST_ID') && $this->betContext['cost']) {
-            $prizes['levelPrize'] = $this->getLevelPrize();
-        }
-
         //处理已触发的feature
         $this->dealWithTriggeredFeature($prizes['features'], $prizes['freespin']);
 
@@ -702,13 +682,6 @@ class SlotsMachine extends SlotsAddition
      */
     public function coinsSettlement(&$totalWin)
     {
-        //观看广告奖励加成
-        if ($adMultiple = $this->getAdMultiple()) {
-            $totalWin *= $adMultiple;
-            $this->betContext['totalWin'] = $totalWin;
-            $this->betContext['adMultiple'] = $adMultiple;
-        }
-
         $winType = $this->getWinType($totalWin);
         $this->betContext['winType'] = $winType;
 
@@ -722,7 +695,7 @@ class SlotsMachine extends SlotsAddition
         if (!$this->isSpinning) {
             $this->betContext['totalWin'] = $totalWin;
             Bll::analysis()->featureAnalyze($this->betContext, $this->balance, $this->analysisInfo);
-            $this->checkInterveneOnEnd($totalWin, $winType);
+            //$this->checkInterveneOnEnd($totalWin, $winType);
         }
 
         return $winType;
@@ -737,14 +710,12 @@ class SlotsMachine extends SlotsAddition
         Bll::analysis()->spinAnalyze($this->machineId, $this->betContext, $prizes, $settled, $this->balance, $this->analysisInfo);
 
         //下注次序
-        $betSeq = $this->analysisInfo['totalSpinTimes'];
-
-        $spinTimes = $this->gameInfo['spinTimes'];
+        $betSeq = $this->analysisInfo['spinTimes'];
 
         //下注日志
         Bll::log()->addBetLog(
             $this->betId, $this->uid, $this->machineId, $this->userInfo['level'],
-            $betSeq, $spinTimes, $this->betContext, $resultSteps, $this->getExtraLog(), $prizes, $settled, $this->balance,
+            $betSeq, $this->betContext, $resultSteps, $this->getExtraLog(), $prizes, $settled, $this->balance,
             Bll::session()->get('version')
         );
 
@@ -754,7 +725,7 @@ class SlotsMachine extends SlotsAddition
             'enterWin' => $this->gameInfo['enterWin'],
             'enterSpinTimes' => $this->gameInfo['enterSpinTimes'],
         );
-        $this->updateGameInfo($updates, true);
+        $this->updateGameInfo($updates);
 
         //测试统计
         if (defined('TEST_ID')) {
@@ -775,7 +746,7 @@ class SlotsMachine extends SlotsAddition
 
         //保存游戏数据
         $this->saveAnalysisInfo();
-        $this->saveGameInfo(true);
+        $this->saveGameInfo();
     }
 
 

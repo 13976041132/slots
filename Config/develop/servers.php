@@ -4,22 +4,6 @@
  */
 
 $config = array(
-    'AsyncTaskRelay' => array(
-        'nodes' => array(
-            array('host' => '127.0.0.1', 'port' => 9690),
-        ),
-        'mode' => SWOOLE_PROCESS,
-        'sock' => SWOOLE_SOCK_TCP,
-        'options' => array(
-            'worker_num' => 1,
-            'dispatch_mode' => 2,
-            'open_tcp_nodelay' => true,
-            'log_file' => PATH_LOG . '/AsyncTaskRelay.log',
-            'log_level' => 2,
-            'daemonize' => 1
-        )
-    ),
-
     'AsyncTask' => array(
         'nodes' => array(
             array('host' => '127.0.0.1', 'port' => 9640),

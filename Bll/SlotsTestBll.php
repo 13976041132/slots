@@ -591,14 +591,6 @@ class SlotsTestBll
         }
     }
 
-    public function coinAwardStats($prizes)
-    {
-        if (empty($prizes['levelPrize']['prizes'])) return;
-
-        $coins = $prizes['levelPrize']['prizes']['coins'];
-        $this->coinsAwardStats[1] += (int)$coins;
-    }
-
     /**
      * 更新统计数据
      */

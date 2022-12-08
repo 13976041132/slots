@@ -17,12 +17,12 @@ message PB_FeatureInfo {
 
 message PB_EnterMachine_Res {
     int32 machineId = 1; //机台ID
-    int32 betMultiple = 2; //当前下注倍数
+    int64 betMultiple = 2; //当前下注倍数
     int64 totalBet = 3; //当前下注额
     int64 resumeBet = 4; //待恢复下注额
     int64 totalWin = 5; //当前TotalWin
     int64 coins = 6; //用户金币余额
-    int64 gem = 7; //用户gem余额
+    int64 diamond = 7; //用户diamond余额
     PB_FeatureInfo featureInfo = 8; //feature信息
     repeated PB_SlotsElement elements = 9; //机台初始化元素列表
     repeated PB_SlotsElement stickyElements = 10; //轴上悬浮的元素列表

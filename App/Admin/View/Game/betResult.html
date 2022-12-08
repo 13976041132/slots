@@ -10,8 +10,6 @@
             <th>机台</th>
             <th>新手保护</th>
             <th>干预类型</th>
-            <th>样本标签</th>
-            <th>样本ID</th>
             <th>下注次序</th>
             <th>下注额</th>
             <th>下注比</th>
@@ -31,8 +29,6 @@
             <td>{{$machine.name}}</td>
             <td>{{if $log.isNoviceProtect}}Y{{else}}N{{/if}}</td>
             <td>{{$log.interveneType|default:'-'}}{{if $log.interveneNo}}({{$log.interveneNo}}){{/if}}</td>
-            <td>{{$log.sampleTag}}</td>
-            <td>{{$log.sampleId}}</td>
             <td>{{$log.betSeq}}</td>
             <td>{{if $log.totalBet < 100000}}{{$log.totalBet}}{{elseif $log.totalBet < 1000000}}{{$log.totalBet/1000}}K{{elseif $log.totalBet < 1000000000}}{{$log.totalBet/1000000}}M{{else}}{{$log.totalBet/1000000000}}B{{/if}}</td>
             <td>{{number_format($log.betRatio)}}</td>
@@ -84,14 +80,14 @@
                 </thead>
                 <tbody style="background: #f0f0f0;">
 
-                {{for $row=$stepInfo.maxRow;$row >= 0; $row--}}
+                {{for $row=$stepInfo.maxRow;$row >= 1; $row--}}
                 {{if $stepInfo.elements[$row]}}
                 {{assign var=elements value=$stepInfo['elements'][$row]}}
                 {{else}}
                 {{assign var=elements value=[]}}
                 {{/if}}
                 <tr style="height: 108px">
-                    {{for $col=0 to $machine.cols - 1}}
+                    {{for $col=1 to $machine.cols}}
                     {{assign var=elementId value=$elements[$col].elementId}}
                     <td style="border: 1px solid #ffffff; position: relative;"
                         data-col="{{$col}}" data-row="{{$row}}"
@@ -247,22 +243,26 @@
                 context.lineWidth = 2;
                 routes = routes.split(',');
                 var boxPos = $box.offset();
-                for (var col = 0; col < routes.length; col++) {
-                    var row = routes[col];
-                    var color = elements[col] === '0' ? '#999999' : 'gold';
+                for (var col = 1; col <= routes.length; col++) {
+                    var row = routes[col - 1];
+                    var color = elements[col - 1] === '0' ? '#999999' : 'gold';
                     var $td = $box.find('td[data-col=' + col + '][data-row=' + row + ']');
                     $td.css('background', color);
                     var pos = $td.offset();
                     var posX = pos.left - boxPos.left + $td.width() / 2;
                     var posY = pos.top - boxPos.top + $td.height() / 2;
-                    context.lineTo(posX, posY);
-                    context.moveTo(posX, posY);
+                    if (col === 1) {
+                        context.moveTo(posX, posY);
+                    } else {
+                        context.lineTo(posX, posY);
+                        context.moveTo(posX, posY);
+                    }
                 }
                 context.closePath();
                 context.stroke();
             } else {
-                for (var col = 0; col < elements.length; col++) {
-                    var elementId = elements[col];
+                for (var col = 1; col <= elements.length; col++) {
+                    var elementId = elements[col - 1];
                     if (elementId === '0') break;
                     $box.find('td[data-col=' + col + '][data-element=' + elementId + ']').css('background', 'gold');
                     for (var _elementId in machineItems) {
@@ -274,17 +274,6 @@
                 }
             }
         });
-
-        $('.btn-detail-feature').click(function () {
-            var betId = $(this).attr('data-bet-id');
-            var featureId = $(this).attr('data-feature-id');
-            showFeatureStepsDetail(betId, featureId);
-        });
-        function showFeatureStepsDetail(betId, featureId) {
-            $dialog = showDialog("Feature步骤结果", '', {
-                url: '/game/featureSteps?betId=' + betId + '&featureId=' + featureId + '&table={{$REQUEST.table}}'
-            });
-        }
     })();
 </script>
 {{if $isLast}}

@@ -14,21 +14,15 @@ use Google\Protobuf\Internal\GPBUtil;
 class PB_CheckAppVersion_Req extends \Google\Protobuf\Internal\Message
 {
     /**
-     *应用ID
-     *
-     * Generated from protobuf field <code>string appId = 1;</code>
-     */
-    private $appId = '';
-    /**
      *大版本号
      *
-     * Generated from protobuf field <code>string bigVersion = 2;</code>
+     * Generated from protobuf field <code>string bigVersion = 1;</code>
      */
     private $bigVersion = '';
     /**
      *小版本号
      *
-     * Generated from protobuf field <code>int32 smallVersion = 3;</code>
+     * Generated from protobuf field <code>int32 smallVersion = 2;</code>
      */
     private $smallVersion = 0;
 
@@ -38,35 +32,9 @@ class PB_CheckAppVersion_Req extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     *应用ID
-     *
-     * Generated from protobuf field <code>string appId = 1;</code>
-     * @return string
-     */
-    public function getAppId()
-    {
-        return $this->appId;
-    }
-
-    /**
-     *应用ID
-     *
-     * Generated from protobuf field <code>string appId = 1;</code>
-     * @param string $var
-     * @return $this
-     */
-    public function setAppId($var)
-    {
-        GPBUtil::checkString($var, True);
-        $this->appId = $var;
-
-        return $this;
-    }
-
-    /**
      *大版本号
      *
-     * Generated from protobuf field <code>string bigVersion = 2;</code>
+     * Generated from protobuf field <code>string bigVersion = 1;</code>
      * @return string
      */
     public function getBigVersion()
@@ -77,7 +45,7 @@ class PB_CheckAppVersion_Req extends \Google\Protobuf\Internal\Message
     /**
      *大版本号
      *
-     * Generated from protobuf field <code>string bigVersion = 2;</code>
+     * Generated from protobuf field <code>string bigVersion = 1;</code>
      * @param string $var
      * @return $this
      */
@@ -92,7 +60,7 @@ class PB_CheckAppVersion_Req extends \Google\Protobuf\Internal\Message
     /**
      *小版本号
      *
-     * Generated from protobuf field <code>int32 smallVersion = 3;</code>
+     * Generated from protobuf field <code>int32 smallVersion = 2;</code>
      * @return int
      */
     public function getSmallVersion()
@@ -103,7 +71,7 @@ class PB_CheckAppVersion_Req extends \Google\Protobuf\Internal\Message
     /**
      *小版本号
      *
-     * Generated from protobuf field <code>int32 smallVersion = 3;</code>
+     * Generated from protobuf field <code>int32 smallVersion = 2;</code>
      * @param int $var
      * @return $this
      */

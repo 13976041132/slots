@@ -68,7 +68,7 @@ class LightningMachine extends SlotsMachine
     /**
      * 获取多列合并后的列号
      */
-    public function getBigCol($sampleId, &$cols = null)
+    public function getBigCol(&$cols = null)
     {
         $cols = [1, 2, 3, 4, 5];
 

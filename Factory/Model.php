@@ -36,6 +36,7 @@ use FF\App\GameMain\Model\Main\ItemModel;
 use FF\App\GameMain\Model\Main\OnlineModel;
 use FF\App\GameMain\Model\Main\UserModel;
 use FF\Framework\Mode\Factory;
+use FF\App\GameMain\Model\Config\MachineItemReelWeightsModel;
 
 class Model extends Factory
 {
@@ -203,6 +204,14 @@ class Model extends Factory
     public static function featureGame()
     {
         return self::getInstance('FF\App\GameMain\Model\Config\FeatureGameModel');
+    }
+
+    /**
+     * @return MachineItemReelWeightsModel
+     */
+    public static function machineReelItemsWeight()
+    {
+        return self::getInstance('FF\App\GameMain\Model\Config\MachineItemReelWeightsModel');
     }
 
     /**

@@ -14,7 +14,7 @@ $config = array(
         ['ID', 'Element_Machine', 'Machine_Icon_Type', 'Detail_Descreption', 'Icon_Name']
     ),
 
-    'machine_reel_items' => array(
+    'machine_item_reel_weights' => array(
         ['machineId', 'featureName', 'reelWeights', 'elementId'],
         ['Machine_Id', 'Feature_Name', 'Weight', 'Element_Id']
     ),

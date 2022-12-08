@@ -44,7 +44,7 @@ abstract class SlotsIntervene extends SlotsDecider
      */
     public function checkInterveneOnEnd($totalWin, $winType)
     {
-        if ((defined('IV_ENABLE') && !IV_ENABLE) || defined('SAMPLE_PLAN_ID')) {
+        if ((defined('IV_ENABLE') && !IV_ENABLE)) {
             return;
         }
 
@@ -62,34 +62,11 @@ abstract class SlotsIntervene extends SlotsDecider
     {
         if (empty($this->betContext['interveneType']) || $this->betContext['interveneType'] !== 'Recharge') return;
 
-        $this->analysisInfo['lastRechargeFeatureNum'] = $this->analysisInfo['totalSpinTimes'] + 1;
     }
 
     public function checkBankruptcyInterveneExit()
     {
-        if (empty($this->betContext['interveneType']) || $this->betContext['interveneType'] !== 'Bankrupt') return;
 
-        $interveneInfo = $this->analysisInfo['bankruptcyInfo'] ?? [];
-
-        if (isset($interveneInfo['iHitBankruptcyBet'])) {
-            $interveneInfo['betIndex'] = $this->getTotalBetIndex($interveneInfo['iHitBankruptcyBet']);
-        }
-
-        $userInfo = array(
-            'machineId' => $this->machineId,
-            'balance' => $this->balance,
-            'betIndex' => $this->getTotalBetIndex(),
-        );
-
-        if (Bll::ivBankruptEvent()->checkInterveneExit($this->uid, $interveneInfo, $userInfo)) {
-            Log::info(['Bankrupt', 'Exit', $this->uid, $interveneInfo, $userInfo], 'intervene.log');
-
-            $this->analysisInfo['bankruptcyInfo']['lastHitType'] = $this->analysisInfo['bankruptcyInfo']['hitType'];
-            $this->analysisInfo['bankruptcyInfo']['hitType'] = 0;
-            $this->analysisInfo['bankruptcyInfo']['iLastHitCD'] = $this->analysisInfo['bankruptcyInfo']['iCurHitCD'];
-            $this->analysisInfo['bankruptcyInfo']['iHitBankruptcyRate'] = 0;
-            $this->analysisInfo['bankruptcyInfo']['iHitInterveneTimes'] = 0;
-        }
     }
 
     /**
@@ -268,7 +245,7 @@ abstract class SlotsIntervene extends SlotsDecider
 
         $result = Bll::ivNovice()->checkInterveneTrigger($this->uid, array(
             'machineId' => $this->machineId,
-            'spinTimes' => $this->analysisInfo['totalSpinTimes'] + 1,
+            'spinTimes' => $this->analysisInfo['spinTimes'] + 1,
         ));
 
         // 执行干预内容
@@ -305,7 +282,6 @@ abstract class SlotsIntervene extends SlotsDecider
         $result = Bll::ivRechargeEvent()->checkInterveneTrigger($this->uid, array(
             'machineId' => $this->machineId,
             'rechargePlayNum' => Bll::userAdapter()->getRechargeInfo($this->uid, 'rechargePlayNum') ?: 0,
-            'lastRechargeFeatureNum' => $this->analysisInfo['lastRechargeFeatureNum'] ?? 0
         ));
 
         $isIntervene = $this->dealEventIntervene('Recharge', $result);
@@ -341,25 +317,7 @@ abstract class SlotsIntervene extends SlotsDecider
             return false;
         }
 
-        $spinTimes = $this->analysisInfo['totalSpinTimes'] ?? 0;
-        $checkData = array(
-            'machineId' => $this->machineId,
-            'spinTimes' => (int)$spinTimes,
-            'notHitTimes' => $spinTimes - ($this->analysisInfo['lastWinNum'] ?? 0),
-            'notFeatureTimes' => $spinTimes - ($this->analysisInfo['lastFeatureNum'] ?? 0),
-            'notBigWinTimes' => $spinTimes - ($this->analysisInfo['lastBigWinNum'] ?? 0),
-            'isRelativeBankrupt' => !empty($this->analysisInfo['firstBankruptcyNum']) ? 'Y' : 'N',
-            'maxBetRatio' => $this->balance / max(array_values($this->betOptions)),
-            'balance' => $this->balance
-        );
-
-        $result = Bll::ivExtremeEvent()->checkInterveneTrigger($this->uid, $checkData);
-
-        $reback = $this->dealEventIntervene($result['interveneFlag'], $result);
-        if ($result['isIntervene']) {
-            Log::info(['checkExtremeEventIntervene', $this->uid, $result, $checkData, $reback], 'intervene.log');
-        }
-        return $reback;
+        return false;
     }
 
     /**
@@ -378,22 +336,17 @@ abstract class SlotsIntervene extends SlotsDecider
             return false;
         }
 
-        // 是否进行过破产干预
-        $isBankrupt = !empty($this->analysisInfo['bankruptcyInfo']['lastHitType']);
-
         $checkData = array(
             'machineId' => $this->machineId,
             'totalBet' => $this->getTotalBet(),
             'betIndex' => $this->getTotalBetIndex(),
             'betRatio' => $this->betContext['betRatio'],
-            'isBankrupt' => $isBankrupt,
             'isRecharge' => Bll::userAdapter()->getRechargeInfo($this->uid, 'times') > 0,
             'registerTime' => Bll::userAdapter()->getUserInfo($this->uid, 'createTime') ?: time(),
             'loginDays' => (int)$this->getUserInfo('loginDays'),
-            'spinTimes' => $this->analysisInfo['totalSpinTimes'],
+            'spinTimes' => $this->analysisInfo['spinTimes'],
             'balance' => $this->balance,
             'winMultiples' => json_decode($this->machine['winMultiples'], true),
-            'interveneInfo' => $this->analysisInfo['bankruptcyInfo'] ?? []
         );
 
         if (isset($checkData['interveneInfo']['iHitBankruptcyBet'])) {
@@ -402,11 +355,7 @@ abstract class SlotsIntervene extends SlotsDecider
 
         $result = Bll::ivBankruptEvent()->checkInterveneTrigger($this->uid, $checkData);
 
-        // 干预，需要更新 interveneInfo
-        if ($result['interveneInfo']) {
-            $this->analysisInfo['bankruptcyInfo'] = array_merge($this->analysisInfo['bankruptcyInfo'] ?? [], $result['interveneInfo']);
-            unset($result['interveneInfo']);
-        }
+
 
         return $this->dealEventIntervene('Bankrupt', $result);
     }
@@ -416,14 +365,7 @@ abstract class SlotsIntervene extends SlotsDecider
      */
     public function updateInterveneInfo($totalWin)
     {
-        // 破产干预更新数据
-        if (!empty($this->betContext['interveneType']) && $this->betContext['interveneType'] == 'Bankrupt') {
-            $this->analysisInfo['bankruptcyInfo']['iHitInterveneTimes']++;
-            $multiple = ceil($totalWin / $this->getTotalBet());
-            if ($multiple > 0) {
-                $this->analysisInfo['bankruptcyInfo']['iHitBankruptcyRate'] += $multiple;
-            }
-        }
+
     }
 
     /**
@@ -437,37 +379,13 @@ abstract class SlotsIntervene extends SlotsDecider
 
         $result = Bll::ivNoviceEvent()->checkInterveneTrigger($this->uid, array(
             'machineId' => $this->machineId,
-            'spinTimes' => $this->analysisInfo['totalSpinTimes'] + 1,
-            'regCoins' => 2000000,
+            'spinTimes' => $this->analysisInfo['spinTimes'] + 1,
+            'regCoins' =>$this->analysisInfo['regCoins'],
             'balance' => $this->balance,
         ));
 
         // 执行干预内容
         return $this->dealEventIntervene('Novice', $result);
-    }
-
-    /**
-     * 获取 bigWin 干预过滤元素
-     */
-    public function getBigWinInterveneExcludeElements()
-    {
-        // 通过当前使用的轴样本进行过滤
-        $sampleId = $this->betContext['sampleId'];
-        $sampleItems = $this->sampleItems[$sampleId];
-        $includeElements = [];
-        foreach ($sampleItems as $col => $sampleItem) {
-            $includeElements = array_unique(array_merge($includeElements, $sampleItem));
-        }
-
-        $excludeElements = array_diff(array_keys($this->machineItems), $includeElements);
-        $excludeElements = array_merge(
-            $excludeElements,
-            $this->scatterElements,
-            $this->bonusElements,
-            $this->frameElements
-        );
-
-        return $excludeElements;
     }
 
     /**
@@ -483,229 +401,6 @@ abstract class SlotsIntervene extends SlotsDecider
             $features[] = $featureId;
         }
         $this->betContext['preFeatures'] = $features;
-    }
-
-    /**
-     * 生成中奖牌面
-     * 1、去除预触发掉落的 feature
-     * 2、跳过 wild/scatter/bonus
-     */
-    public function makeReelElementsWithWinMultiple($elements)
-    {
-        // 检查 预触发 feature 内容
-        $this->checkFeatureInInWinMultipleIntervene();
-        $randomElements = $this->interveneInfo['winMulti']['interveneElements'] ?? [];
-
-        if ($randomElements && !in_array('*', $randomElements)) {
-            return $this->makeReelElementsWithSame($randomElements);
-        }
-
-        return $this->makeReelElementsWithRandom($elements);
-    }
-
-    /**
-     * 生成一样的牌面
-     */
-    public function makeReelElementsWithSame($elementIds)
-    {
-        $elements = [];
-        shuffle($elementIds);
-        $elementId = array_shift($elementIds);
-        $cols = $this->machine['cols'];
-        $rows = $this->machine['rows'];
-
-        for ($i = 1; $i <= $cols; $i++) {
-            for ($j = 1; $j <= $rows; $j++) {
-                $elements[$i][$j] = $elementId;
-            }
-        }
-
-        return $elements;
-    }
-
-    public function makeReelElementsWithRandom($elements)
-    {
-        // 目标倍数
-        $winMulti = !empty($this->runOptions['winType']) ? $this->getWinMultiByWinType($this->runOptions['winType']) : $this->runOptions['winMulti'];
-
-        // 过滤特殊元素
-        $excludeElements = $this->getBigWinInterveneExcludeElements();
-
-        // 排除位置 scatter/bonus
-        $excludeMap = [];
-        foreach ($elements as $col => $rowElements) {
-            foreach ($rowElements as $row => $elementId) {
-                if (!in_array($elementId, $excludeElements)) continue;
-                $excludeMap[$col][] = $row;
-            }
-        }
-
-        // 首列全不可用的情况下，无可用方案
-        if (isset($excludeMap[1]) && count($excludeMap[1]) == $this->machine['rows']) {
-            return $elements;
-        }
-
-        // 生成用 paytable元素长度 作为索引的 payline
-        $colPayLine = [];
-        if (!empty($this->paylines)) {
-            // 非全线机台，可用中奖线
-            for ($length = 1; $length <= $this->machine['cols']; $length++) {
-                $tempPayLine = [];
-                $colPayLine[$length] = [];
-                foreach ($this->paylines as $resultId => $result) {
-                    // 排除位置的中奖线
-                    $isExclude = false;
-                    for ($col = 1; $col <= $length; $col++) {
-                        if (!empty($excludeMap[$col]) && in_array($result['route'][$col - 1], $excludeMap[$col])) {
-                            $isExclude = true;
-                            break;
-                        }
-                    }
-                    if ($isExclude) continue;
-                    $tempPayLine[$resultId] = $result;
-                }
-                $colPayLine[$length]['paylines'] = $tempPayLine;
-                $colPayLine[$length]['paylinesNum'] = count($tempPayLine);
-            }
-        } else {
-            // 全线机台，可用中奖线数量
-            for ($length = 1; $length <= $this->machine['cols']; $length++) {
-                $paylinesNum = 1;
-                $enableRows = [];
-                for ($col = 1; $col <= $length; $col++) {
-                    $enableRow = $this->machine['rows'] - (empty($excludeMap[$col]) ? 0 : count($excludeMap[$col]));
-                    $paylinesNum *= $enableRow;
-                    $enableRows[] = $enableRow;
-                }
-                $colPayLine[$length]['enableRows'] = $enableRows;
-                $colPayLine[$length]['paylinesNum'] = $paylinesNum;
-            }
-        }
-
-        // 【优化方案】计算奖励组合 使用哪几个 paytable 和 payline 进行组合
-        // 【简单方案】取最少中奖线 和 paytable 组合，且满足 winMulti 的结果
-        $availableResults = [];
-        $highAbleResults = [];
-        foreach ($this->paytable as $resultId => $result) {
-            $length = count(array_diff($result['elements'], [0]));
-            if ($colPayLine[$length]['paylinesNum'] <= 0) continue;
-
-            // 排除元素
-            $hasExclude = array_intersect($result['elements'], $excludeElements);
-            if ($hasExclude) continue;
-
-            // 不满足条件
-            $curLineNum = $winMulti / ($result['prize'] / 100);
-            if ($curLineNum >= $colPayLine[$length]['paylinesNum']) continue;
-            $result['payLineNumFloat'] = $curLineNum;
-            $result['payLineNum'] = ceil($curLineNum);
-            if ($curLineNum >= 1) {
-                $availableResults[$resultId] = $result;
-            } else {
-                if (!empty($highAbleResults) && $highAbleResults['payLineNumFloat'] >= $curLineNum) continue;
-                $highAbleResults = $result;
-            }
-        }
-
-        // 没有满足条件的方案，考虑排除
-        if (!$availableResults && !$highAbleResults) {
-            return $elements;
-        }
-
-        // 没有满足条件时，使用高倍数结果
-        if (!$availableResults) {
-            $availableResults[$highAbleResults['resultId']] = $highAbleResults;
-        }
-
-        // 取随机结果
-        $ableResult = $availableResults[array_rand($availableResults)];
-        $length = count(array_diff($ableResult['elements'], [0]));
-
-        // 区分全牌面和非全牌面
-        if (isset($colPayLine[$length]['paylines'])) {
-            $paylines = $colPayLine[$length]['paylines'];
-            for ($index = 0; $index < $ableResult['payLineNum']; $index++) {
-                $resultKey = array_rand($paylines);
-                $payline = $paylines[$resultKey];
-                for ($rIndex = 0; $rIndex < $length; $rIndex++) {
-                    $elementId = $ableResult['elements'][$rIndex];
-                    if (strstr($elementId, '*') !== false) {
-                        $elementId = $this->getMatchRandomElementId($elementId);
-                    }
-                    $col = $rIndex + 1;
-                    $row = $payline['route'][$rIndex];
-                    $elements[$col][$row] = $elementId;
-
-                    // 移除 stack 元素标识
-                    if (isset($this->elementValues)) {
-                        unset($this->elementValues[$col][$row]);
-                    }
-                }
-                unset($paylines[$resultKey]);
-            }
-        } else {
-            $enableRows = $colPayLine[$length]['enableRows'];
-
-            // 极限倍数计算
-            $takeRows = [];
-            for ($index = 0; $index < $length; $index++) {
-                $takeRows[$index] = $enableRows[$index];
-                for ($rIndex = $length - 1; $rIndex > $index; $rIndex--) {
-                    $takeRows[$index] *= $enableRows[$rIndex];
-                }
-            }
-
-            // 计算每列替换个数
-            $replaceRows = [];
-            $willMulti = 1;
-            for ($index = 0; $index < $length; $index++) {
-                // 下一个值是否满足剩余倍数
-                $min = min(ceil($ableResult['payLineNum'] / $willMulti / (isset($takeRows[$index + 1]) ? $takeRows[$index + 1] : 1)), $enableRows[$index]);
-                $max = min(ceil($ableResult['payLineNum'] / $willMulti), $enableRows[$index]);
-                $randomNum = rand($min, $max);
-                $replaceRows[] = $randomNum;
-                $willMulti *= $randomNum;
-            }
-
-            // 更新牌面结果
-            for ($index = 0; $index < $length; $index++) {
-                $elementId = $ableResult['elements'][$index];
-                if (strstr($elementId, '*') !== false) {
-                    $elementId = $this->getMatchRandomElementId($elementId);
-                }
-                $ableRows = array_diff(range(1, $this->machine['rows']), isset($excludeMap[$index + 1]) ? $excludeMap[$index + 1] : []);
-                for ($rIndex = 0; $rIndex < $replaceRows[$index]; $rIndex++) {
-                    $useRowKey = array_rand($ableRows);
-                    $col = $rIndex + 1;
-                    $row = $ableRows[$useRowKey];
-                    $elements[$col][$row] = $elementId;
-                    unset($ableRows[$useRowKey]);
-
-                    // 移除 stack 元素标识
-                    if (isset($this->elementValues)) {
-                        unset($this->elementValues[$col][$row]);
-                    }
-                }
-            }
-        }
-
-        return $elements;
-    }
-
-    /**
-     * 获取匹配的随机元素
-     */
-    public function getMatchRandomElementId($pregElementId)
-    {
-        $allElements = [];
-        $pregElement = str_replace('*', '.', $pregElementId);
-        foreach ($this->machineItems as $elementId => $elementVal) {
-            $matchNum = preg_match("/" . $pregElement . "/", $elementId);
-            if ($matchNum < 1) continue;
-            $allElements[] = $elementId;
-        }
-
-        return $allElements[array_rand($allElements)];
     }
 
     /**

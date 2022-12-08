@@ -31,8 +31,6 @@ class Lightning extends BaseFeature
 
     protected function init($args = array())
     {
-        $sampleId = $args['sampleId'];
-
         if (!empty($args['elements'])) {
             $bonusList = $args['elements'];
         } else {
@@ -42,7 +40,7 @@ class Lightning extends BaseFeature
         $featureDetail = array(
             'times' => $this->initTimes, 'round' => 1,
             'collected' => 0, 'elements' => array(),
-            'sampleId' => $sampleId, 'timesHit' => 0
+            'timesHit' => 0
         );
         $featureDetail['collected'] = count($bonusList);
         $featureDetail['elements'] = $bonusList;
@@ -55,12 +53,10 @@ class Lightning extends BaseFeature
         $data = $this->machineObj->getFeatureDetail();
 
         if ($this->machineObj->isLightning2($this->featureId)) {
-            $data['bigCol'] = $this->machineObj->getBigCol($data['sampleId']);
+            $data['bigCol'] = $this->machineObj->getBigCol();
         } else {
             $data['bigCol'] = 0;
         }
-
-        unset($data['sampleId']);
 
         return $data;
     }

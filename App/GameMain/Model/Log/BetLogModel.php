@@ -31,18 +31,14 @@ class BetLogModel extends MyModel
         $betContext = $data['betContext'];
         $prizes = $data['prizes'];
 
-        $data['steps'] = $this->updateElmCoordFromSteps($data['steps']);
-
         return array(
             'betId' => $data['betId'],
             'uid' => $data['uid'],
             'machineId' => $data['machineId'],
-            'sampleTag' => lcfirst($betContext['sampleGroup']),
-            'sampleId' => $data['sampleId'],
             'betSeq' => $data['betSeq'],
             'isNoviceProtect' => isset($betContext['noviceProtect']) ? (int)$betContext['noviceProtect'] : 0,
-            'isIntervene' => isset($betContext['isIntervene']) && !$betContext['feature'] ? (int)$betContext['isIntervene'] : 0,
-            'interveneType' => isset($betContext['interveneType']) && !$betContext['feature'] ? $betContext['interveneType'] : '',
+            'isIntervene' => isset($betContext['isIntervene']) ? (int)$betContext['isIntervene'] : 0,
+            'interveneType' => isset($betContext['interveneType']) ? $betContext['interveneType'] : '',
             'interveneNo' => isset($betContext['interveneNo']) ? $betContext['interveneNo'] : '',
             'cost' => $betContext['cost'],
             'balance' => $data['balance'],
@@ -52,7 +48,7 @@ class BetLogModel extends MyModel
             'isMaxBet' => (int)$betContext['isMaxBet'],
             'isFreeSpin' => (int)$betContext['isFreeSpin'],
             'isLastFreeSpin' => (int)$betContext['isLastFreeSpin'],
-            'isReFreeSpin' => $betContext['isReFreeSpin'] ?? 0,
+            'isReFreeSpin' => (int)$betContext['isReFreeSpin'],
             'spinTimes' => $betContext['spinTimes'],
             'stickyElements' => json_encode($betContext['stickyElements'] ?? []),
             'steps' => json_encode($data['steps']),
@@ -60,59 +56,17 @@ class BetLogModel extends MyModel
             'feature' => $betContext['feature'],
             'featureNo' => $betContext['featureNo'],
             'features' => $prizes['features'] ? implode(',', $prizes['features']) : '',
-            'featureSteps' => json_encode($data['featureSteps'] ?? []),
             'coinsAward' => $prizes['coins'],
             'freespinAward' => $prizes['freespin'],
             'multipleAward' => $prizes['multiple'],
             'totalWin' => $betContext['totalWin'],
             'jackpotWin' => $prizes['jackpotWin'],
             'settled' => $data['settled'] ? 1 : 0,
-            'level' => $data['level'],
+            'version' => $data['version'],
+            'level' => $data['level'] ?: 1,
             'time' => $data['time'] ?: now(),
             'microtime' => $data['microtime'] ?: microtime(true) * 10000
         );
-    }
-
-    /**
-     * 修改元素位置偏移量坐标
-     */
-    public function updateElmCoordFromSteps($steps)
-    {
-        foreach ($steps as &$row) {
-            foreach ($row['elements'] as &$elementInfo) {
-                $elementInfo['col'] -= 1;
-                $elementInfo['row'] -= 1;
-            }
-
-            foreach ($row['results'] as &$resultInfo) {
-                $resultInfo['lineRoute'] = array_map(function ($reel) {
-                    return max(0, $reel - 1);
-                }, $resultInfo['lineRoute']);
-            }
-
-            if(!isset($row['prizes']['elements'])) {
-                $row['prizes']['elements'] = [];
-            }
-
-            foreach ($row['prizes']['elements'] as &$_element) {
-                $_element['col'] -= 1;
-                $_element['row'] -= 1;
-            }
-
-            if(!isset($row['prizes']['splitElements'])) {
-                $row['prizes']['splitElements'] = [];
-            }
-
-            foreach ($row['prizes']['splitElements'] as &$_splitElement) {
-                foreach ($_splitElement['elements'] as &$_elem) {
-                    $_elem['col'] -= 1;
-                    $_elem['row'] -= 1;
-                }
-            }
-
-        }
-
-        return $steps;
     }
 
     public function updateInfo($betId, $updates)

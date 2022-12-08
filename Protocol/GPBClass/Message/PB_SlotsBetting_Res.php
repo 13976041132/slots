@@ -68,57 +68,51 @@ class PB_SlotsBetting_Res extends \Google\Protobuf\Internal\Message
      */
     private $stickyElements;
     /**
-     *下次spin轴上的stack替换元素
-     *
-     * Generated from protobuf field <code>repeated int32 nextStacks = 10 [packed = true];</code>
-     */
-    private $nextStacks;
-    /**
      *本次spin附加消息列表
      *
-     * Generated from protobuf field <code>repeated int32 nextMsgIds = 11 [packed = true];</code>
+     * Generated from protobuf field <code>repeated int32 nextMsgIds = 10 [packed = true];</code>
      */
     private $nextMsgIds;
     /**
      *本次中奖赢得数额
      *
-     * Generated from protobuf field <code>int64 winCoins = 12;</code>
+     * Generated from protobuf field <code>int64 winCoins = 11;</code>
      */
     private $winCoins = 0;
     /**
      *当前TotalWin
      *
-     * Generated from protobuf field <code>int64 totalWin = 13;</code>
+     * Generated from protobuf field <code>int64 totalWin = 12;</code>
      */
     private $totalWin = 0;
     /**
      *本次中奖类型(BIG WIN | MEGA WIN...)
      *
-     * Generated from protobuf field <code>int32 winType = 14;</code>
+     * Generated from protobuf field <code>int32 winType = 13;</code>
      */
     private $winType = 0;
     /**
      *TotalWin中奖类型(BIG WIN | MEGA WIN...)
      *
-     * Generated from protobuf field <code>int32 totalWinType = 15;</code>
+     * Generated from protobuf field <code>int32 totalWinType = 14;</code>
      */
     private $totalWinType = 0;
     /**
      *金币余额(最新值)
      *
-     * Generated from protobuf field <code>int64 balance = 17;</code>
+     * Generated from protobuf field <code>int64 balance = 15;</code>
      */
     private $balance = 0;
     /**
      *是否结算
      *
-     * Generated from protobuf field <code>bool settled = 18;</code>
+     * Generated from protobuf field <code>bool settled = 16;</code>
      */
     private $settled = false;
     /**
      * 附加消息
      *
-     * Generated from protobuf field <code>repeated .GPBClass.Message.PB_MessageBase64List nextMessages = 19;</code>
+     * Generated from protobuf field <code>repeated .GPBClass.Message.PB_MessageBase64List nextMessages = 17;</code>
      */
     private $nextMessages;
 
@@ -362,35 +356,9 @@ class PB_SlotsBetting_Res extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     *下次spin轴上的stack替换元素
-     *
-     * Generated from protobuf field <code>repeated int32 nextStacks = 10 [packed = true];</code>
-     * @return \Google\Protobuf\Internal\RepeatedField
-     */
-    public function getNextStacks()
-    {
-        return $this->nextStacks;
-    }
-
-    /**
-     *下次spin轴上的stack替换元素
-     *
-     * Generated from protobuf field <code>repeated int32 nextStacks = 10 [packed = true];</code>
-     * @param int[]|\Google\Protobuf\Internal\RepeatedField $var
-     * @return $this
-     */
-    public function setNextStacks($var)
-    {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::INT32);
-        $this->nextStacks = $arr;
-
-        return $this;
-    }
-
-    /**
      *本次spin附加消息列表
      *
-     * Generated from protobuf field <code>repeated int32 nextMsgIds = 11 [packed = true];</code>
+     * Generated from protobuf field <code>repeated int32 nextMsgIds = 10 [packed = true];</code>
      * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getNextMsgIds()
@@ -401,7 +369,7 @@ class PB_SlotsBetting_Res extends \Google\Protobuf\Internal\Message
     /**
      *本次spin附加消息列表
      *
-     * Generated from protobuf field <code>repeated int32 nextMsgIds = 11 [packed = true];</code>
+     * Generated from protobuf field <code>repeated int32 nextMsgIds = 10 [packed = true];</code>
      * @param int[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
@@ -416,7 +384,7 @@ class PB_SlotsBetting_Res extends \Google\Protobuf\Internal\Message
     /**
      *本次中奖赢得数额
      *
-     * Generated from protobuf field <code>int64 winCoins = 12;</code>
+     * Generated from protobuf field <code>int64 winCoins = 11;</code>
      * @return int|string
      */
     public function getWinCoins()
@@ -427,7 +395,7 @@ class PB_SlotsBetting_Res extends \Google\Protobuf\Internal\Message
     /**
      *本次中奖赢得数额
      *
-     * Generated from protobuf field <code>int64 winCoins = 12;</code>
+     * Generated from protobuf field <code>int64 winCoins = 11;</code>
      * @param int|string $var
      * @return $this
      */
@@ -442,7 +410,7 @@ class PB_SlotsBetting_Res extends \Google\Protobuf\Internal\Message
     /**
      *当前TotalWin
      *
-     * Generated from protobuf field <code>int64 totalWin = 13;</code>
+     * Generated from protobuf field <code>int64 totalWin = 12;</code>
      * @return int|string
      */
     public function getTotalWin()
@@ -453,7 +421,7 @@ class PB_SlotsBetting_Res extends \Google\Protobuf\Internal\Message
     /**
      *当前TotalWin
      *
-     * Generated from protobuf field <code>int64 totalWin = 13;</code>
+     * Generated from protobuf field <code>int64 totalWin = 12;</code>
      * @param int|string $var
      * @return $this
      */
@@ -468,7 +436,7 @@ class PB_SlotsBetting_Res extends \Google\Protobuf\Internal\Message
     /**
      *本次中奖类型(BIG WIN | MEGA WIN...)
      *
-     * Generated from protobuf field <code>int32 winType = 14;</code>
+     * Generated from protobuf field <code>int32 winType = 13;</code>
      * @return int
      */
     public function getWinType()
@@ -479,7 +447,7 @@ class PB_SlotsBetting_Res extends \Google\Protobuf\Internal\Message
     /**
      *本次中奖类型(BIG WIN | MEGA WIN...)
      *
-     * Generated from protobuf field <code>int32 winType = 14;</code>
+     * Generated from protobuf field <code>int32 winType = 13;</code>
      * @param int $var
      * @return $this
      */
@@ -494,7 +462,7 @@ class PB_SlotsBetting_Res extends \Google\Protobuf\Internal\Message
     /**
      *TotalWin中奖类型(BIG WIN | MEGA WIN...)
      *
-     * Generated from protobuf field <code>int32 totalWinType = 15;</code>
+     * Generated from protobuf field <code>int32 totalWinType = 14;</code>
      * @return int
      */
     public function getTotalWinType()
@@ -505,7 +473,7 @@ class PB_SlotsBetting_Res extends \Google\Protobuf\Internal\Message
     /**
      *TotalWin中奖类型(BIG WIN | MEGA WIN...)
      *
-     * Generated from protobuf field <code>int32 totalWinType = 15;</code>
+     * Generated from protobuf field <code>int32 totalWinType = 14;</code>
      * @param int $var
      * @return $this
      */
@@ -520,7 +488,7 @@ class PB_SlotsBetting_Res extends \Google\Protobuf\Internal\Message
     /**
      *金币余额(最新值)
      *
-     * Generated from protobuf field <code>int64 balance = 17;</code>
+     * Generated from protobuf field <code>int64 balance = 15;</code>
      * @return int|string
      */
     public function getBalance()
@@ -531,7 +499,7 @@ class PB_SlotsBetting_Res extends \Google\Protobuf\Internal\Message
     /**
      *金币余额(最新值)
      *
-     * Generated from protobuf field <code>int64 balance = 17;</code>
+     * Generated from protobuf field <code>int64 balance = 15;</code>
      * @param int|string $var
      * @return $this
      */
@@ -546,7 +514,7 @@ class PB_SlotsBetting_Res extends \Google\Protobuf\Internal\Message
     /**
      *是否结算
      *
-     * Generated from protobuf field <code>bool settled = 18;</code>
+     * Generated from protobuf field <code>bool settled = 16;</code>
      * @return bool
      */
     public function getSettled()
@@ -557,7 +525,7 @@ class PB_SlotsBetting_Res extends \Google\Protobuf\Internal\Message
     /**
      *是否结算
      *
-     * Generated from protobuf field <code>bool settled = 18;</code>
+     * Generated from protobuf field <code>bool settled = 16;</code>
      * @param bool $var
      * @return $this
      */
@@ -572,7 +540,7 @@ class PB_SlotsBetting_Res extends \Google\Protobuf\Internal\Message
     /**
      * 附加消息
      *
-     * Generated from protobuf field <code>repeated .GPBClass.Message.PB_MessageBase64List nextMessages = 19;</code>
+     * Generated from protobuf field <code>repeated .GPBClass.Message.PB_MessageBase64List nextMessages = 17;</code>
      * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getNextMessages()
@@ -583,7 +551,7 @@ class PB_SlotsBetting_Res extends \Google\Protobuf\Internal\Message
     /**
      * 附加消息
      *
-     * Generated from protobuf field <code>repeated .GPBClass.Message.PB_MessageBase64List nextMessages = 19;</code>
+     * Generated from protobuf field <code>repeated .GPBClass.Message.PB_MessageBase64List nextMessages = 17;</code>
      * @param \GPBClass\Message\PB_MessageBase64List[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */

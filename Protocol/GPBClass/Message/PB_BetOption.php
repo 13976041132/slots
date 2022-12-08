@@ -16,7 +16,7 @@ class PB_BetOption extends \Google\Protobuf\Internal\Message
     /**
      *下注倍数
      *
-     * Generated from protobuf field <code>int32 betMultiple = 1;</code>
+     * Generated from protobuf field <code>int64 betMultiple = 1;</code>
      */
     private $betMultiple = 0;
     /**
@@ -34,8 +34,8 @@ class PB_BetOption extends \Google\Protobuf\Internal\Message
     /**
      *下注倍数
      *
-     * Generated from protobuf field <code>int32 betMultiple = 1;</code>
-     * @return int
+     * Generated from protobuf field <code>int64 betMultiple = 1;</code>
+     * @return int|string
      */
     public function getBetMultiple()
     {
@@ -45,13 +45,13 @@ class PB_BetOption extends \Google\Protobuf\Internal\Message
     /**
      *下注倍数
      *
-     * Generated from protobuf field <code>int32 betMultiple = 1;</code>
-     * @param int $var
+     * Generated from protobuf field <code>int64 betMultiple = 1;</code>
+     * @param int|string $var
      * @return $this
      */
     public function setBetMultiple($var)
     {
-        GPBUtil::checkInt32($var);
+        GPBUtil::checkInt64($var);
         $this->betMultiple = $var;
 
         return $this;
