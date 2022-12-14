@@ -10,7 +10,7 @@ use FF\Service\Lib\Service;
 use Swoole\Runtime;
 
 include __DIR__ . '/../../Include/common.php';
-include(__DIR__ . '/../Include/consts.php');
+include(__DIR__ . '/../../Include/consts.php');
 
 $args = get_cli_args();
 
