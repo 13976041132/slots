@@ -16,9 +16,9 @@ class PB_SlotsElement extends \Google\Protobuf\Internal\Message
     /**
      *元素ID
      *
-     * Generated from protobuf field <code>string elementId = 1;</code>
+     * Generated from protobuf field <code>int32 elementId = 1;</code>
      */
-    private $elementId = '';
+    private $elementId = 0;
     /**
      *元素所在列
      *
@@ -46,8 +46,8 @@ class PB_SlotsElement extends \Google\Protobuf\Internal\Message
     /**
      *元素ID
      *
-     * Generated from protobuf field <code>string elementId = 1;</code>
-     * @return string
+     * Generated from protobuf field <code>int32 elementId = 1;</code>
+     * @return int
      */
     public function getElementId()
     {
@@ -57,13 +57,13 @@ class PB_SlotsElement extends \Google\Protobuf\Internal\Message
     /**
      *元素ID
      *
-     * Generated from protobuf field <code>string elementId = 1;</code>
-     * @param string $var
+     * Generated from protobuf field <code>int32 elementId = 1;</code>
+     * @param int $var
      * @return $this
      */
     public function setElementId($var)
     {
-        GPBUtil::checkString($var, True);
+        GPBUtil::checkInt32($var);
         $this->elementId = $var;
 
         return $this;

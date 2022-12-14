@@ -26,47 +26,23 @@ class PB_SlotsBetting_Req extends \Google\Protobuf\Internal\Message
      */
     private $winType = 0;
     /**
-     *指定样本组(测试专用)
-     *
-     * Generated from protobuf field <code>string sampleGroup = 3;</code>
-     */
-    private $sampleGroup = '';
-    /**
      *指定中feature，逗号分隔(测试专用)
      *
-     * Generated from protobuf field <code>string feature = 4;</code>
+     * Generated from protobuf field <code>string feature = 3;</code>
      */
     private $feature = '';
     /**
      *是否清除当前feature(测试专用)
      *
-     * Generated from protobuf field <code>bool clear = 5;</code>
+     * Generated from protobuf field <code>bool clear = 4;</code>
      */
     private $clear = false;
     /**
      *是否必中奖(测试专用)
      *
-     * Generated from protobuf field <code>bool hit = 6;</code>
+     * Generated from protobuf field <code>bool hit = 5;</code>
      */
     private $hit = false;
-    /**
-     *其他命令选项(机器人专用)
-     *
-     * Generated from protobuf field <code>string options = 7;</code>
-     */
-    private $options = '';
-    /**
-     *广告是否已就绪
-     *
-     * Generated from protobuf field <code>bool isAdReady = 8;</code>
-     */
-    private $isAdReady = false;
-    /**
-     *样本库触发器Id
-     *
-     * Generated from protobuf field <code>string sampleLibId = 9;</code>
-     */
-    private $sampleLibId = '';
 
     public function __construct() {
         \GPBMetadata\PBSlotsBetting::initOnce();
@@ -126,35 +102,9 @@ class PB_SlotsBetting_Req extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     *指定样本组(测试专用)
-     *
-     * Generated from protobuf field <code>string sampleGroup = 3;</code>
-     * @return string
-     */
-    public function getSampleGroup()
-    {
-        return $this->sampleGroup;
-    }
-
-    /**
-     *指定样本组(测试专用)
-     *
-     * Generated from protobuf field <code>string sampleGroup = 3;</code>
-     * @param string $var
-     * @return $this
-     */
-    public function setSampleGroup($var)
-    {
-        GPBUtil::checkString($var, True);
-        $this->sampleGroup = $var;
-
-        return $this;
-    }
-
-    /**
      *指定中feature，逗号分隔(测试专用)
      *
-     * Generated from protobuf field <code>string feature = 4;</code>
+     * Generated from protobuf field <code>string feature = 3;</code>
      * @return string
      */
     public function getFeature()
@@ -165,7 +115,7 @@ class PB_SlotsBetting_Req extends \Google\Protobuf\Internal\Message
     /**
      *指定中feature，逗号分隔(测试专用)
      *
-     * Generated from protobuf field <code>string feature = 4;</code>
+     * Generated from protobuf field <code>string feature = 3;</code>
      * @param string $var
      * @return $this
      */
@@ -180,7 +130,7 @@ class PB_SlotsBetting_Req extends \Google\Protobuf\Internal\Message
     /**
      *是否清除当前feature(测试专用)
      *
-     * Generated from protobuf field <code>bool clear = 5;</code>
+     * Generated from protobuf field <code>bool clear = 4;</code>
      * @return bool
      */
     public function getClear()
@@ -191,7 +141,7 @@ class PB_SlotsBetting_Req extends \Google\Protobuf\Internal\Message
     /**
      *是否清除当前feature(测试专用)
      *
-     * Generated from protobuf field <code>bool clear = 5;</code>
+     * Generated from protobuf field <code>bool clear = 4;</code>
      * @param bool $var
      * @return $this
      */
@@ -206,7 +156,7 @@ class PB_SlotsBetting_Req extends \Google\Protobuf\Internal\Message
     /**
      *是否必中奖(测试专用)
      *
-     * Generated from protobuf field <code>bool hit = 6;</code>
+     * Generated from protobuf field <code>bool hit = 5;</code>
      * @return bool
      */
     public function getHit()
@@ -217,7 +167,7 @@ class PB_SlotsBetting_Req extends \Google\Protobuf\Internal\Message
     /**
      *是否必中奖(测试专用)
      *
-     * Generated from protobuf field <code>bool hit = 6;</code>
+     * Generated from protobuf field <code>bool hit = 5;</code>
      * @param bool $var
      * @return $this
      */
@@ -225,84 +175,6 @@ class PB_SlotsBetting_Req extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->hit = $var;
-
-        return $this;
-    }
-
-    /**
-     *其他命令选项(机器人专用)
-     *
-     * Generated from protobuf field <code>string options = 7;</code>
-     * @return string
-     */
-    public function getOptions()
-    {
-        return $this->options;
-    }
-
-    /**
-     *其他命令选项(机器人专用)
-     *
-     * Generated from protobuf field <code>string options = 7;</code>
-     * @param string $var
-     * @return $this
-     */
-    public function setOptions($var)
-    {
-        GPBUtil::checkString($var, True);
-        $this->options = $var;
-
-        return $this;
-    }
-
-    /**
-     *广告是否已就绪
-     *
-     * Generated from protobuf field <code>bool isAdReady = 8;</code>
-     * @return bool
-     */
-    public function getIsAdReady()
-    {
-        return $this->isAdReady;
-    }
-
-    /**
-     *广告是否已就绪
-     *
-     * Generated from protobuf field <code>bool isAdReady = 8;</code>
-     * @param bool $var
-     * @return $this
-     */
-    public function setIsAdReady($var)
-    {
-        GPBUtil::checkBool($var);
-        $this->isAdReady = $var;
-
-        return $this;
-    }
-
-    /**
-     *样本库触发器Id
-     *
-     * Generated from protobuf field <code>string sampleLibId = 9;</code>
-     * @return string
-     */
-    public function getSampleLibId()
-    {
-        return $this->sampleLibId;
-    }
-
-    /**
-     *样本库触发器Id
-     *
-     * Generated from protobuf field <code>string sampleLibId = 9;</code>
-     * @param string $var
-     * @return $this
-     */
-    public function setSampleLibId($var)
-    {
-        GPBUtil::checkString($var, True);
-        $this->sampleLibId = $var;
 
         return $this;
     }

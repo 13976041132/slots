@@ -9,13 +9,9 @@ import "PB_MessageBase64List.proto";
 message PB_SlotsBetting_Req {
     int64 totalBet = 1; //下注额
     int32 winType = 2; //指定中奖类型(测试专用)
-    string sampleGroup = 3; //指定样本组(测试专用)
-    string feature = 4; //指定中feature，逗号分隔(测试专用)
-    bool clear = 5; //是否清除当前feature(测试专用)
-    bool hit = 6; //是否必中奖(测试专用)
-    string options = 7; //其他命令选项(机器人专用)
-	bool isAdReady = 8; //广告是否已就绪
-	string sampleLibId = 9; //样本库触发器Id
+    string feature = 3; //指定中feature，逗号分隔(测试专用)
+    bool clear = 4; //是否清除当前feature(测试专用)
+    bool hit = 5; //是否必中奖(测试专用)
 }
 
 message PB_SlotsBetting_Res {

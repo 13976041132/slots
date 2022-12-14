@@ -141,23 +141,13 @@ class GameController extends BaseController
 
         Bll::session()->save(['isSpinning' => true, 'spinTime' => time()]);
 
-        try {
-            $totalBet = $this->getParam('totalBet', false, 0);
-            $options = !FF::isProduct() ? $this->getRunOptions() : array();
-            $data = $machineObj->run($totalBet, $options);
-            Bll::session()->save(['isSpinning' => false]);
+        $totalBet = $this->getParam('totalBet', false, 0);
+        $options = !FF::isProduct() ? $this->getRunOptions() : array();
+        $data = $machineObj->run($totalBet, $options);
+        Bll::session()->save(['isSpinning' => false]);
 
-            return $data;
+        return $data;
 
-        } catch (\Exception $ex) {
-            Bll::session()->save(['isSpinning' => false]);
-            Log::error(['uid' => Bll::session()->get('uid'),
-                'code' => $ex->getCode(), 'message' => $ex->getMessage(),
-                'file' => $ex->getFile(), 'line' => $ex->getLine()
-            ], 'slotsGame.log');
-
-            FF::throwException($ex->getCode(), $ex->getMessage());
-        }
     }
 
     public function initJackpots()

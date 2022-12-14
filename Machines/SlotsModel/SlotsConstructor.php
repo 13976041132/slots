@@ -609,7 +609,7 @@ abstract class SlotsConstructor
     /**
      * 更新用户游戏信息
      */
-    public function updateGameInfo($data, $save = false)
+    public function updateGameInfo($data, $save = true)
     {
         foreach ($data as $key => $value) {
             $this->gameInfo[$key] = $value;
