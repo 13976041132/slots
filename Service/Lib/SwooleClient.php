@@ -70,4 +70,17 @@ class SwooleClient
             Log::error('send data to server failed, error = ' . $this->client()->errCode);
         }
     }
+
+    public function receive()
+    {
+        if (!$this->enabled()) return false;
+
+        $data = $this->client()->recv();
+
+        if ($data == '') return false;
+
+        $data = rtrim(ltrim($data, '--BEGIN--'), '--END--');
+
+        return json_decode($data, true);
+    }
 }

@@ -78,7 +78,7 @@ function start($serverType, $node, $nodeInfo)
 function stats($serverType, $node)
 {
     $client = new SwooleClient($serverType, $node);
-    $client->send(MSG_ID::MSG_SERVER_STATS);
+    $client->send('Stats');
     $data = $client->receive();
     $stats = $data['data'];
     $runTime = 0;
@@ -103,20 +103,17 @@ function stats($serverType, $node)
 function restart($serverType, $node)
 {
     $client = new SwooleClient($serverType, $node);
-    $client->send(MSG_ID::MSG_SERVER_RESTART);
-    cli_output($client->receive());
+    $client->send('Restart');
 }
 
 function reload($serverType, $node)
 {
     $client = new SwooleClient($serverType, $node);
-    $client->send(MSG_ID::MSG_SERVER_RELOAD);
-    cli_output($client->receive());
+    $client->send('Reload');
 }
 
 function stop($serverType, $node)
 {
     $client = new SwooleClient($serverType, $node);
-    $client->send(MSG_ID::MSG_SERVER_STOP);
-    cli_output($client->receive());
+    $client->send('Stop');
 }

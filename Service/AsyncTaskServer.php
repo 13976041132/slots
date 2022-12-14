@@ -6,6 +6,7 @@
 namespace FF\Service;
 
 use FF\Factory\Bll;
+use FF\Framework\Utils\Log;
 use FF\Service\Lib\Service;
 use Swoole\Server;
 use Swoole\Timer;
@@ -50,7 +51,7 @@ class AsyncTaskServer extends Service
         try {
             Bll::asyncTask()->dealTask($event, $data);
         } catch (\Exception $e) {
-            $this->log(array(
+            Log::error(array(
                 'code' => $e->getCode(),
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),

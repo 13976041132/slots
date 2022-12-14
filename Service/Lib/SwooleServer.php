@@ -59,7 +59,7 @@ class SwooleServer
         $this->server->start();
     }
 
-    public function onWorkerStop($server, $workerId)
+    public function onWorkerStop(Server $server, int $workerId)
     {
 
     }
@@ -130,6 +130,11 @@ class SwooleServer
         $this->server->reload();
     }
 
+    private function onRestart()
+    {
+        $this->server->reload(true);
+    }
+
     private function onMessage($fd, $data)
     {
         $packages = $this->getPackages($fd, $data);
@@ -148,7 +153,7 @@ class SwooleServer
 
     private function dispatchMessage($fd, $data)
     {
-        if (in_array($data['event'], ['Stop', 'Reload'])) {
+        if (in_array($data['event'], ['Stop', 'Reload', 'Restart', 'Stats'])) {
             $clientInfo = $this->server->getClientInfo($fd);
             if (!$clientInfo) return;
             $remoteIp = $clientInfo['remote_ip'];
@@ -156,10 +161,25 @@ class SwooleServer
                 Log::warning("A danger command [{$data['event']}] from {$remoteIp}");
                 //return;
             }
-            if ($data['event'] == 'Stop') {
-                $this->onStop();
-            } elseif ($data['event'] == 'Reload') {
-                $this->onReload();
+            switch ($data['event']) {
+                case 'Stop':
+                    $this->onStop();
+                    break;
+                case 'Reload':
+                    $this->onReload();
+                    break;
+                case 'Restart':
+                    $this->onRestart();
+                    break;
+                case 'stats':
+                    $stats = $this->server->stats();
+                    $stats = array_merge(array(
+                        'name' => $this->server->serverName,
+                        'host' => $this->host,
+                        'port' => $this->port,
+                    ), $stats);
+                    $this->server->sendMessage($fd, json_encode($stats));
+                    break;
             }
         } else {
             $taskWorkerId = 0;

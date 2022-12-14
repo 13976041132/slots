@@ -53,13 +53,13 @@ class PubSubServer extends Service
     {
         if ($this->subProcessId) {
             Process::kill($this->subProcessId, SIGKILL);
-            $this->log("sub process killed, pid = {$this->subProcessId}");
+            Log::info("sub process killed, pid = {$this->subProcessId}");
         }
     }
 
     public function pubSubMain(Process $process)
     {
-        $this->log('subprocess started, pid = ' . $process->pid);
+        Log::info('subprocess started, pid = ' . $process->pid);
 
         $this->subProcessId = $process->pid;
 
@@ -79,7 +79,7 @@ class PubSubServer extends Service
     {
         $message = $amqpMessage->getBody();
 
-        $this->log("onChannelMessage, pid = {$this->subProcessId} message = " . $message);
+        Log::info("onChannelMessage, pid = {$this->subProcessId} message = " . $message);
 
         $data = json_decode($message, true);
 
@@ -88,7 +88,7 @@ class PubSubServer extends Service
         try {
             $this->dealMessage($data);
         } catch (\Exception $e) {
-            $this->log($e->getMessage());
+            Log::error($e->getMessage());
         }
     }
 

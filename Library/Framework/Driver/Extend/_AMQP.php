@@ -6,6 +6,8 @@
 
 namespace FF\Framework\Driver\Extend;
 
+use FF\Framework\Common\Code;
+use FF\Framework\Core\FF;
 use FF\Framework\Utils\Log;
 use FF\Framework\Utils\Str;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
@@ -83,7 +85,8 @@ class _AMQP
                 Log::info('try to reconnect in connecting', 'mq.log');
                 return $this->getConnection();
             } else {
-                throw $e;
+                Log::error('unable to connect server,check server run enable', 'mq.log');
+                FF::throwException(Code::SYSTEM_BUSY);
             }
         }
     }
