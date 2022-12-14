@@ -12,7 +12,7 @@ use Swoole\Timer;
 
 class AsyncTaskServer extends Service
 {
-    public function onWorkerStart(swoole_server $server, $workerId)
+    public function onWorkerStart(\swoole_server $server, $workerId)
     {
         parent::onWorkerStart($server, $workerId);
 
@@ -23,7 +23,7 @@ class AsyncTaskServer extends Service
         }
     }
 
-    public function onWorkerStop(swoole_server $server, $workerId)
+    public function onWorkerStop(\swoole_server $server, $workerId)
     {
         if ($server->taskworker) {
             if (Bll::asyncTask()->getLogBufferInfo()) {

@@ -59,7 +59,7 @@ class SwooleServer
         $this->server->start();
     }
 
-    public function onWorkerStop(swoole_server $server, $workerId)
+    public function onWorkerStop(\swoole_server $server, $workerId)
     {
 
     }

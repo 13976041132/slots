@@ -10,7 +10,6 @@ use FF\Framework\Utils\Log;
 use FF\Service\Lib\Service;
 use PhpAmqpLib\Message\AMQPMessage;
 use Swoole\Process;
-use Swoole\Server;
 
 class PubSubServer extends Service
 {
@@ -21,21 +20,21 @@ class PubSubServer extends Service
     protected $queueName = '';
     protected $queueOpt = array();
 
-    public function onWorkerStart(Server $server, int $workerId)
+    public function onWorkerStart(\swoole_server $server, $workerId)
     {
         parent::onWorkerStart($server, $workerId);
 
         $this->createSubProcess();
     }
 
-    public function onWorkerStop(Server $server, int $workerId)
+    public function onWorkerStop(\swoole_server $server, $workerId)
     {
         $this->killSubProcess();
 
         parent::onWorkerStop($server, $workerId);
     }
 
-    public function onReload(Server $server, int $workerId)
+    public function onReload(\swoole_server $server, int $workerId)
     {
         $this->killSubProcess();
 
