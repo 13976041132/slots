@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS `t_machine` (
   `machineId` int(10) NOT NULL COMMENT '机台ID',
   `name` varchar(32) NOT NULL COMMENT '机台名称',
   `className` varchar(32) NOT NULL COMMENT '机台类名',
-  `cols` int(10) UNSIGNED NOT NULL COMMENT '总列数',
-  `rows` int(10) UNSIGNED NOT NULL COMMENT '总行数',
+  `cols` int(10) unsigned NOT NULL COMMENT '总列数',
+  `rows` int(10) unsigned NOT NULL COMMENT '总行数',
   `winMultiples` int(10) NOT NULL DEFAULT '0' COMMENT '解锁等级',
   `unlockLevel` varchar(64) NOT NULL COMMENT '中奖特殊倍数',
   `options` text NOT NULL COMMENT '其它选项',
@@ -30,9 +30,9 @@ CREATE TABLE IF NOT EXISTS `t_machine_item` (
 
 CREATE TABLE IF NOT EXISTS `t_payline` (
   `machineId` int(10) NOT NULL COMMENT '机台ID',
-  `seq` int(10) UNSIGNED NOT NULL COMMENT 'line序号',
+  `seq` int(10) unsigned NOT NULL COMMENT 'line序号',
   `route` varchar(64) NOT NULL COMMENT 'line路由',
-  PRIMARY KEY (`machineId`, `seq`)
+  PRIMARY KEY (`machineId`,`seq`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='机台中奖线路表';
 
 CREATE TABLE IF NOT EXISTS `t_paytable` (
@@ -56,23 +56,23 @@ CREATE TABLE IF NOT EXISTS `t_feature_game` (
   `machineId` int(10) NOT NULL COMMENT '机台ID',
   `featureId` varchar(16) NOT NULL COMMENT 'featureId',
   `featureName` varchar(32) NOT NULL DEFAULT '' COMMENT 'featureName',
-  `triggerOnline` tinyint(1) UNSIGNED NOT NULL DEFAULT '0' COMMENT '是否只在line上触发',
+  `triggerOnline` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否只在line上触发',
   `triggerLines` varchar(64) NOT NULL DEFAULT '' COMMENT '触发时所在line',
   `triggerItems` varchar(255) NOT NULL DEFAULT '' COMMENT '触发时须包含元素(取其中一个)',
   `triggerItemNum` varchar(64) NOT NULL DEFAULT '0' COMMENT '触发时须包含元素的个数',
   `triggerOptions` text NOT NULL COMMENT '触发条件选项',
   `coinsAward` varchar(32) NOT NULL DEFAULT '0' COMMENT '金币奖励',
   `freespinAward` varchar(256) NOT NULL DEFAULT '0' COMMENT 'freespin奖励',
-  `multipleAward` int(10) UNSIGNED NOT NULL DEFAULT '0' COMMENT '倍数奖励',
+  `multipleAward` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '倍数奖励',
   `itemAward` varchar(255) NOT NULL DEFAULT '0' COMMENT '奖励元素',
   `itemAwardLimit` varchar(1000) NOT NULL DEFAULT '{}' COMMENT '奖励元素约束',
   `extraTimes` varchar(256) NOT NULL DEFAULT '0' COMMENT 'freespin奖励',
-  `priority` tinyint(1) UNSIGNED NOT NULL DEFAULT '0' COMMENT '优先级',
-  `breakSpin` tinyint(1) UNSIGNED NOT NULL DEFAULT '0' COMMENT '是否中断Spin',
-  `chooseMode` tinyint(1) UNSIGNED NOT NULL DEFAULT '0' COMMENT '是否是选择模式',
+  `priority` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '优先级',
+  `breakSpin` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否中断Spin',
+  `chooseMode` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否是选择模式',
   `version` varchar(8) NOT NULL DEFAULT '' COMMENT '适用版本',
   PRIMARY KEY (`featureId`),
-  KEY (`machineId`)
+  KEY `machineId` (`machineId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='FeatureGame配置表';
 
 CREATE TABLE IF NOT EXISTS `t_version` (
