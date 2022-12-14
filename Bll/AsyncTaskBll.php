@@ -38,9 +38,6 @@ class AsyncTaskBll
     public function dealTask($event, $data)
     {
         switch ($event) {
-            case EVENT_FLUSH_LOGS:
-                $this->onFlushLogs();
-                break;
             case EVENT_LOGIN:
                 $this->onLogin($data);
                 break;
