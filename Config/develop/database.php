@@ -5,7 +5,7 @@
 
 $config = array(
     DB_CONFIG => array(
-        'host' => '192.168.33.10',
+        'host' => '127.0.0.1',
         'port' => '3306',
         'username' => 'root',
         'passwd' => '123456',
@@ -13,7 +13,7 @@ $config = array(
         'charset' => 'utf8mb4',
     ),
     DB_ADMIN => array(
-        'host' => '192.168.33.10',
+        'host' => '127.0.0.1',
         'port' => '3306',
         'username' => 'root',
         'passwd' => '123456',
@@ -22,7 +22,7 @@ $config = array(
     ),
 
     DB_TEST => array(
-        'host' => '192.168.33.10',
+        'host' => '127.0.0.1',
         'port' => '3306',
         'username' => 'root',
         'passwd' => '123456',
@@ -31,7 +31,7 @@ $config = array(
     ),
 
     DB_MAIN => array(
-        'host' => '192.168.33.10',
+        'host' => '127.0.0.1',
         'port' => '3306',
         'username' => 'root',
         'passwd' => '123456',
@@ -40,7 +40,7 @@ $config = array(
     ),
 
     DB_LOG => array(
-        'host' => '192.168.33.10',
+        'host' => '127.0.0.1',
         'port' => '3306',
         'username' => 'root',
         'passwd' => '123456',
@@ -48,7 +48,7 @@ $config = array(
         'charset' => 'utf8mb4',
     ),
     DB_ANALYSIS => array(
-        'host' => '192.168.33.10',
+        'host' => '127.0.0.1',
         'port' => '3306',
         'username' => 'root',
         'passwd' => '123456',
