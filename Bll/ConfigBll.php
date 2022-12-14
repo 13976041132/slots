@@ -512,6 +512,8 @@ class ConfigBll
     {
         $sqls = array(
             "UPDATE `{$sourceTable}` SET Col = REPLACE(Col, '|', ',')",
+            "UPDATE `{$sourceTable}` SET Used_in_freespin = 'Y' WHERE Used_in_freespin = 'True'",
+            "UPDATE `{$sourceTable}` SET Used_in_freespin = 'N' WHERE Used_in_freespin != 'Y'",
             "DELETE FROM `t_paytable`"
         );
 

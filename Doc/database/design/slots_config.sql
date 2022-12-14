@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS `t_machine` (
   `rows` int(10) unsigned NOT NULL COMMENT '总行数',
   `winMultiples` int(10) NOT NULL DEFAULT '0' COMMENT '解锁等级',
   `unlockLevel` varchar(64) NOT NULL COMMENT '中奖特殊倍数',
-  `options` text NOT NULL COMMENT '其它选项',
+  `options` text  COMMENT '其它选项',
   PRIMARY KEY (`machineId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='机台表';
 
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS `t_paytable` (
   `machineId` int(10) NOT NULL COMMENT '机台ID',
   `elements` varchar(128) NOT NULL COMMENT '中奖元素列表',
   `prize` varchar(16) NOT NULL COMMENT '金币倍数奖励（兼容jackpot标识）',
-  `freeSpinOnly` char(1) NOT NULL DEFAULT 'N' COMMENT '是否仅用于freeSpin',
+  `freeSpinOnly` char(1) NOT NULL DEFAULT '' COMMENT '是否仅用于freeSpin',
   PRIMARY KEY (`resultId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='机台中奖组合表';
 
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS `t_feature_game` (
   `triggerLines` varchar(64) NOT NULL DEFAULT '' COMMENT '触发时所在line',
   `triggerItems` varchar(255) NOT NULL DEFAULT '' COMMENT '触发时须包含元素(取其中一个)',
   `triggerItemNum` varchar(64) NOT NULL DEFAULT '0' COMMENT '触发时须包含元素的个数',
-  `triggerOptions` text NOT NULL COMMENT '触发条件选项',
+  `triggerOptions` text COMMENT '触发条件选项',
   `coinsAward` varchar(32) NOT NULL DEFAULT '0' COMMENT '金币奖励',
   `freespinAward` varchar(256) NOT NULL DEFAULT '0' COMMENT 'freespin奖励',
   `multipleAward` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '倍数奖励',
