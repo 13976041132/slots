@@ -8,12 +8,11 @@ namespace FF\Service;
 use FF\Factory\Bll;
 use FF\Framework\Utils\Log;
 use FF\Service\Lib\Service;
-use Swoole\Server;
 use Swoole\Timer;
 
 class AsyncTaskServer extends Service
 {
-    public function onWorkerStart(Server $server, int $workerId)
+    public function onWorkerStart(swoole_server $server, $workerId)
     {
         parent::onWorkerStart($server, $workerId);
 
@@ -24,7 +23,7 @@ class AsyncTaskServer extends Service
         }
     }
 
-    public function onWorkerStop(Server $server, int $workerId)
+    public function onWorkerStop(swoole_server $server, $workerId)
     {
         if ($server->taskworker) {
             if (Bll::asyncTask()->getLogBufferInfo()) {
