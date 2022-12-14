@@ -36,8 +36,6 @@ class AsyncTaskServer extends Service
 
     protected function dealTask($data)
     {
-        $data = $data['data'];
-
         if (!$data || empty($data['event'])) {
             return 'Invalid data: ' . json_encode($data);
         }
