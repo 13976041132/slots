@@ -11,7 +11,6 @@ fi
 
 cd `dirname $0`
 
-php configTransform.php
 php import.php
 
 if [ $PHP_ENV = 'product' ];then
