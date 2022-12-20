@@ -137,8 +137,17 @@ abstract class SlotsDecider extends SlotsFeature
         while (1) {
             $elements = array();
             foreach ($sheetGroup as $col => $sheets) {
+                $scatterDisAble = false;
                 foreach (array_keys($sheets) as $row) {
-                    $elements[$col][$row] = (string)Utils::randByRates($elementReelWeights[$row]);
+                    while (true) {
+                        $elementId = (string)Utils::randByRates($elementReelWeights[$row]);
+                        if ($this->isScatterElement($elementId)) {
+                            if ($scatterDisAble) continue;
+                            $scatterDisAble = true;
+                        }
+
+                        $elements[$col][$row] = $elementId;
+                    }
                 }
             }
             if ($this->checkElements($elements)) {
