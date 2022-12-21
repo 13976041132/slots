@@ -147,6 +147,7 @@ abstract class SlotsDecider extends SlotsFeature
                         }
 
                         $elements[$col][$row] = $elementId;
+                        break;
                     }
                 }
             }
