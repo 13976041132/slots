@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS `t_feature_game` (
   `triggerLines` varchar(64) NOT NULL DEFAULT '' COMMENT '触发时所在line',
   `triggerItems` varchar(255) NOT NULL DEFAULT '' COMMENT '触发时须包含元素(取其中一个)',
   `triggerItemNum` varchar(64) NOT NULL DEFAULT '0' COMMENT '触发时须包含元素的个数',
+  `triggerInReels` varchar(64) NOT NULL DEFAULT '0' COMMENT '在reels中触发(取其中一个)',
   `triggerOptions` text COMMENT '触发条件选项',
   `coinsAward` varchar(32) NOT NULL DEFAULT '0' COMMENT '金币奖励',
   `freespinAward` varchar(256) NOT NULL DEFAULT '0' COMMENT 'freespin奖励',

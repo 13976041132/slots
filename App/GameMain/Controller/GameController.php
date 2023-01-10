@@ -98,7 +98,7 @@ class GameController extends BaseController
         if ($winType || $feature || $clear || $hit) {
             $machineObj = $this->getMachineObj();
             if ($clear) {
-                $machineObj->clearFeature(true);
+                $machineObj->clearFeature();
                 $machineObj->clearFreespin();
             }
         }

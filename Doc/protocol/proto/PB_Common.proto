@@ -24,6 +24,7 @@ enum MSG_ID {
     MSG_RECOVER_LIGHTNING = 4002; //恢复Lightning
     MSG_HOLD_AND_SPIN = 4003; //Hold&Spin
     MSG_WHEEL_SPIN = 4004; //转盘SPIN
+    MSG_PLAY_PICK_GAME = 4005; //进行pickGame
 
     MSG_NTF_LEVEL_PRIZE = 7001; //等级奖励通知
     MSG_NTF_JACKPOT_PRIZE = 7002; //Jackpot奖励通知()

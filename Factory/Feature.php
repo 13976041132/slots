@@ -10,6 +10,7 @@ use FF\Machines\Features\Chooser;
 use FF\Machines\Features\CollectGame;
 use FF\Machines\Features\Lightning;
 use FF\Machines\SlotsModel\SlotsMachine;
+use FF\Machines\Features\JackpotPickGame;
 
 class Feature extends Factory
 {
@@ -77,4 +78,11 @@ class Feature extends Factory
         return self::_getInstance('FF\Machines\Features\CollectGame', $machineObj, $featureId);
     }
 
+    /**
+     * @return JackpotPickGame
+     */
+    public static function jackpotPickGame($machineObj, $featureId)
+    {
+        return self::_getInstance('FF\Machines\Features\JackpotPickGame', $machineObj, $featureId);
+    }
 }

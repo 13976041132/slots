@@ -102,6 +102,18 @@ class FeatureController extends BaseController
         return $data;
     }
 
+    public function playPickGame()
+    {
+        $machineObj = $this->getMachineObj();
+        $featureId = $machineObj->getCurrFeature();
+
+        if (!$featureId || $this->getMachineObj()->getFeatureName($featureId) != FEATURE_PICK_GAME) {
+            FF::throwException(RET::FAILED);
+        }
+
+        return $machineObj->getFeaturePlugin($featureId)->onPick();
+    }
+
     /**
      * 转盘spin
      */

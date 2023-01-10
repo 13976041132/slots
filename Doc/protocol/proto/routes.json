@@ -15,5 +15,6 @@
     "4001": "PB_ResumeFreeGame",
     "4002": "PB_RecoverLightning",
     "4003": "PB_HoldAndSpin",
-    "4004": "PB_WheelSpin"
+    "4004": "PB_WheelSpin",
+    "4005": "PB_JackpotPickGame"
 }

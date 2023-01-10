@@ -23,6 +23,7 @@ $config = array(
     MSG_ID::MSG_RECOVER_LIGHTNING => array('/Feature/recoverLightning', 'PB_RecoverLightning'),
     MSG_ID::MSG_HOLD_AND_SPIN => array('/Feature/holdAndSpin', 'PB_HoldAndSpin'),
     MSG_ID::MSG_WHEEL_SPIN => array('/Feature/wheelSpin', 'PB_WheelSpin'),
+    MSG_ID::MSG_PLAY_PICK_GAME => array('/Feature/playPickGame', 'PB_JackpotPickGame'),
 //    MSG_ID::MSG_COLLECT_AWARD => array('/Game/collectAward', 'PB_CollectAward'),
 
 );

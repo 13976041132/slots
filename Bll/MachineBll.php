@@ -107,6 +107,7 @@ class MachineBll
                     $feature['freespinAward'] = Bll::config()->parseValue($feature['freespinAward']);
                     $feature['itemAward'] = Bll::config()->parseValue($feature['itemAward']);
                     $feature['itemAwardLimit'] = (array)json_decode($feature['itemAwardLimit'], true);
+                    $feature['triggerInReels'] = $feature['triggerInReels'] ? explode('|', $feature['triggerInReels']) : [];
                 }
                 $data = $features ? array_column($features, null, 'featureId') : array();
                 ksort($data);

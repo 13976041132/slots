@@ -16,7 +16,6 @@ abstract class SlotsDecider extends SlotsFeature
 {
     protected $elementValues = null;
     protected $reelSampleFilter = array();
-    protected $bonusConfig = array();
     protected $bonusElementsReplaceConfig = null;
 
     public function clearBuffer()
@@ -25,7 +24,6 @@ abstract class SlotsDecider extends SlotsFeature
 
         $this->elementValues = null;
         $this->reelSampleFilter = array();
-        $this->bonusConfig = array();
         $this->bonusElementsReplaceConfig = null;
     }
 
@@ -160,32 +158,6 @@ abstract class SlotsDecider extends SlotsFeature
     }
 
     /**
-     * 获取当前适用的转轴样本组
-     */
-    public function getReelSampleGroup($sampleGroup = null)
-    {
-        if (!$sampleGroup) {
-            if (defined('TEST_SAMPLE_GROUP')) {
-                $sampleGroup = TEST_SAMPLE_GROUP;
-            } elseif (!empty($this->runOptions['sampleGroup'])) {
-                $sampleGroup = $this->runOptions['sampleGroup'];
-            } else {
-                $sampleGroup = $this->gameInfo['sampleGroup'] ?: 'Normal';
-            }
-        }
-
-        return $sampleGroup;
-    }
-
-    /**
-     * 匹配样本适配选项
-     */
-    public function matchSampleOptions($options)
-    {
-        return true;
-    }
-
-    /**
      * 元素消除玩法
      */
     protected function elementsElimination($hitResult, $elements)
@@ -312,18 +284,6 @@ abstract class SlotsDecider extends SlotsFeature
     }
 
     /**
-     * 获取bonus配置项
-     */
-    protected function getBonusConfig($key)
-    {
-        if ($this->bonusConfig) {
-            return $this->bonusConfig[$key];
-        }
-
-        return [];
-    }
-
-    /**
      * 判断bonus值是否是jackpot
      */
     public function isJackpotValue($value)
@@ -338,28 +298,18 @@ abstract class SlotsDecider extends SlotsFeature
     /**
      * 生成bonus上的数值
      */
-    public function getBonusValue($elementId, $hitType, $col, $hitJackpots = array())
+    public function getBonusValue($elementId, $hitJackpots = array())
     {
-        $bonusHitRates = $this->getBonusConfig('bonusHitRates');
-        $bonusHitRates = json_decode($bonusHitRates[$hitType], true);
-
-        //部分机台有多个bonus，是按元素ID配置
-        if (isset($bonusHitRates[$elementId])) {
-            $bonusHitRates = $bonusHitRates[$elementId];
-        }
-
-        //部分机台的bonus值是按列配置
-        if (isset($bonusHitRates[$col]) && is_array($bonusHitRates[$col])) {
-            $bonusHitRates = $bonusHitRates[$col];
-        }
+        $currFeatureId = $this->getCurrFeature();
+        $featureName = $currFeatureId ? $this->getFeatureName($currFeatureId) : 'Base';
+        $bonusBallValueRates = Config::get("machine/bonus-ball-value" , $this->machineId);
+        $bonusHitRates = $bonusBallValueRates[$featureName] ?? $bonusBallValueRates['Base'];
 
         //jackpot未解锁或者已经中过了，则去掉该jackpot
         $jackpotPots = $this->getJackpotPots();
         foreach ($bonusHitRates as $value => $weight) {
             if (!$this->isJackpotValue($value)) continue;
             if (!isset($jackpotPots[$value])) {
-                unset($bonusHitRates[$value]);
-            } elseif (!$this->jackpotHitRepeatedAble && in_array($value, $hitJackpots)) {
                 unset($bonusHitRates[$value]);
             }
         }

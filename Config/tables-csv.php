@@ -13,12 +13,10 @@ $config = array(
         'feature_game' => 'Feature_Games.csv',
         'jackpot' => 'Machine_Jackpot.csv',
         'paytable' => 'Machine_Paytable.csv',
+        'bonus_value' => 'Machine_Ball.csv',
+        'hold_and_spin' => 'Machine_Holdspin.csv'
     ),
 
-//    '轴样本' => array(
-//        'sample' => 'Sample.csv',
-//        'sample_items' => 'Sample_Item.csv',
-//    ),
 //    '系统功能' => array(
 //        'wheel' => 'Wheel.csv',
 //        'wheel_item' => 'Wheel_Item.csv',

@@ -22,59 +22,6 @@ class LightningMachine extends SlotsMachine
         parent::clearBuffer();
     }
 
-    /**
-     * 判断feature是否是Lightning2
-     * 海洋机台特有
-     */
-    public function isLightning2($featureId)
-    {
-        if (!$featureId) return false;
-
-        return $this->getFeatureName($featureId) == FEATURE_LIGHTNING_2;
-    }
-
-    /**
-     * 判断是否触发了Lightning
-     */
-    public function isLightningTriggered($features)
-    {
-        if (!$features) return false;
-
-        foreach ($features as $featureId) {
-            if ($this->isLightning($featureId)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * 判断是否触发了Lightning2
-     */
-    public function isLightning2Triggered($features)
-    {
-        if (!$features) return false;
-
-        foreach ($features as $featureId) {
-            if ($this->isLightning2($featureId)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * 获取多列合并后的列号
-     */
-    public function getBigCol(&$cols = null)
-    {
-        $cols = [1, 2, 3, 4, 5];
-
-        return 0;
-    }
-
     protected function checkElements(&$elements)
     {
         $bonusCount = 0;
@@ -111,32 +58,19 @@ class LightningMachine extends SlotsMachine
     {
         $values = array();
 
-        $hitType = 0;//普通spin中未触发Hold&Spin
-        if ($features && $this->isLightningTriggered($features)) {
-            $hitType = 1;//普通spin中触发了Hold&Spin
-        }
-
-        $isLightning2 = $this->isLightning2Triggered($features);
-
         if (!$this->isElementsList($elements)) {
             $elements = $this->elementsToList($elements);
         }
 
-        $bonusValue = null;
         $hitJackpots = array();
         foreach ($elements as $element) {
             $elementId = $element['elementId'];
             if (!$this->isBonusElement($elementId)) continue;
             $col = $element['col'];
             $row = $element['row'];
-            if ($isLightning2 && $bonusValue) {
-                $value = $bonusValue; //freespin中bonus上数值一致，只随机一次
-            } else {
-                $value = $this->getBonusValue($elementId, $hitType, $col, $hitJackpots);
-                if ($this->isJackpotValue($value)) {
-                    $hitJackpots[] = $value;
-                }
-                $bonusValue = $value;
+            $value = $this->getBonusValue($elementId, $hitJackpots);
+            if ($this->isJackpotValue($value)) {
+                $hitJackpots[] = $value;
             }
             $values[$col][$row] = $value;
         }
@@ -168,16 +102,6 @@ class LightningMachine extends SlotsMachine
     }
 
     /**
-     * 由bonus上的数值反推配置值
-     */
-    public function calBonusConfigValue($value, $totalBet, $betMultiple)
-    {
-        $configValue = $value / $totalBet;
-
-        return $configValue;
-    }
-
-    /**
      * 获取触发feature的bonus元素列表
      */
     public function getBonusCollected($featureId, &$collected)
@@ -185,8 +109,6 @@ class LightningMachine extends SlotsMachine
         $collected = 0;
         $bonusElements = array();
 
-        $bigCol = 0;
-        $isLightning2 = $this->isLightning2($featureId);
         $elements = $this->getStepElements();
 
         foreach ($elements as $element) {
@@ -195,9 +117,6 @@ class LightningMachine extends SlotsMachine
             $elementId = $element['elementId'];
             if (!$this->isBonusElement($elementId)) continue;
             $collected++;
-            if ($isLightning2) {
-                if ($col != $bigCol || $row != 1) continue;
-            }
             $values = explode(',', $element['value']);
             foreach ($values as $value) {
                 if (!$this->isBonusValue($value)) continue;

@@ -12,7 +12,6 @@ use FF\Framework\Core\FF;
 use FF\Framework\Utils\Log;
 use FF\Library\Utils\Utils;
 use FF\Machines\Features\BaseFeature;
-use FF\Service\Lib\Service;
 
 abstract class SlotsFeature extends SlotsJackpot
 {
@@ -45,18 +44,6 @@ abstract class SlotsFeature extends SlotsJackpot
         return $this->featureGames[$featureId];
     }
 
-    public function getFeatureNames($featureIds)
-    {
-        $featureNames = array();
-        if (!$featureIds) return $featureNames;
-
-        foreach ($featureIds as $featureId) {
-            $featureNames[] = $this->getFeatureName($featureId);
-        }
-
-        return $featureNames;
-    }
-
     public function getFeatureByName($featureName)
     {
         foreach ($this->featureGames as $featureId => $feature) {
@@ -66,19 +53,6 @@ abstract class SlotsFeature extends SlotsJackpot
         }
 
         return '';
-    }
-
-    public function getFeaturesByName($featureName)
-    {
-        $features = array();
-
-        foreach ($this->featureGames as $featureId => $feature) {
-            if ($feature['featureName'] === $featureName) {
-                $features[] = $featureId;
-            }
-        }
-
-        return $features;
     }
 
     /**
@@ -188,6 +162,7 @@ abstract class SlotsFeature extends SlotsJackpot
     /**
      * 获得前置触发的feature
      * 先出feature，再分配机台元素
+     * @return array
      */
     public function getPreTriggerFeature()
     {
@@ -249,32 +224,14 @@ abstract class SlotsFeature extends SlotsJackpot
             if (!isset($triggerAbleFeatures[$featureId])) continue;
             if (!$this->isTriggerAbleInFeature($featureId, $currFeature, $features)) continue;
             if ($feature['triggerItems']) { //按指定元素触发
-                if ($feature['triggerOnline']) { //必须在中奖线上触发
-                    $triggerLines = $feature['triggerLines'];
-                    foreach ($hitResultIds as $lineId => $resultId) {
-                        $_elements = $this->getElementsOnline($lineId, $elements, true);
-                        if (!in_array('*', $triggerLines) && !in_array($lineId, $triggerLines)) continue;
-                        if ($this->triggerByElements($featureId, $_elements)) {
-                            $features[] = $featureId;
-                        }
-                    }
-                } elseif ($triggerOptions['triggerOnRow']) { // 触发元素必须是同一行
-                    for ($row = 1; $row <= $this->machine['rows']; $row++) {
-                        $_elements = $this->getElementsByRow($row, $elements);
-                        if ($this->triggerByElements($featureId, $_elements)) {
-                            $features[] = $featureId;
-                        }
-                    }
-                } elseif ($triggerOptions['limitOnRow']) { // 触发元素必须在某一行
-                    $_elements = $this->getElementsByRow($triggerOptions['limitOnRow'], $elements);
-                    if ($this->triggerByElements($featureId, $_elements)) {
-                        $features[] = $featureId;
-                    }
-                } else {
-                    if ($this->triggerByElements($featureId, $elements)) {
-                        $features[] = $featureId;
-                    }
+                if (!$this->triggerByElements($featureId, $elements)) {
+                    continue;
                 }
+                if (isset($triggerOptions['ratio']) && !Utils::isHitByRate($triggerOptions['ratio'])) {
+                    continue;
+                }
+                $features[] = $featureId;
+
             } elseif (isset($triggerOptions['ratio'])) { //按固定概率触发
                 //支持中奖和不中奖时触发的概率不同
                 if (is_array($triggerOptions['ratio'])) {
@@ -359,6 +316,7 @@ abstract class SlotsFeature extends SlotsJackpot
         $feature = $this->featureGames[$featureId];
         $triggerItems = $feature['triggerItems'];
         $triggerItemNums = explode('|', $feature['triggerItemNum']);
+        $triggerInReels = $feature['triggerInReels'];
 
         if (strpos($triggerItems, '|')) { //或模式，多个不同元素组合触发(不要求每个元素都出现)
             $triggerItems = explode('|', $triggerItems);
@@ -366,10 +324,16 @@ abstract class SlotsFeature extends SlotsJackpot
             $triggerItems = [$triggerItems];
         }
 
-        $elementsCount = $this->elementsCount($this->elementsToList($elements));
         $triggerItemCount = 0;
-        foreach ($triggerItems as $triggerItem) {
-            $triggerItemCount += $elementsCount[$triggerItem] ?? 0;
+        foreach ($this->elementsToList($elements) as $_element) {
+            if (!in_array($_element['elementId'], $triggerItems)) {
+                continue;
+            }
+            if ($triggerInReels && !in_array($_element['col'], $triggerInReels)) {
+                continue;
+            }
+
+            $triggerItemCount += 1;
         }
 
         $triggered = false;
@@ -379,7 +343,7 @@ abstract class SlotsFeature extends SlotsJackpot
                 continue;
             }
 
-            if ($this->getFeatureAwardFreeSpin($featureId, $feature, $triggerItemCount)) {
+            if (!$this->isFreeGame($featureId) || $this->getFeatureAwardFreeSpin($featureId, $feature, $triggerItemCount)) {
                 $triggered = true;
             }
 
@@ -523,24 +487,6 @@ abstract class SlotsFeature extends SlotsJackpot
     }
 
     /**
-     * 合并feature奖励
-     */
-    protected function mergeFeaturePrizes(&$prizes, $otherPrizes)
-    {
-        foreach ($prizes as $key => $val) {
-            if (!empty($otherPrizes[$key])) {
-                $newVal = $otherPrizes[$key];
-                if (in_array($key, ['coins', 'freespin'])) {
-                    $newVal += $val;
-                } elseif (in_array($key, ['multiple'])) {
-                    $newVal *= $val;
-                }
-                $prizes[$key] = $newVal;
-            }
-        }
-    }
-
-    /**
      * 获取feature奖励
      */
     public function getFeaturePrizes(&$features, &$hitResultIds, $elements)
@@ -588,109 +534,7 @@ abstract class SlotsFeature extends SlotsJackpot
             }
         }
 
-        //处理其他特殊feature奖励
-        foreach ($features as $k => $featureId) {
-            $featureName = $this->getFeatureName($featureId);
-            if ($featureName == FEATURE_WILD_MULTI) {
-                $otherPrizes = $this->getWildMultiPrizes($featureId, $hitResultIds, $elements, $prizes);
-                if ($otherPrizes) $this->mergeFeaturePrizes($prizes, $otherPrizes);
-                if (!empty($otherPrizes['values'])) {
-                    if (!$this->paylines && $this->isRecalculateByWildMulti()) { //全线机台触发了wild翻倍时，需要重算中奖结果
-                        $hitResultIds = $this->getHitResultIds($elements, $otherPrizes['values']);
-                    }
-                } else {
-                    unset($features[$k]);
-                }
-            } else {
-                $otherPrizes = $this->getOtherFeaturePrizes($featureId, $hitResultIds, $elements);
-                if ($otherPrizes) $this->mergeFeaturePrizes($prizes, $otherPrizes);
-            }
-        }
-
         $features = array_values($features);
-
-        return $prizes;
-    }
-
-    /**
-     * 计算Wild翻倍奖励
-     */
-    public function getWildMultiPrizes($featureId, $hitResultIds, $elements, $featurePrizes)
-    {
-        $prizes = array();
-        $prizes['values'] = array();
-
-        $triggerOptions = $this->getTriggerOptions($featureId);
-        $awardLimit = $this->featureGames[$featureId]['itemAwardLimit'];
-        $multiRatios = $triggerOptions['multiRatios'] ?: $awardLimit['multiRatios'];
-        $limitType = $awardLimit['limitType'] ?: '';
-        $multiItems = array();
-        $colMulti = array();
-
-        if ($limitType == 'reel') {
-            $cols = array();
-            $reelRatios = $awardLimit['reelRatios'];
-            $reelNum = (int)Utils::randByRates($awardLimit['numReelRatios']);
-            //当同时触发了掉落wild的feature，则wild翻倍只能出现在掉落的wild上
-            if (!empty($featurePrizes['elements'])) {
-                foreach ($reelRatios as $col => $weight) {
-                    if (!isset($featurePrizes['elements'][$col])) {
-                        unset($reelRatios[$col]);
-                    }
-                }
-            }
-            for ($i = 0; $i < $reelNum; $i++) {
-                if (!$reelRatios) break;
-                $col = (int)Utils::randByRates($reelRatios);
-                unset($reelRatios[$col]);
-                $cols[] = $col;
-            }
-            sort($cols);
-        } else {
-            $cols = array_keys($multiRatios);
-        }
-
-        //按照既定策略筛选出翻倍Wild元素
-        //部分wild翻倍feature特殊，要求整列wild都翻倍，并且倍数一样
-        foreach ($cols as $col) {
-            foreach ($elements[$col] as $row => $elementId) {
-                if (!$this->isWildElement($elementId)) continue;
-                if (is_array($multiRatios[$col])) { //非固定倍数，按权重进行随机
-                    if ($limitType == 'reel' && isset($colMulti[$col])) {
-                        $multiple = $colMulti[$col];
-                    } else {
-                        $multiple = (int)Utils::randByRates($multiRatios[$col]);
-                        if ($limitType == 'reel') {
-                            $colMulti[$col] = $multiple;
-                        }
-                    }
-                } elseif (is_numeric($multiRatios[$col])) { //固定倍数
-                    $multiple = (int)$multiRatios[$col];
-                } else {
-                    break;
-                }
-                if ($multiple <= 1) continue;
-                $multiItems[] = array(
-                    'col' => $col, 'row' => $row, 'value' => (string)$multiple
-                );
-            }
-        }
-
-        //Wild翻倍个数限制
-        if (!empty($triggerOptions['maxNum'])) {
-            if (count($multiItems) > $triggerOptions['maxNum']) {
-                shuffle($multiItems);
-                $multiItems = array_slice($multiItems, 0, $triggerOptions['maxNum']);
-            }
-        }
-
-        foreach ($multiItems as $item) {
-            $prizes['values'][$item['col']][$item['row']] = $item['value'];
-        }
-
-        if ($this->paylines) {
-            $prizes['multiples'] = $this->getLineMultiples($hitResultIds, $elements, $prizes['values']);
-        }
 
         return $prizes;
     }
@@ -720,15 +564,6 @@ abstract class SlotsFeature extends SlotsJackpot
         }
 
         return $multiples;
-    }
-
-    /**
-     * 获取其他特定feature奖励
-     */
-    public function getOtherFeaturePrizes($featureId, $hitResultIds, $elements)
-    {
-        //to override
-        return array();
     }
 
     /**
@@ -974,7 +809,7 @@ abstract class SlotsFeature extends SlotsJackpot
         }
 
         $featureNo = $featureNo ?: $this->genFeatureNo();
-        $activated = $this->isVirtualMode ? true : $this->isAutoActivated($featureId);
+        $activated = $this->isVirtualMode ?: $this->isAutoActivated($featureId);
         $bakFeatures = $this->gameInfo['bakFeatures'];
 
         //feature中触发feature
@@ -1014,21 +849,13 @@ abstract class SlotsFeature extends SlotsJackpot
     }
 
     /**
-     * 设置feature状态为已激活
-     */
-    public function setFeatureActivated()
-    {
-        $this->updateGameInfo(array('activated' => 1));
-    }
-
-    /**
      * 获取当前用户所处feature的详细信息
      */
     public function getFeatureDetail($key = null)
     {
         $featureDetail = $this->gameInfo['featureDetail'];
 
-        return $key ? (isset($featureDetail[$key]) ? $featureDetail[$key] : null) : $featureDetail;
+        return $key ? ($featureDetail[$key] ?? null) : $featureDetail;
     }
 
     /**
@@ -1046,14 +873,6 @@ abstract class SlotsFeature extends SlotsJackpot
     }
 
     /**
-     * 设置feature临时数据
-     */
-    public function setFeatureData($featureId, $data)
-    {
-        $this->featureData[$featureId] = $data;
-    }
-
-    /**
      * 恢复FreeGame时，获取需要传递给用户的feature详情
      */
     public function getFreeGameDetailOnResume()
@@ -1064,7 +883,7 @@ abstract class SlotsFeature extends SlotsJackpot
     /**
      * 清除用户当前feature信息
      */
-    public function clearFeature($byRunOptions = false)
+    public function clearFeature()
     {
         Log::info('clearFeature, featureId = ' . $this->getCurrFeature(), 'slotsGame.log');
 
@@ -1109,16 +928,6 @@ abstract class SlotsFeature extends SlotsJackpot
     public function isChooseMode($featureId)
     {
         return $this->featureGames[$featureId]['chooseMode'] == 1;
-    }
-
-    /**
-     * 当用户选择Feature模式时的逻辑
-     */
-    public function onChooseFeature($choosed)
-    {
-        $featureId = $this->getCurrFeature();
-
-        return Feature::chooser($this, $featureId)->onChoose($choosed);
     }
 
     /**
@@ -1431,7 +1240,7 @@ abstract class SlotsFeature extends SlotsJackpot
         $freespinAward = $this->featureGames[$featureId]['freespinAward'];
         $featureName = $this->featureGames[$featureId]['featureName'];
 
-        if ($freespinAward || in_array($featureName, [FEATURE_FREE_SPIN])) {
+        if ($freespinAward || $featureName === FEATURE_FREE_SPIN) {
             return true;
         } elseif (strpos($featureName, FEATURE_FREE_SPIN) !== false) {
             return true;
@@ -1535,14 +1344,6 @@ abstract class SlotsFeature extends SlotsJackpot
     }
 
     /**
-     * 初始 Bingo 机台的 area
-     */
-    public function initMachineBingoArea()
-    {
-        return [];
-    }
-
-    /**
      * 获取掉落的元素ID
      */
     public function getDropElementIdInFeature($dropElement)
@@ -1605,8 +1406,7 @@ abstract class SlotsFeature extends SlotsJackpot
         }
 
         // 下注次序
-        $betSeq = $this->getAnalysisInfo('totalSpinTimes');
-        $spinTimes = $this->gameInfo['spinTimes'];
+        $betSeq = $this->getAnalysisInfo('spinTimes');
 
         // 重写 betContext
         $betContext = $this->getBetContext();
@@ -1615,9 +1415,9 @@ abstract class SlotsFeature extends SlotsJackpot
 
         //下注日志
         Bll::log()->addBetLog(
-            $betId, $this->uid, $this->machineId, $this->userInfo['level'],
-            $betSeq, $spinTimes, $betContext, [], [], $prizes, false, $this->balance,
-            Bll::session()->get('version'), $featureSteps
+            $betId, $this->uid, $this->machineId, $this->getUserInfo('level'),
+            $betSeq, $betContext, [], [], $prizes, 'false', $this->getBalance(),
+            Bll::session()->get('version'),$featureSteps
         );
     }
 

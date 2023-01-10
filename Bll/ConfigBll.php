@@ -9,8 +9,6 @@ use FF\Factory\Bll;
 use FF\Factory\Dao;
 use FF\Factory\Keys;
 use FF\Factory\Model;
-use FF\Framework\Common\DBResult;
-use FF\Framework\Core\FF;
 use FF\Framework\Utils\Config;
 use FF\Library\Utils\CsvReader;
 use FF\Library\Utils\Importer;
@@ -193,7 +191,7 @@ class ConfigBll
     {
         $data = Utils::loadCsv($sourceFile);
         $betUnlocks = [];
-        foreach($data as $row) {
+        foreach ($data as $row) {
             $betUnlocks[] = $row['Value'];
         }
 
@@ -246,7 +244,7 @@ class ConfigBll
                 'activeBalance' => (array)json_decode($row['Assets'], true),
                 'activeLevel' => (array)json_decode($row['Active_Bet_Level'], true),
                 'awardByBet' => true,
-                'betAddition' => (float)($row['Bet_Addition']??0),
+                'betAddition' => (float)($row['Bet_Addition'] ?? 0),
                 'duration' => (int)$row['Duration'],
                 'growthMultiple' => 1,
                 'relatedMachineIds' => [],
@@ -259,144 +257,6 @@ class ConfigBll
         ksort($config);
 
         $this->createConfigFile('machine/jackpots', $config, $version);
-    }
-
-    public function initInterveneConfig($sourceFile)
-    {
-        $config = array();
-        $data = Utils::loadCsv($sourceFile);
-
-        foreach ($data as $row) {
-            $config[$row['Intervention_Name']] = array(
-                'trigItem' => $row['Trig_Item'],
-                'trigItemNum' => $this->parseValue($row['Trig_Item_Num']),
-                'trigCondition' => $this->parseValue($row['Trig_Condition']),
-                'trigProbability' => $this->parseValue($row['Trig_Probability']),
-                'trigOptions' => $this->parseValue($row['Trig_Options']),
-                'trigAgainProbability' => $this->parseValue($row['Trig_Again_Probability']),
-                'trigTimes' => $this->parseValue($row['Trig_Times']),
-                'endCondition' => $this->parseValue($row['End_Condition']),
-                'endEvent' => $this->parseValue($row['End_Event']),
-                'priority' => $this->parseValue($row['Priority']),
-            );
-        }
-
-        $this->createConfigFile('machine/intervene', $config);
-    }
-
-    public function initInterveneNoviceConfig($sourceFile)
-    {
-        $config = array();
-        $data = Utils::loadCsv($sourceFile);
-
-        foreach ($data as $row) {
-            $config[$row['Machine_Id']][$row['User_Group']][$row['Hit_SpinNum']] = array(
-                'hitEvent' => (int)$row['Hit_Event'],
-                'hitCondition' => json_decode($row['Hit_Condition'] ?: '{}', true),
-                'hitFeature' => $row['Hit_Feature'],
-                'hitRatio' => $row['Hit_Ratio'],
-                'sampleGroup' => $row['Sample_Group']
-            );
-        }
-
-        $this->createConfigFile('machine/intervene-novice', $config);
-    }
-
-    public function initInterveneExtremeConfig($sourceFile)
-    {
-        $config = array();
-        $data = Utils::loadCsv($sourceFile);
-
-        foreach ($data as $row) {
-            $config[$row['Machine_Id']] = array(
-                'maxBetRatio' => (int)$row['maxBetRatio'],
-                'maxBalance' => (int)$row['maxBalance'],
-                'maxNoBigWin' => json_decode($row['maxNoBigWin'], true),
-                'bigWinMultiple' => json_decode($row['bigWinMultiple'], true),
-                'randomElements' => $row['bigWinType'],
-                'maxNoWin' => json_decode($row['maxNoWinSpin'], true),
-                'maxNoFeature' => json_decode($row['maxNoFeature'], true),
-                'winFeature' => json_decode($row['winFeature'], true),
-            );
-        }
-
-        $this->createConfigFile('machine/intervene-extreme', $config);
-    }
-
-    public function initInterveneExperienceConfig($sourceFile)
-    {
-        $config = array();
-        $data = Utils::loadCsv($sourceFile);
-
-        foreach ($data as $row) {
-            $hitSpinNumRatio = json_decode($row['Hit_SpinNum_Ratio'], true);
-
-            foreach ($hitSpinNumRatio as $hitSpinNum => $hitRatio) {
-                $config[$row['Machine_Id']][$row['User_Group']][$hitSpinNum] = array(
-                    'hitCondition' => json_decode($row['Hit_Condition'] ?: '{}', true),
-                    'hitFeature' => $row['Hit_Feature'],
-                    'hitRatio' => $hitRatio,
-                );
-            }
-        }
-
-        $this->createConfigFile('machine/intervene-experience', $config);
-    }
-
-    public function initInterveneRechargeConfig($sourceFile)
-    {
-        $config = array();
-        $data = Utils::loadCsv($sourceFile);
-
-        foreach ($data as $row) {
-            $config[$row['Machine_Id']] = array(
-                'winFeature' => json_decode($row['winFeature'], true),
-            );
-        }
-
-        $this->createConfigFile('machine/intervene-recharge', $config);
-    }
-
-    public function initBankruptUserConfig($sourceFile)
-    {
-        $config = array();
-        $data = Utils::loadCsv($sourceFile);
-
-        foreach ($data as $row) {
-            $config[$row['ABTest']][$row['User_Group']] = array(
-                'userGroup' => $row['User_Group'],
-                'isBankrupt' => (boolean)$row['Bankrupt'],
-                'isRecharge' => (boolean)$row['Recharge'],
-                'registerDate' => $this->parseValue($row['Register_Date']),
-                'betRatio' => $this->parseValue($row['Bet_Ratio']),
-                'hitRatio' => $row['Hit_Ratio'],
-                'loginDays' => $row['Login_Days'],
-                'hitCD' => $row['Hit_CD'],
-                'noHitCD' => $row['No_Hit_CD'],
-                'winType' => $row['Bigwin_Type'],
-            );
-        }
-
-        $this->createConfigFile('machine/bankrupt-user', $config);
-    }
-
-    public function initInterveneBankruptConfig($sourceFile)
-    {
-        $config = array();
-        $data = Utils::loadCsv($sourceFile);
-
-        foreach ($data as $row) {
-            $config[$row['Machine_Id']] = array(
-                'machineId' => $row['Machine_Id'],
-                'judgeLeft' => $row['Judge_Left'],
-                'betRaise' => $row['Bet_Raise'],
-                'betReduce' => $row['Bet_Reduce'],
-                'coinMultiple' => $row['Coin_Multiple'],
-                'winFeature' => $this->parseValue($row['winFeature']),
-            );
-        }
-
-        $this->createConfigFile('machine/intervene-bankrupt', $config);
     }
 
     public function initWheelConfig($sourceFile)
@@ -437,37 +297,45 @@ class ConfigBll
         $this->createConfigFile('feature/wheel-items', $config, $version);
     }
 
-    public function initAdRewardConfig($sourceFile)
+    public function initHoldAndSpinConfig($sourceFile)
     {
         $config = array();
         $data = Utils::loadCsv($sourceFile);
-
         foreach ($data as $row) {
-            $seq = (int)$row['seq'];
-            $adData = array(
-                'type' => (int)$row['type'],
-                'seq' => $seq,
-                'id' => $row['ID'],
-                'adName' => $row['adName'],
-                'coolTime' => $this->parseValue($row['coolTime']),
-                'timesLimit' => $this->parseValue($row['timesLimit']),
-                'registerDaysMin' => $this->parseValue($row['registerDaysMin']),
-                'totalPaidMax' => $this->parseValue($row['totalPaidMax']),
-                'lastPayTimeMin' => $this->parseValue($row['lastPayTimeMin']),
-                'isOpen' => $row['isOpen'],
-                'reward' => json_decode($row['Reward'] ?: '{}', true),
-                'options' => json_decode($row['Options'] ?: '{}', true),
+            $config[$row['Machine_id']][$row['Ball_Num']] = array(
+                'bonusElements' => json_decode($row['Ball_Elements'], true),
+                'weights' => array(
+                    (int)$row['Drop_Weight1'],
+                    (int)$row['Drop_Weight2'],
+                    (int)$row['Drop_Weight3'],
+                    (int)$row['Drop_Weight4'],
+                    (int)$row['Drop_Weight5']
+                )
             );
-            //将数字型的金币奖励配置统一为数组格式
-            if ($adData['reward'] && is_numeric($adData['reward'])) {
-                $adData['reward'] = array(
-                    ITEM_COINS => $adData['reward']
-                );
-            }
-            $config[$row['adName']] = $adData;
         }
 
-        $this->createConfigFile('common/ad_reward', $config);
+        $this->createConfigFile('machine/hold-and-spin', $config);
+    }
+
+    public function initBonusValueConfig($sourceFile)
+    {
+        $config = array();
+        $data = Utils::loadCsv($sourceFile);
+        $jackpots = Config::get('machine/jackpots');
+        foreach ($data as $row) {
+            $machineId = $row['Machine_Id'];
+            $featureName = $row['Feature_Name'] ?: 'Base';
+            $multiples = explode('|', $row['Multiple']);
+            $weights = explode('|', $row['Weight']);
+            foreach ($multiples as $index => $multiple) {
+                if ($multiple < 0) {
+                    $multiple = $jackpots[$machineId][abs($multiple)]['jackpotName'] ?? 1;
+                }
+                $config[$machineId][$featureName][$multiple] = (int)($weights[$index] ?? 0);
+            }
+        }
+
+        $this->createConfigFile('machine/bonus-ball-value', $config);
     }
 
     protected function getInitConfigSql($table, $machineId)

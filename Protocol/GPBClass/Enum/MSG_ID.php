@@ -118,6 +118,12 @@ class MSG_ID
      */
     const MSG_WHEEL_SPIN = 4004;
     /**
+     *进行pickGame
+     *
+     * Generated from protobuf enum <code>MSG_PLAY_PICK_GAME = 4005;</code>
+     */
+    const MSG_PLAY_PICK_GAME = 4005;
+    /**
      *等级奖励通知
      *
      * Generated from protobuf enum <code>MSG_NTF_LEVEL_PRIZE = 7001;</code>

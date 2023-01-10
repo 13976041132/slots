@@ -29,9 +29,9 @@ const ITEM_JACKPOT = 'I901';
 const FEATURE_FREE_SPIN = 'FreeSpin';
 const FEATURE_WILD_MULTI = 'Wild Multi';
 const FEATURE_LIGHTNING = 'Lightning';
-const FEATURE_LIGHTNING_2 = 'Lightning2';
 const FEATURE_HOLD_AND_SPIN = 'HoldSpin';
 const FEATURE_COLLECT_GAME = 'Collect';
+const FEATURE_PICK_GAME = 'PickGame';
 
 const EVENT_LOGIN = 'Login';
 const EVENT_LOGS = 'Logs';

@@ -31,12 +31,6 @@ class PB_JackpotPickResult extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>int32 pickTimes = 3;</code>
      */
     private $pickTimes = 0;
-    /**
-     *是否pick到了wildBoost牌 0:否 1:是
-     *
-     * Generated from protobuf field <code>int32 hasWildBoost = 4;</code>
-     */
-    private $hasWildBoost = 0;
 
     public function __construct() {
         \GPBMetadata\PBJackpotPickGame::initOnce();
@@ -117,32 +111,6 @@ class PB_JackpotPickResult extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkInt32($var);
         $this->pickTimes = $var;
-
-        return $this;
-    }
-
-    /**
-     *是否pick到了wildBoost牌 0:否 1:是
-     *
-     * Generated from protobuf field <code>int32 hasWildBoost = 4;</code>
-     * @return int
-     */
-    public function getHasWildBoost()
-    {
-        return $this->hasWildBoost;
-    }
-
-    /**
-     *是否pick到了wildBoost牌 0:否 1:是
-     *
-     * Generated from protobuf field <code>int32 hasWildBoost = 4;</code>
-     * @param int $var
-     * @return $this
-     */
-    public function setHasWildBoost($var)
-    {
-        GPBUtil::checkInt32($var);
-        $this->hasWildBoost = $var;
 
         return $this;
     }

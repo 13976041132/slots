@@ -11,6 +11,7 @@ use FF\Framework\Core\FF;
 use FF\Framework\Utils\Config;
 use FF\Library\Utils\Utils;
 use FF\Machines\SlotsModel\LightningMachine;
+use function Swoole\Coroutine\Http\request;
 
 class Lightning extends BaseFeature
 {
@@ -50,15 +51,7 @@ class Lightning extends BaseFeature
 
     public function onResume()
     {
-        $data = $this->machineObj->getFeatureDetail();
-
-        if ($this->machineObj->isLightning2($this->featureId)) {
-            $data['bigCol'] = $this->machineObj->getBigCol();
-        } else {
-            $data['bigCol'] = 0;
-        }
-
-        return $data;
+        return $this->machineObj->getFeatureDetail();
     }
 
     protected function isSpinAble()
@@ -89,15 +82,16 @@ class Lightning extends BaseFeature
                 if ($this->timesResetAble && $hitResult['newCollected']) {
                     $featureDetail['times'] = $this->initTimes;
                     $featureDetail['round'] = 1;
-                    $featureDetail['timesHit'] = 0;
                 }
             } else {
                 $featureDetail['times'] = 0;
             }
-        } else {
-            if ($featureDetail['times']) {
-                $featureDetail['round']++;
-            }
+        } elseif ($featureDetail['times']) {
+            $featureDetail['round']++;
+        }
+
+        if ($this->currentTimes == 1) {
+            $featureDetail['timesHit'] = $this->timesHit;
         }
 
         if ($featureDetail['times'] == 0) {
@@ -146,8 +140,7 @@ class Lightning extends BaseFeature
         }
 
         // 下注次序
-        $betSeq = $_this->getAnalysisInfo('totalSpinTimes');
-        $spinTimes = $_this->getGameInfo('spinTimes');
+        $betSeq = $_this->getAnalysisInfo('spinTimes');
 
         // 重写下注结果
         $resultSteps = $this->checkResultSteps($detail, $result);
@@ -161,7 +154,7 @@ class Lightning extends BaseFeature
         //下注日志
         Bll::log()->addBetLog(
             $betId, $this->uid, $this->machineId, $_this->getUserInfo('level'),
-            $betSeq, $spinTimes, $betContext, $resultSteps, [], $prizes, $settled, $_this->getBalance(),
+            $betSeq, $betContext, $resultSteps, [], $prizes, $settled, $_this->getBalance(),
             Bll::session()->get('version')
         );
     }
@@ -256,9 +249,7 @@ class Lightning extends BaseFeature
      */
     public function getHitResult($featureDetail)
     {
-        $hitResult = $this->getHitResultByConfig($featureDetail);
-
-        return $hitResult;
+        return $this->getHitResultByConfig($featureDetail);
     }
 
     /**
@@ -266,15 +257,21 @@ class Lightning extends BaseFeature
      */
     public function getHitResultByConfig($featureDetail)
     {
-        if (!$featureDetail['timesHit']) {
-            $config = $this->getConfig($featureDetail['collected']);
-            $this->timesHit = Utils::randByRates($config['timesDropWeight']) + 1;
+        if ($this->initTimes - $featureDetail['times'] == 1) {
+            $timesHit = max(1, $featureDetail['timesHit']);
+            $config = $this->machineObj->getFeatureConfig($this->featureId);
+            $timesResetRound = $config['itemAwardLimit']['resetRound'][$timesHit] ?? [];
+            if (!$timesResetRound) {
+                $nextTimesHit = rand(1, $this->initTimes);
+            } else {
+                $nextTimesHit = Utils::randByRates($timesResetRound) + 1;
+            }
+            $this->timesHit = $nextTimesHit;
         } else {
             $this->timesHit = $featureDetail['timesHit'];
         }
 
         $this->currentTimes = $this->initTimes - $featureDetail['times'];
-
         $collected = $featureDetail['collected'];
         $elements = $featureDetail['elements'] ?: array();
         $round = $featureDetail['round'] ?: 1;
@@ -391,19 +388,12 @@ class Lightning extends BaseFeature
             return $hitResult;
         }
 
-        //扫描出已中的jackpot
-        $hitJackpots = array();
-        foreach ($elements as $element) {
-            if ($this->machineObj->isJackpotValue($element['value'])) {
-                $hitJackpots[] = $element['value'];
-            }
-        }
+        if (!$holdSpinCfg = $this->getConfig($collected)) return $hitResult;
 
-        $holdSpinCfg = $this->getConfig($collected);
+        $dropCnt = Utils::randByRates($holdSpinCfg['weights']);
 
-        if (!$holdSpinCfg) return $hitResult;
+        if ($dropCnt == 0) return $hitResult;
 
-        $dropCnt = Utils::randByRates($holdSpinCfg['weight']);
         $preCollected = $collected;
         $totalCollected = $collected;
 
@@ -411,25 +401,19 @@ class Lightning extends BaseFeature
         shuffle($validSheets);
 
         for ($i = 1; $i <= $dropCnt; $i++) {
-
             if (!$validSheets) break;
 
+            $value = '';
             $sheet = array_pop($validSheets);
             $col = $sheet['col'];
             $row = $sheet['row'];
             $elementId = Utils::randByRates($holdSpinCfg['bonusElements']);
 
             if ($this->machineObj->isBonusElement($elementId)) {
-                $value = $this->machineObj->getBonusValue($elementId, 2, $col, $hitJackpots);
-            } else {
-                $value = '';
+                $value = $this->machineObj->getBonusValue($elementId, []);
             }
-            $element = array(
-                'elementId' => $elementId,
-                'col' => $col,
-                'row' => $row,
-                'value' => $value
-            );
+
+            $element = array('elementId' => $elementId, 'col' => $col, 'row' => $row, 'value' => $value);
             $hitResult['elements'][] = $element;
             $newCollected = $this->getNewCollectCount($element);
             $totalCollected += $newCollected;
@@ -466,18 +450,10 @@ class Lightning extends BaseFeature
         $validSheets = array();
         $sheetGroup = $_this->getSheetGroup($this->featureId);
 
-        $bigCol = 0;
-        $isLightning2 = $_this->isLightning2($this->featureId);
         $elements = $_this->elementsListToPoint($elements);
-
 
         //过滤出可用的格子
         foreach ($sheetGroup as $col => $sheets) {
-            if ($isLightning2) {
-                if ($col >= $bigCol - 1 && $col <= $bigCol + 1) {
-                    continue;
-                }
-            }
             foreach ($sheets as $row => $sheet) {
                 if (!isset($elements[$col][$row])) {
                     $validSheets[] = $sheet;
@@ -565,54 +541,23 @@ class Lightning extends BaseFeature
         //to override
     }
 
-    public function bonusValueMerge($bonusVal1, $bonusVal2, $multiple = 1)
-    {
-        $bonusVal1s = explode(',', $bonusVal1);
-        $bonusVal2s = is_array($bonusVal2) ? $bonusVal2 : explode(',', $bonusVal2);
-        $bonusValues = array_merge($bonusVal1s, $bonusVal2s);
-        $jackNames = [];
-        $totalValue = 0;
-        foreach ($bonusValues as $value) {
-            if (is_numeric($value)) {
-                $totalValue = bcadd($totalValue, $value) * $multiple;
-                continue;
-            }
-
-            $jackNames = array_merge($jackNames, array_pad([], $multiple, $value));
-        }
-        sort($jackNames);
-
-        $values = array_merge([$totalValue], $jackNames);
-
-        return implode(',', array_filter($values));
-    }
-
     /**
      * 获取feature配置项
      * 使用了新的配置
      */
-    protected function getConfig($key)
+    protected function getConfig($collect)
     {
         if ($this->featureCfg) {
-            return $this->featureCfg[$key] ?? null;
+            return $this->featureCfg[$collect] ?? null;
         }
 
-        $configs = Config::get('feature/hold-and-spin-new', "{$this->machineId}");
+        $configs = Config::get('machine/hold-and-spin', "{$this->machineId}");
         if (!$configs) {
             FF::throwException(Code::SYSTEM_ERROR, "Lightning config for {$this->machineId} is missed");
         }
-        foreach ($configs as $bonusNum => $rows) {
-            foreach ($rows as $row) {
+        $this->featureCfg = $configs;
 
-                $this->featureCfg[$bonusNum] = $row;
-                break;
-            }
-        }
+        return $this->featureCfg[$collect] ?? [];
 
-        if (empty($this->featureCfg)) {
-            FF::throwException(Code::SYSTEM_ERROR, "Lightning config for {$this->machineId} is missed");
-        }
-
-        return $this->featureCfg[$key] ?? null;
     }
 }

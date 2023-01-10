@@ -14,7 +14,6 @@ abstract class SlotsJackpot extends SlotsHitResult
     protected $jackpotPots = array();
     protected $jackpotProgressAdd = 0;
     protected $jackpotItemCount = 0;
-    protected $jackpotHitRepeatedAble = false;
 
     public function clearBuffer()
     {
