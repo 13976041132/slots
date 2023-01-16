@@ -8,23 +8,97 @@
     <script type="text/javascript" src="{{$JS_URL}}/jquery.1.7.2.min.js"></script>
     <script type="text/javascript" src="{{$JS_URL}}/common.js?v={{$VER}}"></script>
     <style>
-        .fa-plus-square-o:before, .fa-minus-square-o:before {color: gray;}
-        .panel {margin: 0; height: 100%; box-sizing: border-box; position: relative;}
-        .panel-head {width: 100%; box-sizing: border-box; border-bottom: 1px solid white;}
-        .panel-body {height: 100%; overflow: auto; box-sizing: border-box;}
-        #container {display: flex; flex-direction: row; position: fixed; left: 0; right: 0; top: 0; bottom: 0;}
-        #api-list, #api-detail, #api-response {padding: 5px;}
-        #api-detail {min-width: 500px;}
-        #api-response {flex: 1;}
-        #api-list li {padding: 5px 10px; margin: 5px 0; cursor: pointer; background: #f0f0f0;}
-        #api-list li.selected {background: orange; color: white;}
-        #api-detail li {padding: 5px; margin: 5px;}
-        #api-detail label {width: 100px; display: inline-block; text-align: right; margin-right: 10px;}
-        #api-info {height: 250px;}
-        #api-protocol, #api-params {height: auto;}
-        #api-params .panel-body {min-height: 50px;}
-        #api-params input {width: 135px; height: 20px; line-height: 20px;}
-        #api-params comment {color: grey; margin-left: 10px;}
+        .fa-plus-square-o:before, .fa-minus-square-o:before {
+            color: gray;
+        }
+
+        .panel {
+            margin: 0;
+            height: 100%;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .panel-head {
+            width: 100%;
+            box-sizing: border-box;
+            border-bottom: 1px solid white;
+        }
+
+        .panel-body {
+            height: 100%;
+            overflow: auto;
+            box-sizing: border-box;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: row;
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+        }
+
+        #api-list, #api-detail, #api-response {
+            padding: 5px;
+        }
+
+        #api-detail {
+            min-width: 500px;
+        }
+
+        #api-response {
+            flex: 1;
+        }
+
+        #api-list li {
+            padding: 5px 10px;
+            margin: 5px 0;
+            cursor: pointer;
+            background: #f0f0f0;
+        }
+
+        #api-list li.selected {
+            background: orange;
+            color: white;
+        }
+
+        #api-detail li {
+            padding: 5px;
+            margin: 5px;
+        }
+
+        #api-detail label {
+            width: 100px;
+            display: inline-block;
+            text-align: right;
+            margin-right: 10px;
+        }
+
+        #api-info {
+            height: 250px;
+        }
+
+        #api-protocol, #api-params {
+            height: auto;
+        }
+
+        #api-params .panel-body {
+            min-height: 50px;
+        }
+
+        #api-params input {
+            width: 135px;
+            height: 20px;
+            line-height: 20px;
+        }
+
+        #api-params comment {
+            color: grey;
+            margin-left: 10px;
+        }
     </style>
     <script type="text/javascript">
         var RES_VER = '{{$RES_VER}}';
@@ -54,21 +128,36 @@
             <div id="api-protocol" class="panel-body hide">
                 <table style="text-align: left">
                     <tr>
-                        <th>URL</th><th><span style="font-weight: normal;">{{$BASE_URL}}</span></th>
+                        <th>URL</th>
+                        <th><span style="font-weight: normal;">{{$BASE_URL}}</span></th>
                     </tr>
                     <tr>
-                        <th>Method</th><th><span style="font-weight: normal;">HTTP / POST</span></th>
+                        <th>Method</th>
+                        <th><span style="font-weight: normal;">HTTP / POST</span></th>
                     </tr>
                     <tr>
-                        <th>Content-Type</th><th><span style="font-weight: normal;">application/x-www-form-urlencoded</span></th>
+                        <th>Content-Type</th>
+                        <th><span style="font-weight: normal;">application/x-www-form-urlencoded</span></th>
                     </tr>
                     <tr>
                         <th colspan="2">Params</th>
                     </tr>
-                    <tr><td>c</td><td>消息ID[MSG_ID]</td></tr>
-                    <tr><td>k</td><td>API参数序列化字符串(pbuf需要转base64)</td></tr>
-                    <tr><td>s</td><td>SessionId</td></tr>
-                    <tr><td>f</td><td>消息格式[json|pbuf]</td></tr>
+                    <tr>
+                        <td>c</td>
+                        <td>消息ID[MSG_ID]</td>
+                    </tr>
+                    <tr>
+                        <td>k</td>
+                        <td>API参数序列化字符串(pbuf需要转base64)</td>
+                    </tr>
+                    <tr>
+                        <td>s</td>
+                        <td>SessionId</td>
+                    </tr>
+                    <tr>
+                        <td>f</td>
+                        <td>消息格式[json|pbuf]</td>
+                    </tr>
                 </table>
             </div>
             <div class="panel-head">API信息</div>
@@ -92,6 +181,7 @@
 </div>
 <script type="text/javascript">
     (function () {
+        var uid = 10000;
         $(document).ready(function () {
             $('#api-list').find('li').click(function () {
                 $(this).siblings().removeClass('selected');
@@ -140,9 +230,10 @@
                 var key = $(this).attr('name');
                 params[key] = $(this).val();
             });
-            var data = {msgId: msgId, params: params};
+            var data = {msgId: msgId, params: params,uid:uid};
             $("#json-viewer").html('');
             ajaxRequest('/ApiTest/getResponse', data, function (data) {
+                if (msgId === 2000) uid = data['roleInfo']['uid'];
                 showResponse({code: 0, message: '', data: data});
             }, function (code, message) {
                 showResponse({code: code, message: message, data: null});
