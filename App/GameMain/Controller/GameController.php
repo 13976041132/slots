@@ -93,7 +93,6 @@ class GameController extends BaseController
         $feature = $this->getParam('feature', false);
         $clear = $this->getParam('clear', false);
         $hit = $this->getParam('hit', false);
-        $otherOptions = $this->getParam('options', false);
 
         if ($winType || $feature || $clear || $hit) {
             $machineObj = $this->getMachineObj();
@@ -115,9 +114,6 @@ class GameController extends BaseController
         }
         if ($hit) {
             $options['hit'] = $hit;
-        }
-        if ($otherOptions) {
-            $options['otherOptions'] = json_decode($otherOptions, true);
         }
 
         return $options;

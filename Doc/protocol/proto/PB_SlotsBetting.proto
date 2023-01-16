@@ -10,8 +10,8 @@ message PB_SlotsBetting_Req {
     int64 totalBet = 1; //下注额
     int32 winType = 2; //指定中奖类型(测试专用)
     string feature = 3; //指定中feature，逗号分隔(测试专用)
-    bool clear = 4; //是否清除当前feature(测试专用)
-    bool hit = 5; //是否必中奖(测试专用)
+    bool clear = 4; //是否清除当前feature(测试专用,true, false)
+    bool hit = 5; //是否必中奖(测试专用,true, false)
 }
 
 message PB_SlotsBetting_Res {

@@ -32,13 +32,13 @@ class PB_SlotsBetting_Req extends \Google\Protobuf\Internal\Message
      */
     private $feature = '';
     /**
-     *是否清除当前feature(测试专用)
+     *是否清除当前feature(测试专用,true, false)
      *
      * Generated from protobuf field <code>bool clear = 4;</code>
      */
     private $clear = false;
     /**
-     *是否必中奖(测试专用)
+     *是否必中奖(测试专用,true, false)
      *
      * Generated from protobuf field <code>bool hit = 5;</code>
      */
@@ -128,7 +128,7 @@ class PB_SlotsBetting_Req extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     *是否清除当前feature(测试专用)
+     *是否清除当前feature(测试专用,true, false)
      *
      * Generated from protobuf field <code>bool clear = 4;</code>
      * @return bool
@@ -139,7 +139,7 @@ class PB_SlotsBetting_Req extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     *是否清除当前feature(测试专用)
+     *是否清除当前feature(测试专用,true, false)
      *
      * Generated from protobuf field <code>bool clear = 4;</code>
      * @param bool $var
@@ -154,7 +154,7 @@ class PB_SlotsBetting_Req extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     *是否必中奖(测试专用)
+     *是否必中奖(测试专用,true, false)
      *
      * Generated from protobuf field <code>bool hit = 5;</code>
      * @return bool
@@ -165,7 +165,7 @@ class PB_SlotsBetting_Req extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     *是否必中奖(测试专用)
+     *是否必中奖(测试专用,true, false)
      *
      * Generated from protobuf field <code>bool hit = 5;</code>
      * @param bool $var
