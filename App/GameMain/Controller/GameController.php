@@ -7,7 +7,6 @@ namespace FF\App\GameMain\Controller;
 
 use FF\Factory\Bll;
 use FF\Framework\Core\FF;
-use FF\Framework\Utils\Log;
 use FF\Machines\SlotsModel\MachineCollectionTrait;
 use FF\Machines\SlotsModel\SlotsMachine;
 use GPBClass\Enum\MSG_ID;
@@ -130,8 +129,7 @@ class GameController extends BaseController
             FF::throwException(RET::FAILED, 'player spin  disable, Because spin is not over yet');
         }
 
-        $machineObj = $this->getMachineObj();
-        if ($machineObj->getMember('unlockLevel') > Bll::user()->getLevel($this->getUid())) {
+        if ($this->getMachineObj()->getMember('unlockLevel') > Bll::user()->getLevel($this->getUid())) {
             FF::throwException(RET::FAILED, 'machine is not unlocked');
         }
 
@@ -139,11 +137,11 @@ class GameController extends BaseController
 
         $totalBet = $this->getParam('totalBet', false, 0);
         $options = !FF::isProduct() ? $this->getRunOptions() : array();
-        $data = $machineObj->run($totalBet, $options);
+        $data = $this->getMachineObj()->run($totalBet, $options);
+
         Bll::session()->save(['isSpinning' => false]);
 
         return $data;
-
     }
 
     public function initJackpots()
