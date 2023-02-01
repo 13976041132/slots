@@ -119,17 +119,7 @@ abstract class SlotsDecider extends SlotsFeature
      */
     public function getRandomElements()
     {
-        $featureName = 'Base';
-        if ($this->isFreeSpin()) {
-            $featureName = $this->getFeatureName($this->getCurrFeature());
-        }
-
-        if (!$this->elementReelWeights[$featureName]) {
-            Log::error("Machine item reel weights config  do not configure {$featureName}", 'slotsGame.log');
-            FF::throwException(Code::FAILED);
-        }
-
-        $elementReelWeights = $this->elementReelWeights[$featureName];
+        $elementReelWeights = $this->getElementReelWeights();
         $sheetGroup = $this->getSheetGroup();
 
         while (1) {
@@ -156,6 +146,22 @@ abstract class SlotsDecider extends SlotsFeature
 
         return $elements;
     }
+
+    public function getElementReelWeights()
+    {
+        $featureName = 'Base';
+        if ($this->isFreeSpin()) {
+            $featureName = $this->getFeatureName($this->getCurrFeature());
+        }
+
+        if (!$this->elementReelWeights[$featureName]) {
+            Log::error("Machine item reel weights config  do not configure {$featureName}", 'slotsGame.log');
+            FF::throwException(Code::FAILED);
+        }
+
+        return $this->elementReelWeights[$featureName];
+    }
+
 
     /**
      * 元素消除玩法
@@ -302,7 +308,7 @@ abstract class SlotsDecider extends SlotsFeature
     {
         $currFeatureId = $this->getCurrFeature();
         $featureName = $currFeatureId ? $this->getFeatureName($currFeatureId) : 'Base';
-        $bonusBallValueRates = Config::get("machine/bonus-ball-value" , $this->machineId);
+        $bonusBallValueRates = Config::get("machine/bonus-ball-value", $this->machineId);
         $bonusHitRates = $bonusBallValueRates[$featureName] ?? $bonusBallValueRates['Base'];
 
         //jackpot未解锁或者已经中过了，则去掉该jackpot

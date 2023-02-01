@@ -7,6 +7,26 @@ use FF\Machines\SlotsModel\SlotsMachine;
 
 class Buffalo extends SlotsMachine
 {
+    public function checkElements(&$elements)
+    {
+        if (!$this->isFreeSpin()) return true;
+
+        $elementReelWeights = $this->getElementReelWeights();
+        foreach ($elements as $col => $rowElements) {
+            $colWildCnt = 0;
+            foreach ($rowElements as $row => $elementId) {
+                if (!$this->isWildElement($elementId)) continue;
+                while ($colWildCnt) {
+                    $hitElementId = (string)Utils::randByRates($elementReelWeights[$row]);
+                    if ($this->isWildElement($hitElementId)) continue;
+                    $elements[$col][$row] = $hitElementId;
+                    break;
+                }
+                $colWildCnt++;
+            }
+        }
+    }
+
     public function checkFeaturePrizes(&$features, &$featurePrizes, $elements)
     {
         if (!$this->isFreeSpin()) {
