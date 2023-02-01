@@ -25,6 +25,8 @@ class Buffalo extends SlotsMachine
                 $colWildCnt++;
             }
         }
+
+        return true;
     }
 
     public function checkFeaturePrizes(&$features, &$featurePrizes, $elements)
