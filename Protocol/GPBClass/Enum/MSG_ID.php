@@ -124,6 +124,12 @@ class MSG_ID
      */
     const MSG_PLAY_PICK_GAME = 4005;
     /**
+     *结束所有feature
+     *
+     * Generated from protobuf enum <code>MSG_FEATURES_OVER = 4006;</code>
+     */
+    const MSG_FEATURES_OVER = 4006;
+    /**
      *等级奖励通知
      *
      * Generated from protobuf enum <code>MSG_NTF_LEVEL_PRIZE = 7001;</code>

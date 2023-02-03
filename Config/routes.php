@@ -24,6 +24,7 @@ $config = array(
     MSG_ID::MSG_HOLD_AND_SPIN => array('/Feature/holdAndSpin', 'PB_HoldAndSpin'),
     MSG_ID::MSG_WHEEL_SPIN => array('/Feature/wheelSpin', 'PB_WheelSpin'),
     MSG_ID::MSG_PLAY_PICK_GAME => array('/Feature/playPickGame', 'PB_JackpotPickGame'),
+    MSG_ID::MSG_FEATURES_OVER => array('/Feature/featuresOver', 'PB_FeaturesOver'),
 //    MSG_ID::MSG_COLLECT_AWARD => array('/Game/collectAward', 'PB_CollectAward'),
 
 );

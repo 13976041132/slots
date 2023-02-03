@@ -7,6 +7,7 @@ namespace FF\App\GameMain\Controller;
 
 use FF\Factory\Bll;
 use FF\Framework\Core\FF;
+use FF\Machines\Features\BaseFeature;
 use FF\Machines\SlotsModel\LightningMachine;
 use GPBClass\Enum\RET;
 
@@ -55,6 +56,52 @@ class FeatureController extends BaseController
             'totalWin' => $totalWin,
             'winType' => $winType,
             'settled' => $settled,
+        );
+    }
+
+    /**
+     * 结束features
+     */
+    public function featuresOver()
+    {
+        $machineObj = $this->getMachineObj();
+        if (!$machineObj->getCurrFeature()) {
+            FF::throwException(RET::RET_FAILED);
+        }
+
+        if (!$totalBet = $machineObj->getGameInfo('resumeBet')) {
+            $totalBet = $machineObj->getTotalBet();
+        }
+
+        $bakFeatures = $machineObj->getGameInfo('bakFeatures');
+        $currFeature = $machineObj->getCurrFeature();
+        $featureIds = array_merge(array_column($bakFeatures, 'featureId'), [$currFeature]);
+        $prizes = [];
+        $featureWin = 0;
+
+        foreach ($featureIds as $featureId) {
+            if ($machineObj->isFreeGame($featureId)){
+                $machineObj->clearFreespin();
+            }
+            $featureCfg = $machineObj->getFeatureConfig($featureId);
+            $winCoins = round($featureCfg['multiple'] * $totalBet / 100) * 100;
+            $featureWin += $winCoins;
+            $prizes[] = array(
+                'featureId' => $featureId,
+                'coinsWin' => $winCoins
+            );
+        }
+
+        $machineObj->clearBakFeatures();
+        $result = (new BaseFeature($machineObj, $currFeature))->onEnd($featureWin);
+        $machineObj->saveGameInfo();
+
+        return array(
+            'totalWin' => $result['totalWin'],
+            'featureWin' => $featureWin,
+            'featuresPrize' => $prizes,
+            'winType' => $result['winType'],
+            'settled' => $result['settled']
         );
     }
 

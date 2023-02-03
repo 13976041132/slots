@@ -28,8 +28,8 @@ $config = array(
         ['Machine_Id', 'Result_Id', 'Col', 'Prize', 'Used_in_freespin']
     ),
     'feature_game' => array(
-        ['machineId', 'featureId', 'featureName', 'triggerItems', 'triggerItemNum', 'triggerInReels', 'triggerOptions','freespinAward', 'itemAwardLimit', 'extraTimes'],
-        ['Machine_Id', 'ID', 'Feature_name', 'Trig_item_ID', 'Trig_item_num', 'Trig_Reel', 'Trig_Option', 'Times', 'Option', 'Extra_Times']
+        ['machineId', 'featureId', 'featureName', 'triggerItems', 'triggerItemNum', 'triggerInReels', 'triggerOptions','freespinAward', 'itemAwardLimit', 'extraTimes', 'multiple'],
+        ['Machine_Id', 'Feature_ID', 'Feature_name', 'Trig_item_ID', 'Trig_item_num', 'Trig_Reel', 'Trig_Option', 'Times', 'Option', 'Extra_Times', 'Multiple']
     ),
 );
 

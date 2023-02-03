@@ -56,7 +56,7 @@ class BetLogModel extends MyModel
             'feature' => $betContext['feature'],
             'featureNo' => $betContext['featureNo'],
             'features' => $prizes['features'] ? implode(',', $prizes['features']) : '',
-            'featureSteps' => $data['featureSteps'] ?? '',
+            'featureSteps' => !empty($data['featureSteps']) ? json_encode($data['featureSteps']) : '',
             'coinsAward' => $prizes['coins'],
             'freespinAward' => $prizes['freespin'],
             'multipleAward' => $prizes['multiple'],

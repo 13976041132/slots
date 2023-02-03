@@ -116,12 +116,8 @@ class BaseFeature
         $totalWin = $_this->getTotalWin();
         $coinsWin = $_this->getGameInfo('coinsWin');
 
-        //FreeGame过程中已经累积了totalWin，不能重复加
-        if (!$_this->isFreeGame($this->featureId)) {
-            $totalWin += $featureWin;
-            $coinsWin += $featureWin;
-        }
-
+        $totalWin += $featureWin;
+        $coinsWin += $featureWin;
         $settled = !$nextFeatureId;
 
         $_this->onFeatureEnd($this->featureId, $settled);

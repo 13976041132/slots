@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS `t_feature_game` (
   `itemAward` varchar(255) NOT NULL DEFAULT '0' COMMENT '奖励元素',
   `itemAwardLimit` varchar(1000) NOT NULL DEFAULT '{}' COMMENT '奖励元素约束',
   `extraTimes` varchar(256) NOT NULL DEFAULT '0' COMMENT 'freespin奖励',
+  `multiple`  float(10) NOT NULL DEFAULT '0.00' COMMENT 'feature倍数',
   `priority` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '优先级',
   `breakSpin` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否中断Spin',
   `chooseMode` tinyint(1) unsigned NOT NULL DEFAULT '0' COMMENT '是否是选择模式',

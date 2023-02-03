@@ -880,6 +880,11 @@ abstract class SlotsFeature extends SlotsJackpot
         return array();
     }
 
+    public function clearBakFeatures()
+    {
+        $this->updateGameInfo(array('bakFeatures' => array()), false);
+    }
+
     /**
      * 清除用户当前feature信息
      */
@@ -1417,7 +1422,7 @@ abstract class SlotsFeature extends SlotsJackpot
         Bll::log()->addBetLog(
             $betId, $this->uid, $this->machineId, $this->getUserInfo('level'),
             $betSeq, $betContext, [], [], $prizes, 'false', $this->getBalance(),
-            Bll::session()->get('version'),$featureSteps
+            Bll::session()->get('version'), $featureSteps
         );
     }
 
