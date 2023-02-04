@@ -163,6 +163,7 @@ class BaseFeature
         //广告加成倍数
         $adMultiple = $this->machineObj->getBetContext('adMultiple');
 
+        $_this->saveGameInfo();
         $this->destroy();
 
         $result = array(

@@ -114,7 +114,7 @@ class Lightning extends BaseFeature
             $data = $this->settlement($featureDetail);
             $result = array_merge($result, $data);
         } else {
-            $_this->setFeatureDetail($featureDetail);
+            $_this->setFeatureDetail($featureDetail, true , true);
         }
 
         $this->onSpinCompleted($featureDetail, $result, $isOver);

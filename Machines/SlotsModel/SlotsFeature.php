@@ -861,7 +861,7 @@ abstract class SlotsFeature extends SlotsJackpot
     /**
      * 设置用户当前feature详细信息
      */
-    public function setFeatureDetail($featureDetail = array(), $cover = true)
+    public function setFeatureDetail($featureDetail = array(), $cover = true, $sync = false)
     {
         if (!$this->gameInfo['featureId']) return;
 
@@ -869,7 +869,7 @@ abstract class SlotsFeature extends SlotsJackpot
             $featureDetail = array_merge($this->gameInfo['featureDetail'], $featureDetail);
         }
 
-        $this->updateGameInfo(array('featureDetail' => $featureDetail));
+        $this->updateGameInfo(array('featureDetail' => $featureDetail), $sync);
     }
 
     /**

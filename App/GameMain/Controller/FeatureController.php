@@ -94,7 +94,6 @@ class FeatureController extends BaseController
 
         $machineObj->clearBakFeatures();
         $result = (new BaseFeature($machineObj, $currFeature))->onEnd($featureWin);
-        $machineObj->saveGameInfo();
 
         return array(
             'totalWin' => $result['totalWin'],
