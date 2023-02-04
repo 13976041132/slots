@@ -18,7 +18,7 @@ def main():
 	config = configparser.ConfigParser()
 	config.read('config.ini', encoding="utf-8-sig")
 	source_dir = config.get('common', 'source_dir')
-	source_dir = source_dir + '/' + sys.argv[1] + '/xlsx'
+	#source_dir = source_dir + '/' + sys.argv[1] + '/xlsx'
 	target_dir = './csv/' + sys.argv[1]
 	file_list = [i for i in os.listdir(source_dir)]
 	for file in file_list:
