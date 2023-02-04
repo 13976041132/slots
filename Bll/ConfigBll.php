@@ -326,11 +326,11 @@ class ConfigBll
             $machineId = $row['Machine_Id'];
             $featureName = $row['Feature_Name'] ?: 'Base';
             $multiples = explode('|', $row['Multiple']);
+            $multiples = array_merge($multiples, explode('|', $row['jackpot_id']));
+
             $weights = explode('|', $row['Weight']);
             foreach ($multiples as $index => $multiple) {
-                if ($multiple < 0) {
-                    $multiple = $jackpots[$machineId][abs($multiple)]['jackpotName'] ?? 1;
-                }
+                $multiple = $jackpots[$machineId][$multiple]['jackpotName'] ?? $multiple;
                 $config[$machineId][$featureName][$multiple] = (int)($weights[$index] ?? 0);
             }
         }
