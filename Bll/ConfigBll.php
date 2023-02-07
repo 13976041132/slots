@@ -396,6 +396,7 @@ class ConfigBll
             "UPDATE `{$sourceTable}` SET Trig_item_ID = REPLACE(Trig_item_ID, '}', '')",
             "UPDATE `{$sourceTable}` SET Trig_item_ID = REPLACE(Trig_item_ID, ' ', '')",
             "UPDATE `{$sourceTable}` SET Trig_item_ID = '*' WHERE Trig_item_ID = 'all'",
+            "UPDATE `{$sourceTable}` SET Trig_item_num = concat(Trig_item_num,'+') WHERE Is_More_Still_Trig = 'TRUE' AND Trig_item_ID != ''",
         );
         return $sqls;
     }

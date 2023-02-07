@@ -3,7 +3,7 @@ ID,Feature_ID,Machine_id,Feature_name,Trig_item_ID,Is_Trig_Same_Type,Trig_item_n
 1000201,F1000201,10002,FreeSpin,29801,False,3,True,2|3|4,,True,10,10,0,,,20
 1000202,F1000202,10002,PickGame,29901,False,1,True,,"{""ratio"": 0.05}",False,0,0,0,,"{""triggerRatio"":0.05,""jackpotType"":{""Mini"":1000,""Minor"":200,""Major"":50,""Grand"":1},""pickTimes"":{""3"":1,""4"":1,""5"":5,""6"":10,""7"":50}}",20
 1000301,F1000301,10003,FreeSpin,39801,False,3,True,2|3|4,,True,10,10,0,,,20
-1000302,F1000302,10003,HoldSpin,39701,False,6,True,,,False,3,3,0,,"{""resetRound"":{""1"":[20,20,50],""2"":[30,30,30],""3"":[50,20,20]}}",20
+1000302,F1000302,10003,HoldSpin,39701,False,6,True,,,False,0,0,0,,"{""resetRound"":{""1"":[20,20,50],""2"":[30,30,30],""3"":[50,20,20]}}",20
 1000401,F1000401,10004,FreeSpin,49801,False,3,True,1|3|5,,True,10,10,0,,,20
 1000501,F1000501,10005,FreeSpin,59801,False,3,True,1|3|5,,True,10,10,0,,,20
-1000502,F1000502,10005,HoldSpin,59701,False,6,True,,,False,3,3,0,,"{""resetRound"":{""1"":[20,20,50],""2"":[30,30,30],""3"":[50,20,20]}}",20
+1000502,F1000502,10005,HoldSpin,59701,False,6,True,,,False,0,0,0,,"{""resetRound"":{""1"":[20,20,50],""2"":[30,30,30],""3"":[50,20,20]}}",20
