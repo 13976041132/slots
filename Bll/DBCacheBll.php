@@ -86,6 +86,7 @@ abstract class DBCacheBll
             if ($result || $this->cacheEmpty) {
                 $result['uid'] = $uid;
                 $redis->hMSet($cacheKey, $result);
+                $redis->expire($cacheKey, 12 * 3600);
             }
         }
 
@@ -283,6 +284,7 @@ abstract class DBCacheBll
                     $cacheKey = $this->getCacheKey($result['uid'], $wheres);
                     $resultList[$dirtyList[$result['uid']]] = $result;
                     $redis->hMSet($cacheKey, $result);
+                    $redis->expire($cacheKey, 12 * 3600);
                 }
             }
             $redis->exec();

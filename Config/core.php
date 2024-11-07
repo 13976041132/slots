@@ -6,7 +6,7 @@
 $config = array(
     'in_maintain' => false,
     'static_ver' => '1.0',
-    'cache_key_prefix' => 'slots',
+    'cache_key_prefix' => 'pd',
     'resource_dir' => PATH_ROOT . '/Web/res'
 );
 

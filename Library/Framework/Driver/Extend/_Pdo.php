@@ -260,4 +260,19 @@ class _Pdo
 
         throw new \PDOException("Database {$action} failed", Code::DB_EXECUTE_FAILED);
     }
+
+    public function transaction()
+    {
+        $this->pdo()->beginTransaction();
+    }
+
+    public function commit()
+    {
+        $this->pdo()->commit();
+    }
+
+    public function rollback()
+    {
+        $this->pdo()->rollBack();
+    }
 }

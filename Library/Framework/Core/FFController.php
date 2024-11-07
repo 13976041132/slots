@@ -75,7 +75,7 @@ class FFController
         if (isset($this->params[$key]) && !is_empty($this->params[$key])) {
             return $this->params[$key];
         } elseif ($require) {
-            FF::throwException(Code::PARAMS_MISSED, "参数{{$key}}缺失");
+            FF::throwException(Code::PARAMS_MISSED, "param {{$key}} miss");
         }
         return $default;
     }

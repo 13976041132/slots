@@ -37,21 +37,6 @@ class Keys
         return self::buildKey('SessionId', $uid);
     }
 
-    /**
-     * 配置版本记录
-     */
-    public static function configVersion()
-    {
-        return self::buildKey('ConfigVersion', APP_ID);
-    }
-
-    /**
-     * 配置数据记录
-     */
-    public static function configData($name)
-    {
-        return self::buildKey('ConfigData', APP_ID, $name);
-    }
 
     /**
      * 用户信息
@@ -62,113 +47,71 @@ class Keys
     }
 
     /**
-     * 游戏信息
+     * Friends
      */
-    public static function gameInfo($uid, $machineId)
+    public static function friends($uid)
     {
-        return self::buildKey('GameInfo', $uid, $machineId);
+        return self::buildKey('Friends', $uid);
     }
 
     /**
-     * 分析信息
+     * limitAddFriends
      */
-    public static function analysisInfo($uid)
+    public static function limitAddfriends($uid)
     {
-        return self::buildKey('AnalysisInfo', $uid);
+        return self::buildKey('limitAddFriends', $uid);
     }
 
     /**
-     * jackpot创建时间
+     * RequestFriends
      */
-    public static function jackpotCreateTime()
+    public static function requestFriends($uid)
     {
-        return self::buildKey("JackpotCreateTime");
+        return self::buildKey('RequestFriends', $uid);
     }
 
     /**
-     * 用户AB测试参数信息
+     * 申请好友次数
      */
-    public static function abParams($uid)
+    public static function requestFriendTimes($uid)
     {
-        return self::buildKey('AbParams', $uid);
+        return self::buildKey('RequestFriendTimes', $uid);
     }
 
     /**
-     * 玩家干预信息
+     * 发送好友免费金币次数
      */
-    public static function interveneInfo($uid, $type)
+    public static function sentFriendCoins($uid, $type)
     {
-        return self::buildKey('InterveneInfo', $uid, $type);
+        return self::buildKey('SentFriendCoins', $uid, $type);
+    }
+    public static function sentFriendCoinsLock($uid, $fuid)
+    {
+        return self::buildKey('SentFriendCoinsLock', $uid, $fuid);
+    }
+    public static function awardFriendCoinsLock($uid)
+    {
+        return self::buildKey('AwardFriendCoinsLock', $uid);
     }
 
     /**
-     * 每日干预次数
+     * 发送好友免费邮票次数
      */
-    public static function dailyInterveneTimes($uid)
+    public static function sentFriendStamp($uid, $type)
     {
-        return self::buildKey('DailyInterveneTimes', $uid, today());
+        return self::buildKey('SentFriendStamp', $uid, $type);
     }
 
-    /**
-     * 最高下注额
-     */
-    public static function maxBets($uid)
+    public static function sentFriendStampLock($uid, $fuid)
     {
-        return self::buildKey('MaxBets', $uid);
+        return self::buildKey('SentFriendStampLock', $uid, $fuid);
     }
-
-    /**
-     * 公共奖池 PublicJackpot
-     */
-    public static function publicJackpot($machineId)
+    public static function awardFriendStampLock($uid)
     {
-        return self::buildKey('PublicJackpot', $machineId);
+        return self::buildKey('AwardFriendStampLock', $uid);
     }
-
-    /**
-     * 机台测试详细信息
-     */
-    public static function slotsTestInfo($testId)
+    public static function bllMessageQueue($uid)
     {
-        return self::buildKey("SlotsTestInfo", $testId);
-    }
-
-    /**
-     * 机台测试计划列表
-     */
-    public static function slotsTestPlans()
-    {
-        return self::buildKey("SlotsTestPlans");
-    }
-
-    /**
-     * 机台测试统计结果
-     */
-    public static function slotsTestResult($testId, $machineId)
-    {
-        return self::buildKey("SlotsTestResult", $testId, $machineId);
-    }
-
-    /**
-     * 机台测试用户数据
-     */
-    public static function slotsTestUserData($testId)
-    {
-        return self::buildKey("SlotsTestUserData", $testId);
-    }
-
-    public static function slotsTestUserInfo($testId, $uid)
-    {
-        return self::buildKey("SlotsTestUserInfo", $testId, $uid);
-    }
-
-    public static function slotsTestLock($testId)
-    {
-        return self::buildKey("SlotsTestLock", $testId);
-    }
-
-    public static function buffInfo($uid)
-    {
-        return self::buildKey("BuffInfo", $uid);
+        return self::buildKey('BllMessageQueue', $uid);
     }
 }

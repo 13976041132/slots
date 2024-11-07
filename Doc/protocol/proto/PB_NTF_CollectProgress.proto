@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package GPBClass.Message;
-
-message PB_NTF_CollectProgress_Res {
-    int64 collectProgress = 1; //当前总进度
-    int64 collectAvgBet = 2; //当前平均bet
-    int64 collectValue = 3; //当前收集值
-}

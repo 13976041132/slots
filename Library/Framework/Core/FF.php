@@ -34,11 +34,14 @@ class FF
      */
     private static $controller = null;
 
+    private static $config = [];
+
     /**
      * 框架初始化
      */
     public static function init()
     {
+        self::loadConfig();
         self::initEnvironment();
         self::setHandlers();
         self::loadOptions();
@@ -167,6 +170,9 @@ class FF
             }
         }
 
+        if (!$env) {
+            $env = self::getConfig('common.app_env');
+        }
         if (!$env) {
             $env = getenv('PHP_ENV');
         }
@@ -347,8 +353,7 @@ class FF
         $trace = $trace ? $trace : debug_backtrace();
 
         Log::error(array(
-            'uid' => Bll::session()->get('uid'),
-            'ver' => Bll::session()->get('version'),
+            'uid' => Bll::loginUser()->get('uid'),
             'code' => $code,
             'message' => $message,
             'file' => $file,
@@ -358,4 +363,25 @@ class FF
 
         Output::error($code, $message);
     }
+
+    public static function loadConfig()
+    {
+        self::$config = parse_ini_file(PATH_ROOT . '/Config/application.ini', true);
+    }
+
+    public static function getConfig($key)
+    {
+        $keys = explode('.', $key);
+        if (!$keys) return null;
+        $value = self::$config[$keys[0]] ?? null;
+        for ($i = 1; $i < count($keys); ++$i) {
+            if (!is_array($value) || !isset($value[$keys[$i]])) {
+                return null;
+            }
+            $value = $value[$keys[$i]];
+        }
+
+        return $value;
+    }
+
 }

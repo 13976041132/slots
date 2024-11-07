@@ -4,55 +4,12 @@
  */
 
 $config = array(
-    DB_CONFIG => array(
-        'host' => '127.0.0.1',
-        'port' => '3306',
-        'username' => 'root',
-        'passwd' => '123456',
-        'dbname' => 'slots_config',
-        'charset' => 'utf8mb4',
-    ),
-    DB_ADMIN => array(
-        'host' => '127.0.0.1',
-        'port' => '3306',
-        'username' => 'root',
-        'passwd' => '123456',
-        'dbname' => 'slots_admin',
-        'charset' => 'utf8mb4',
-    ),
-
-    DB_TEST => array(
-        'host' => '127.0.0.1',
-        'port' => '3306',
-        'username' => 'root',
-        'passwd' => '123456',
-        'dbname' => 'slots_test',
-        'charset' => 'utf8mb4',
-    ),
-
     DB_MAIN => array(
-        'host' => '127.0.0.1',
+        'host' => '192.168.15.84',
         'port' => '3306',
         'username' => 'root',
         'passwd' => '123456',
-        'dbname' => 'slots_main',
-        'charset' => 'utf8mb4',
-    ),
-
-    DB_LOG => array(
-        'host' => '127.0.0.1',
-        'port' => '3306',
-        'username' => 'root',
-        'passwd' => '123456',
-        'dbname' => 'slots_logs',
-        'charset' => 'utf8mb4',
-    ),
-    DB_ANALYSIS => array(
-        'host' => '127.0.0.1',
-        'port' => '3306',
-        'username' => 'root',
-        'passwd' => '123456',
-        'dbname' => 'slots_analysis',
+        'dbname' => 'cdkey',
         'charset' => 'utf8mb4',
     ),
 );

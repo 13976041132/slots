@@ -5,12 +5,11 @@
 
 namespace FF\Library\Utils;
 
-use FF\Framework\Core\FF;
 use FF\Framework\Common\Code;
 use FF\Framework\Common\Format;
+use FF\Framework\Core\FF;
 use FF\Framework\Utils\Config;
 use FF\Framework\Utils\Input;
-use FF\Framework\Utils\Log;
 
 class Request
 {
@@ -87,12 +86,6 @@ class Request
             if ($message === null) {
                 FF::throwException(Code::PARAMS_INVALID, "Invalid json");
             }
-        } elseif ($format == Format::PBUF) {
-            $string = base64_decode($content);
-            if ($string === false) {
-                FF::throwException(Code::PARAMS_INVALID, "Invalid base64 string");
-            }
-            $message = self::parseProtoBuf($string);
         }
 
         return $message;
@@ -105,76 +98,7 @@ class Request
 
         if ($format == Format::JSON) {
             $string = json_encode($message, JSON_UNESCAPED_UNICODE);
-        } elseif ($format == Format::PBUF) {
-            if ($message['data']) {
-                if (!empty($message['data']['nextMessages'])) {
-                    $message['data']['nextMessages'] = self::serializeNextMessages($message['data']['nextMessages']);
-                }
-                $message['data'] = self::serializeProtoBuf($message['data']);
-                $message['data'] = base64_encode($message['data']);
-            } else {
-                $message['data'] = '';
-            }
-            $string = json_encode($message, JSON_UNESCAPED_UNICODE);
         }
-
         return $string;
     }
-
-    public static function parseProtoBuf($string)
-    {
-        if (!$string) return array();
-
-        $data = array();
-        $proto = self::getProto();
-        $pbClass = "\\GPBClass\\Message\\{$proto}_Req";
-
-        try {
-            /**@var $pbObject \Google\Protobuf\Internal\Message */
-            $pbObject = new $pbClass();
-            $pbObject->mergeFromString($string);
-            $json = $pbObject->serializeToJsonString();
-            $data = json_decode($json, true);
-        } catch (\Exception $e) {
-            FF::throwException(Code::PARAMS_INVALID, $e->getMessage());
-        }
-
-        return $data;
-    }
-
-    public static function serializeProtoBuf($data, $proto = null)
-    {
-        $string = '';
-        $proto = $proto ?: self::getProto();
-        $pbClass = "\\GPBClass\\Message\\{$proto}_Res";
-
-        try {
-            /**@var $pbObject \Google\Protobuf\Internal\Message */
-            $pbObject = new $pbClass();
-            $pbObject->mergeFromJsonString(json_encode($data));
-            $string = $pbObject->serializeToString();
-        } catch (\Exception $e) {
-            FF::throwException(Code::PARAMS_INVALID, $e->getMessage());
-        }
-
-        return $string;
-    }
-
-    protected static function serializeNextMessages(array $nextMessages): array
-    {
-        $messages = [];
-        foreach ($nextMessages as $msgId => $data) {
-            $config = Config::get('routes', $msgId);
-            if (!$config) {
-                FF::throwException(Code::CONFIG_MISSED, "Config routes => {$msgId} is missed");
-            }
-            $messages[] = array(
-                'msgId'  => $msgId,
-                'msgBase64'  => base64_encode(self::serializeProtoBuf($data, $config[1]))
-            );
-        }
-
-        return $messages;
-    }
-
 }

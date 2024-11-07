@@ -5,17 +5,15 @@
 
 namespace FF\App\GameMain\Controller;
 
+use FF\Constants\Exceptions;
 use FF\Extend\MyController;
 use FF\Factory\Bll;
-use FF\Framework\Common\Code;
 use FF\Framework\Core\FF;
 use FF\Framework\Utils\Config;
 use FF\Framework\Utils\Input;
 use FF\Framework\Utils\Log;
 use FF\Framework\Utils\Output;
 use FF\Library\Utils\Request;
-use FF\Service\Lib\Service;
-use GPBClass\Enum\RET;
 
 class BaseController extends MyController
 {
@@ -32,16 +30,16 @@ class BaseController extends MyController
 
         $this->checkMaintain();
 
-        if (!$this->checkSession()) {
-            FF::throwException(RET::RET_SESSION_INVALID);
+        if (!$this->checkUser()) {
+            FF::throwException(Exceptions::RET_USER_INVALID);
         }
 
         if (!$this->checkVersion()) {
-            FF::throwException(RET::RET_VERSION_TOO_OLD);
+            FF::throwException(Exceptions::RET_VERSION_TOO_OLD);
         }
 
         if (!$this->checkCallFrequency()) {
-            FF::throwException(RET::RET_REQUEST_TO_FREQUENT);
+            FF::throwException(Exceptions::RET_REQUEST_TO_FREQUENT);
         }
     }
 
@@ -49,25 +47,25 @@ class BaseController extends MyController
     {
         if (Config::get('core', 'in_maintain')) {
             $message = 'We are having a server maintenance, please try again later.';
-            FF::throwException(RET::RET_SYSTEM_MAINTAIN, $message);
+            FF::throwException(Exceptions::RET_SYSTEM_MAINTAIN, $message);
         }
     }
 
-    private function checkSession()
+    private function checkUser()
     {
-        $sessionId = Input::request('s');
-        Bll::session()->setSessionId($sessionId);
-
+        $uid = (int)Input::request('u');
+        $deviceId = (string)Input::request('d');
         if ($this->isInFilter($this->filterNotNeedLogin)) {
             return true;
         }
 
-        $session = Bll::session()->getSessionData();
-        if (!$session) {
-            Log::error($sessionId, 'session.log');
+        $userInfo = Bll::user()->getUserInfo($uid);
+        if (!$userInfo['uid'] || $userInfo['deviceId'] != $deviceId) {
+            Log::error($uid, 'user.log');
+            return false;
         }
-
-        return $session ? true : false;
+        Bll::loginUser()->setUserInfo($userInfo);
+        return true;
     }
 
     private function checkVersion()
@@ -83,53 +81,11 @@ class BaseController extends MyController
             return true;
         }
 
-        $nowTime = time();
-        $lastTime = Bll::session()->get($route);
-        if (!$lastTime || $nowTime - $lastTime >= $this->apiCallFreqLimits[$route]) {
-            Bll::session()->save(array($route => $nowTime));
-            return true;
-        }
-
-        Log::info([$route, $lastTime, $nowTime], 'call.log');
-
         return false;
     }
 
     public function getUid()
     {
-        return Bll::session()->get('uid');
-    }
-
-    public function getPlatform()
-    {
-        return Bll::session()->get('platform');
-    }
-
-    public function getVersion()
-    {
-        return Bll::session()->get('version');
-    }
-
-    public function getMachineId()
-    {
-        $machineId = Bll::session()->get('machineId');
-        if (!$machineId) {
-            $machineId = $this->getParam('machineId', false);
-        }
-        return $machineId;
-    }
-
-    public function getMachineObj()
-    {
-        $uid = $this->getUid();
-        $machineId = $this->getMachineId();
-
-        if (!$uid || !$machineId) {
-            throw new \Exception('', Code::PARAMS_INVALID);
-        }
-
-        $machineObj = Bll::machine()->getMachineInstance($uid, $machineId);
-
-        return $machineObj;
+        return Bll::loginUser()->get('uid');
     }
 }

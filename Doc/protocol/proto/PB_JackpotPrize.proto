@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package GPBClass.Message;
-
-message PB_JackpotPrize {
-    string jackpotId = 1; //jackpotId
-    string jackpotName = 2; //jackpotName
-    double coins = 3; //jackpot奖励
-}

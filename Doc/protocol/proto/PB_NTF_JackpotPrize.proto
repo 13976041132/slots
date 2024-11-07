@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package GPBClass.Message;
-
-import "PB_JackpotPrize.proto";
-
-message PB_NTF_JackpotPrize_Res {
-    repeated PB_JackpotPrize jackpotPrizes = 1; //jackpot奖励列表
-}
