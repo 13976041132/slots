@@ -21,6 +21,9 @@ abstract class DBCacheBll
     protected $fields = array();
     protected $droppedFields = array();
 
+    protected $uniqueKey = 'uid';
+
+    public $onlyDQL = false;
     /**
      * @return MyModel
      */
@@ -46,9 +49,9 @@ abstract class DBCacheBll
     public function makeWheres($uid, $wheres)
     {
         if ($wheres) {
-            $wheres = array_merge(array('uid' => $uid), $wheres);
+            $wheres = array_merge(array($this->uniqueKey => $uid), $wheres);
         } else {
-            $wheres = array('uid' => $uid);
+            $wheres = array($this->uniqueKey => $uid);
         }
 
         return $wheres;
@@ -75,16 +78,16 @@ abstract class DBCacheBll
         if (!$fields) {
             $result = $redis->hGetAll($cacheKey);
         } else {
-            $_fields = array_values(array_unique(array_merge(['uid'], $fields)));
+            $_fields = array_values(array_unique(array_merge([$this->uniqueKey], $fields)));
             $result = $redis->hMGet($cacheKey, $_fields);
         }
 
         //强制检查uid字段，防止意外情况下产生脏数据
-        if (!$result || empty($result['uid'])) {
+        if (!$result || empty($result[$this->uniqueKey])) {
             Log::info(['getCacheData', $uid, $cacheKey, $fields, $wheres, $result], 'redis-loss.log');
             $result = $this->fetchDataFromDB($uid, '*', $wheres);
             if ($result || $this->cacheEmpty) {
-                $result['uid'] = $uid;
+                $result[$this->uniqueKey] = $uid;
                 $redis->hMSet($cacheKey, $result);
                 $redis->expire($cacheKey, 12 * 3600);
             }
@@ -158,13 +161,13 @@ abstract class DBCacheBll
         $key = $this->getCacheKey($uid, $wheres);
         $wheres = $this->makeWheres($uid, $wheres);
 
-        if ($this->redis()->hGet($key, 'uid')) {
+        if ($this->redis()->hGet($key, $this->uniqueKey)) {
             // if ($sync || ENV == Env::DEVELOPMENT) {
-            if ($sync) {
+            if ($sync && $this->onlyDQL == false) {
                 $this->model($uid)->update($data, $wheres);
             }
             return $this->redis()->hMSet($key, $data);
-        } else {
+        } elseif ($sync && $this->onlyDQL == false) {
             return $this->model($uid)->update($data, $wheres);
         }
     }
@@ -180,7 +183,7 @@ abstract class DBCacheBll
         $key = $this->getCacheKey($uid, $wheres);
         $redis = $this->redis();
 
-        if ($redis->hGet($key, 'uid')) {
+        if ($redis->hGet($key, $this->uniqueKey)) {
             //缓存中有数据，则更新缓存
             $isFloat = $this->fields[$field][0] == 'float';
             $incFun = $isFloat ? 'hIncrByFloat' : 'hIncrBy';
@@ -195,11 +198,11 @@ abstract class DBCacheBll
             } else {
                 $result = true;
             }
-        } else {
+        } elseif($this->onlyDQL == false) {
             //缓存中无数据，则更新数据库
             $updates = array($field => array('+=', $incValue));
             $where = $incValue < 0 ? array($field => array('>=', -$incValue)) : array();
-            $where = array_merge(array('uid' => $uid), $wheres, $where);
+            $where = array_merge(array($this->uniqueKey => $uid), $wheres, $where);
             $result = $this->model($uid)->update($updates, $where);
             $newData = $this->fetchDataFromDB($uid, $field, $wheres);
             if ($newData) {
@@ -248,7 +251,7 @@ abstract class DBCacheBll
             if (!$fields) {
                 $redis->hGetAll($cacheKey);
             } else {
-                $tempFields = array_values(array_unique(array_merge(['uid'], $fields)));
+                $tempFields = array_values(array_unique(array_merge([$this->uniqueKey], $fields)));
                 $redis->hMGet($cacheKey, $tempFields);
             }
         }
@@ -257,7 +260,7 @@ abstract class DBCacheBll
         //强制检查uid字段，防止意外情况下产生脏数据
         $dirtyList = [];
         foreach ($resultList as $index => $result) {
-            if (!$result || empty($result['uid'])) {
+            if (!$result || empty($result[$this->uniqueKey])) {
                 $dirtyList[$uids[$index]] = $index;
             }
         }
@@ -269,9 +272,9 @@ abstract class DBCacheBll
 
             // makeWheres
             if ($wheres) {
-                $wheres = array_merge(array('uid' => array('in' => $dirtyUids)), $wheres);
+                $wheres = array_merge(array($this->uniqueKey => array('in' => $dirtyUids)), $wheres);
             } else {
-                $wheres = array('uid' => array('in' => $dirtyUids));
+                $wheres = array($this->uniqueKey => array('in' => $dirtyUids));
             }
 
             // fetchDataFromDB
@@ -281,8 +284,8 @@ abstract class DBCacheBll
             $redis = $this->redis()->pipeline();
             foreach ($dirtyResultList as $result) {
                 if ($result) {
-                    $cacheKey = $this->getCacheKey($result['uid'], $wheres);
-                    $resultList[$dirtyList[$result['uid']]] = $result;
+                    $cacheKey = $this->getCacheKey($result[$this->uniqueKey], $wheres);
+                    $resultList[$dirtyList[$result[$this->uniqueKey]]] = $result;
                     $redis->hMSet($cacheKey, $result);
                     $redis->expire($cacheKey, 12 * 3600);
                 }
@@ -296,7 +299,7 @@ abstract class DBCacheBll
         //脏数据检查以及数据类型校正
         $redis = $this->redis()->pipeline();
         foreach ($resultList as $index => $result) {
-            $cacheKey = $this->getCacheKey($result['uid'], $wheres);
+            $cacheKey = $this->getCacheKey($result[$this->uniqueKey], $wheres);
             if ($this->droppedFields) {
                 $droppedFields = array_intersect($this->droppedFields, array_keys($result));
                 if ($droppedFields) {

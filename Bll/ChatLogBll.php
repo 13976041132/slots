@@ -2,6 +2,9 @@
 
 namespace FF\Bll;
 
+use FF\Factory\Bll;
+use FF\Factory\Dao;
+use FF\Factory\Keys;
 use FF\Factory\Model;
 
 class ChatLogBll
@@ -15,7 +18,7 @@ class ChatLogBll
             $chatLogList[] = [
                 'sender' => $row['sender'],
                 'receiver' => $row['receiver'],
-                'sendTime' => date('Y-m-d H:i:s', $row['time']),
+                'sendTime' => $row['time'],
                 'content' => $row['content']
             ];
         }
@@ -26,7 +29,7 @@ class ChatLogBll
     {
         $uuid = self::makeUUID($uid, $fUid);
         Model::chatLog()->update(['status' => 1], ['uuid' => $uuid], 0);
-        Model::friends()->update(['unReadCnt' => 0], ['uid' => $uid, 'fUid' => $fUid]);
+        Bll::friendCache()->updateData($uid, $fUid, ['unReadCnt' => 0]);
         return true;
     }
     public function recordChatLog($uid, $fUid, $content)
@@ -44,8 +47,16 @@ class ChatLogBll
     }
     public function incUnreadCnt($uid, $fUid)
     {
-        Model::friends()->update(['unReadCnt' => ['+=', 1]], ['uid' => $uid, 'fUid' => $fUid]);
+        Bll::friendCache()->batchUpdateFieldByInc($uid,[$fUid],'unReadCnt');
     }
+
+    public function updateChatTime($uid, $fUid)
+    {
+        $uuid = self::makeUUID($uid, $fUid);
+        $key = Keys::lastChatTime($uuid);
+        Dao::redis()->set($key, time(), 86400 * 3);
+    }
+
     public static function makeUUID($from, $to)
     {
         if ($from > $to) {
@@ -53,4 +64,12 @@ class ChatLogBll
         }
         return $to . '-' . $from;
     }
+
+    public function getLastChatTime($uid, $fUid)
+    {
+        $uuid = self::makeUUID($uid, $fUid);
+        $key = Keys::lastChatTime($uuid);
+        return Dao::redis()->get($key);
+    }
+
 }

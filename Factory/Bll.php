@@ -11,6 +11,7 @@ use FF\Bll\LoginUserBll;
 use FF\Bll\SessionBll;
 use FF\Bll\UserBll;
 use FF\Bll\MessageNotifyBll;
+use FF\Bll\FriendCacheBll;
 use FF\Framework\Mode\Factory;
 
 class Bll extends Factory
@@ -30,6 +31,15 @@ class Bll extends Factory
     {
         return self::getInstance('FF\Bll\FriendsBll');
     }
+
+    /**
+     * @return FriendCacheBll
+     */
+    public static function friendCache()
+    {
+        return self::getInstance('FF\Bll\FriendCacheBll');
+    }
+
 
     /**
      * @return UserBll

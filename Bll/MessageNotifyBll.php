@@ -46,9 +46,9 @@ class MessageNotifyBll
         $this->recordNotifyMsg($uid, $data);
     }
 
-    public function invitedAward($uid, $optUId)
+    public function invited($uid, $optUId)
     {
-        $data = $this->makeData($optUId, MessageIds::CHAT_INVITED_AWARD_NOTIFY);
+        $data = $this->makeData($optUId, MessageIds::CHAT_INVITED_NOTIFY);
         $this->recordNotifyMsg($uid, $data);
     }
     public function receiveChatMsg($uid, $optUId, $content)
@@ -63,7 +63,7 @@ class MessageNotifyBll
         Dao::redis()->rPush($key, json_encode($data, JSON_UNESCAPED_UNICODE));
 
         if (Dao::redis()->ttl($key) <= 3600) {
-            Dao::redis()->expire($key, 86400);
+            Dao::redis()->expire($key, 3600 * 12);
         }
     }
     public function batchRecordNotifyMsg($uid, $groupData)
@@ -72,7 +72,7 @@ class MessageNotifyBll
         Dao::redis()->rPush($key, ...$groupData);
 
         if (Dao::redis()->ttl($key) <= 3600) {
-            Dao::redis()->expire($key, 86400);
+            Dao::redis()->expire($key, 3600 * 12);
         }
     }
     public function makeData($optUId, $messageId)

@@ -27,20 +27,6 @@ class FriendsModel extends MyModel
     }
 
     /**
-     * 添加好友关系，添加两条记录
-     * uid => fUid
-     * fUid => uid
-     */
-    public function addFriend($uid, $fUid)
-    {
-        $data = array();
-        $data[] = array('uid' => $uid, 'fuid' => $fUid, 'createTime' => now());
-        $data[] = array('uid' => $fUid, 'fuid' => $uid, 'createTime' => now());
-
-        return $this->insertMulti($data);
-    }
-
-    /**
      * 删除好友关系，删除两条记录
      * uid => fUid
      * fUid => uid

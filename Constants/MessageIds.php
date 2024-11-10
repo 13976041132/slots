@@ -11,7 +11,7 @@ class MessageIds
     const RECEIVE_FRIEND_COINS_NOTIFY = 1005; //赠送好金币通知
     const RECEIVE_FRIEND_STAMP_NOTIFY = 1006; //赠送好邮票通知
     const CHAT_MSG_RECEIVE_NOTIFY = 1007; //聊天信息接收通知
-    const CHAT_INVITED_AWARD_NOTIFY = 1008; //邀请奖励通知
+    const CHAT_INVITED_NOTIFY = 1008; //邀请奖励通知
 
     const FETCH_FRIENDS = 100001; //获取好友列表
     const ADD_FRIEND = 100002; //添加好友通知
@@ -33,4 +33,5 @@ class MessageIds
     const FETCH_BLL_MESSAGE_LIST = 100018; //拉取业务信息列表
     const FETCH_BLL_MESSAGE_STAT_LIST = 100019; //拉取业务信息统计列表
     const CLEAR_BLL_MESSAGE = 100020; //清除业务数据 (玩家登录成功后,就要调用)
+    const CLEAR_USER_INFO_REPORT = 100021; //玩家信息上报
 }

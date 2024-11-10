@@ -10,11 +10,15 @@ CREATE TABLE IF NOT EXISTS `friends_requests` (
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='好友申请表';
 
 CREATE TABLE IF NOT EXISTS `friends` (
+    `uuid` varchar(20) NOT NULL COMMENT '唯一ID',
     `uid` int(10) UNSIGNED NOT NULL COMMENT '用户ID',
     `fuid` int(10) UNSIGNED NOT NULL COMMENT '好友用户ID',
     `createTime` datetime DEFAULT NULL COMMENT '创建时间',
     `unReadCnt` int(10) UNSIGNED NOT NULL COMMENT '未读的消息数量',
-    PRIMARY KEY (`uid`, `fuid`)
+    `givingGiftTimes` int(10) UNSIGNED NOT NULL DEFAULT 0 COMMENT '赠送礼物的次数',
+    `receiveGiftTimes` int(10) UNSIGNED NOT NULL DEFAULT 0 COMMENT '接收礼物的次数',
+    PRIMARY KEY (`uuid`),
+    UNIQUE KEY (`uid`, `fuid`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='好友关系表';
 
 CREATE TABLE IF NOT EXISTS `chat_log` (

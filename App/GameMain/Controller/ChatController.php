@@ -23,9 +23,10 @@ class ChatController extends BaseController
         if (!Bll::chatLog()->recordChatLog($uid, $fUid, $content)) {
             FF::throwException(Exceptions::RET_CHAT_SEND_FAIL, 'send chat fail');
         }
-
         Bll::chatLog()->incUnreadCnt($fUid, $uid);
         Bll::messageNotify()->receiveChatMsg($fUid, $uid, $content);
+        Bll::chatLog()->updateChatTime($uid, $fUid);
+
         return [];
     }
 

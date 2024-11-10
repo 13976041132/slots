@@ -47,6 +47,14 @@ class Keys
     }
 
     /**
+     * 朋友信息
+     */
+    public static function friendInfo($uid)
+    {
+        return self::buildKey('FriendInfo', $uid);
+    }
+
+    /**
      * Friends
      */
     public static function friends($uid)
@@ -113,5 +121,10 @@ class Keys
     public static function bllMessageQueue($uid)
     {
         return self::buildKey('BllMessageQueue', $uid);
+    }
+
+    public static function lastChatTime($uuid)
+    {
+        return self::buildKey('LastChatTime', $uuid);
     }
 }

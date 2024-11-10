@@ -19,6 +19,8 @@ use Exception;
 
 class FriendsBll
 {
+    const FRIEND_GROUP_WITHIN_THREE_DAYS = 1;
+    const FRIEND_GROUP_WITHOUT_THREE_DAYS = 2;
     // 好友申请场景
     const REQUEST_SCENE_DEFAULT = 0; // 默认
     const REQUEST_SCENE_SEARCH = 1; // 精确搜索
@@ -62,14 +64,24 @@ class FriendsBll
         $coinList = Dao::redis()->hGetAll($coinKey);
         $stampList = Dao::redis()->hGetAll($stampKey);
 
-        $where = ['uid' => $uid, 'fuid' => ['in', $uids], 'unReadCnt' => ['>', 0]];
-        $unreadData = Model::friends()->fetchAll($where, 'fuid, unReadCnt');
-        $unreadMap = array_column($unreadData, 'unReadCnt', 'fuid');
+        $friends = Bll::friendCache()->getFriendList($uid, $uids, 'fuid,unReadCnt,givingGiftTimes,receiveGiftTimes');
+
         foreach ($userInfos as $fuid => &$userInfo) {
+            $uuid = Bll::friendCache()->makeUUID($uid,$fuid);
             // 是否能够发送免费金币
             $userInfo['stampGivingAble'] = !empty($stampList[$fuid]) ? 0 : 1;
             $userInfo['coinGivingAble'] = !empty($coinList[$fuid]) ? 0 : 1;
-            $userInfo['unreadCnt'] = $unreadMap[$fuid] ?? 0;
+            $userInfo['unreadCnt'] = $friends[$uuid]['unReadCnt'] ?? 0;
+            if (Bll::chatLog()->getLastChatTime($uid, $fuid)) {
+                $userInfo['group'] = self::FRIEND_GROUP_WITHIN_THREE_DAYS;
+                continue;
+            }
+
+            if (!empty($friends[$uuid]['givingGiftTimes']) && !empty($friends[$uuid]['receiveGiftTimes'])) {
+                $userInfo['group'] = self::FRIEND_GROUP_WITHIN_THREE_DAYS;
+                continue;
+            }
+            $userInfo['group'] = self::FRIEND_GROUP_WITHOUT_THREE_DAYS;
         }
 
         return $userInfos;
@@ -86,7 +98,7 @@ class FriendsBll
         $this->renewRequestFriends($fUid);
 
         // 更新结果
-        $result = Model::friends()->addFriend($uid, $fUid);
+        $result = Bll::friendCache()->addFriend($uid, $fUid);
 
         // 更新redis
         if ($result > 0) {
@@ -102,9 +114,7 @@ class FriendsBll
      */
     public function delFriend($uid, $fUid)
     {
-        // 更新结果
-        $result = Model::friends()->delFriend($uid, $fUid);
-
+        $result = Bll::friendCache()->delFriend($uid, $fUid);
         // 修改redis
         if ($result > 0) {
             $this->renewFriends($uid);
@@ -149,7 +159,7 @@ class FriendsBll
     private function formatUserInfo($uids)
     {
         if (empty($uids)) return array();
-        return Bll::user()->getUserInfoList($uids, 'uid,name');
+        return Bll::user()->getUserInfoList($uids, 'uid,name,level');
     }
 
     /**
@@ -227,13 +237,6 @@ class FriendsBll
             $this->renewRequestFriends($fUid);
         }
 
-        // 记录申请次数
-        $cacheKey = Keys::requestFriendTimes($uid);
-        $times = Dao::redis()->hIncrBy($cacheKey, 'scene_' . $requestScene, 1);
-        if ($times == 1) {
-            Dao::redis()->expire($cacheKey, strtotime('tomorrow') - time());
-        }
-
         return $result;
     }
 
@@ -308,18 +311,6 @@ class FriendsBll
         return $requestsSentTimes;
     }
 
-    /**
-     * 检查好友申请次数是否已达限制
-     */
-    public function checkRequestFriendTimes($uid)
-    {
-        $requestsSentTimes = $this->getRequestsSentTimes($uid, $requestsSentTimesLimit);
-        if ($requestsSentTimes >= $requestsSentTimesLimit) {
-            return false;
-        }
-        return true;
-    }
-
     public function bindInviter($uid, $inviteCode)
     {
         try {
@@ -349,10 +340,7 @@ class FriendsBll
                 FF::throwException(Exceptions::RET_BIND_INVITER_FAIL, 'bind invite code fail');
             }
             Dao::db()->commit();
-            //inbox邮件 todo
-            $itemList = $this->coinToItemList(100);
-            Model::userBllRewardData()->record($inviterData['uid'], $uid, MessageIds::CHAT_INVITED_AWARD_NOTIFY, $itemList);
-            Bll::messageNotify()->invitedAward($inviterData['uid'], $uid);
+            Bll::messageNotify()->invited($inviterData['uid'], $uid);
         } catch (Exception $e) {
             Dao::db()->rollback();
             FF::throwException($e->getCode(), $e->getMessage());
@@ -373,6 +361,7 @@ class FriendsBll
         }
         $coins = 0;
         $upIds = [];
+        $fuids = [];
         foreach ($data as $row) {
             if ($row['expireTime'] && $row['expireTime'] < time()) {
                 continue;
@@ -383,12 +372,14 @@ class FriendsBll
             $itemList = json_decode($row['itemList'], true);
             $coins += array_sum(array_column($itemList, 'itemNum'));
             $upIds[] = $row['id'];
+            $fuids[] = $row['triggerUid'];
         }
 
         if (!$upIds) {
             FF::throwException(Exceptions::RET_REWARD_EXPIRED_ERROR, 'coins reward has expired');
         }
         Model::userBllRewardData()->updateMulti($upIds, ['status' => 1]);
+        Bll::friendCache()->batchUpdateFieldByInc($uid, $fuids, 'receiveGiftTimes');
 
         return $coins;
     }
@@ -407,6 +398,7 @@ class FriendsBll
             }
             $reward = [];
             $upIds = [];
+            $fuids = [];
             foreach ($data as $row) {
                 if ($row['expireTime'] && $row['expireTime'] < time()) {
                     continue;
@@ -418,13 +410,14 @@ class FriendsBll
                 foreach ($itemList as $item) {
                     $reward[$item['itemId']] += $item['itemNum'];
                 }
+                $fuids[] = $row['triggerUid'];
                 $upIds[] = $row['id'];
             }
             if (!$upIds) {
                 FF::throwException(Exceptions::RET_REWARD_EXPIRED_ERROR, 'stamp reward has expired');
             }
             Model::userBllRewardData()->updateMulti($upIds, ['status' => 1]);
-
+            Bll::friendCache()->batchUpdateFieldByInc($uid, $fuids, 'receiveGiftTimes');
             $prizes = [];
             foreach ($reward as $itemId => $num) {
                 $prizes[] = ['itemId' => $itemId, 'itemNum' => $num];
@@ -444,17 +437,18 @@ class FriendsBll
         $data = Model::userBllRewardData()->fetchAll($where);
 
         $uids = array_column($data, 'triggerUid');
-        $userMap = Bll::user()->getMulti($uids, ['name']);
+        $userMap = Bll::user()->getMulti($uids, ['name','level']);
 
         $list = [];
         foreach ($data as $row) {
             $list[] = [
                 'id' => $row['id'],
                 'sender' => $row['triggerUid'],
+                'senderName' => $userMap[$row['triggerUid']] ? $userMap[$row['triggerUid']]['name'] : $row['triggerUid'],
+                'senderLevel' => $userMap[$row['triggerUid']] ? $userMap[$row['triggerUid']]['level'] : 0,
                 'sendTime' => $row['time'],
                 'expireTime' => $row['expireTime'],
                 'itemList' => json_decode($row['itemList'], true),
-                'senderName' => $userMap[$row['triggerUid']] ? $userMap[$row['triggerUid']]['name'] : $row['triggerUid']
             ];
         }
         return $list;
@@ -478,16 +472,5 @@ class FriendsBll
     public function getUnreadCount($uid)
     {
         return Model::friends()->getUnreadCnt($uid);
-    }
-
-    //获取朋友信息
-    public function getFriendInfo($uid, $fuid)
-    {
-        if (!$this->isMyFriend($uid, $fuid)) {
-            FF::throwException(Exceptions::RET_SOCIAL_NOT_FRIEND);
-        }
-        $friendInfo = Model::user()->getOneById($fuid);
-
-        return $friendInfo;
     }
 }

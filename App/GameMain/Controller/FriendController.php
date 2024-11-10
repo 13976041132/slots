@@ -238,6 +238,7 @@ class FriendController extends BaseController
         }
         $itemList = Bll::friends()->coinToItemList($coin);
         Model::userBllRewardData()->record($fUId, $uid, MessageIds::RECEIVE_FRIEND_COINS_NOTIFY, $itemList, 30 * 86400);
+        Bll::friendCache()->batchUpdateFieldByInc($uid, [$fUId], 'givingGiftTimes');
         Bll::messageNotify()->receiveFriendCoins($fUId, $uid);
 
         return [];
@@ -280,6 +281,7 @@ class FriendController extends BaseController
         }
 
         Model::userBllRewardData()->record($fUId, $uid, MessageIds::RECEIVE_FRIEND_STAMP_NOTIFY, $itemList, 30 * 86400);
+        Bll::friendCache()->batchUpdateFieldByInc($uid, [$fUId], 'givingGiftTimes');
         Bll::messageNotify()->receiveFriendStamp($fUId, $uid);
         return [];
     }
