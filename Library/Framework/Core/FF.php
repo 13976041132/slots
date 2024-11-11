@@ -154,30 +154,11 @@ class FF
      */
     private static function judgeEnv()
     {
-        $env = '';
-
         if (defined('ENV')) {
             return ENV;
         }
 
-        if (!is_cli()) {
-            $host = $_SERVER['HTTP_HOST'];
-            $env = Config::get('env', $host, false);
-        } else {
-            $args = get_cli_args();
-            if (isset($args['env'])) {
-                $env = $args['env'];
-            }
-        }
-
-        if (!$env) {
-            $env = self::getConfig('common.app_env');
-        }
-        if (!$env) {
-            $env = getenv('PHP_ENV');
-        }
-
-        return $env;
+        return self::getConfig('app_env');
     }
 
     /**
@@ -366,22 +347,22 @@ class FF
 
     public static function loadConfig()
     {
-        self::$config = parse_ini_file(PATH_ROOT . '/Config/application.ini', true);
+        $config = parse_ini_file(PATH_ROOT . '/Config/application.ini', true);
+        $env = $config['common']['app_env'] ?? '';
+        $options = [];
+
+        foreach ($config as $model => $info) {
+            if (!in_array($model, ['common', $env])) {
+                continue;
+            }
+
+            $options = array_merge($options, $info);
+        }
+        self::$config = $options;
     }
 
     public static function getConfig($key)
     {
-        $keys = explode('.', $key);
-        if (!$keys) return null;
-        $value = self::$config[$keys[0]] ?? null;
-        for ($i = 1; $i < count($keys); ++$i) {
-            if (!is_array($value) || !isset($value[$keys[$i]])) {
-                return null;
-            }
-            $value = $value[$keys[$i]];
-        }
-
-        return $value;
+        return self::$config[$key] ?? '';
     }
-
 }

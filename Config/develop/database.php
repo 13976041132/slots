@@ -3,13 +3,15 @@
  * 数据库配置
  */
 
+use FF\Framework\Core\FF;
+
 $config = array(
     DB_MAIN => array(
-        'host' => '192.168.15.84',
-        'port' => '3306',
-        'username' => 'root',
-        'passwd' => '123456',
-        'dbname' => 'cdkey',
+        'host' => FF::getConfig('db.hostname'),
+        'port' => FF::getConfig('db.hostport'),
+        'username' => FF::getConfig('db.username'),
+        'passwd' => FF::getConfig('db.password'),
+        'dbname' => FF::getConfig('db.database'),
         'charset' => 'utf8mb4',
     ),
 );

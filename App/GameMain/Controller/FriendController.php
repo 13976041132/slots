@@ -21,7 +21,7 @@ class FriendController extends BaseController
      * 获取好友列表
      * 步骤：获取好友列表，配置信息齐全，发送结果
      */
-    public function getFriends()
+    public function fetchFriends()
     {
         $uid = $this->getUid();
         $friends = Bll::friends()->getFriendsInfo($uid);
@@ -75,7 +75,7 @@ class FriendController extends BaseController
     /**
      * 获取好友申请列表
      */
-    public function getFriendsRequests()
+    public function fetchFriendsRequests()
     {
         $uid = $this->getUid();
         $requestFriends = Bll::friends()->getFriendsRequestInfo($uid);
@@ -159,8 +159,10 @@ class FriendController extends BaseController
     /**
      * 获取建议好友列表
      */
-    public function getSuggestFriends()
+    public function fetchSuggestFriends()
     {
+        $uid = $this->getUid();
+        $suggestFriends = Bll::friends()->getSuggestFriends($uid);
     }
 
     /**
@@ -170,7 +172,13 @@ class FriendController extends BaseController
     {
         $uid = $this->getUid();
         $suggestUids = $this->getParam('suggestUids', false, []);
+        if (!is_array($suggestUids)) {
+            $suggestUids = json_decode($suggestUids, true);
+        }
 
+        if (!is_array($suggestUids)) {
+            FF::throwException(Exceptions::PARAM_INVALID_ERROR);
+        }
         $friends = Bll::friends()->getFriends($uid);
         // 遍历推荐好友列表
         foreach ($suggestUids as $suggestUid) {

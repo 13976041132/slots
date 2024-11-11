@@ -11,7 +11,7 @@ class ChatController extends BaseController
     public function sendMessage()
     {
         $uid = $this->getUid();
-        $fUid = $this->getParam('fUid');
+        $fUid = (int)$this->getParam('fUid');
         $content = (string)$this->getParam('content');
         if ($uid == $fUid) {
             FF::throwException(Exceptions::RET_CHAT_DENY_SEND_MYSELF);
@@ -33,14 +33,14 @@ class ChatController extends BaseController
     public function fetchMessageList()
     {
         $uid = $this->getUid();
-        $fUid = $this->getParam('fUid');
+        $fUid = (int)$this->getParam('fUid');
         return Bll::chatLog()->getMsgList($uid, $fUid);
     }
 
     public function readAll()
     {
         $uid = $this->getUid();
-        $fUid = $this->getParam('fUid');
+        $fUid = (int)$this->getParam('fUid');
         Bll::chatLog()->ReadAll($uid, $fUid);
         return [];
     }

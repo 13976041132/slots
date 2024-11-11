@@ -3,8 +3,14 @@
  * redis配置
  */
 
+use FF\Framework\Core\FF;
+
 $config = array(
-    'main' => array('host' => '127.0.0.1', 'port' => '6379', 'auth' => ''),
+    'main' => array(
+        'host' => FF::getConfig('redis.host'),
+        'port' => FF::getConfig('redis.port'),
+        'auth' => FF::getConfig('redis.password'),
+    ),
 );
 
 return $config;

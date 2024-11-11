@@ -454,6 +454,16 @@ class FriendsBll
         return $list;
     }
 
+    public function getSuggestFriends($uid)
+    {
+        //存在好友 则不能推荐
+        if (Bll::friends()->getFriends($uid)) {
+            return [];
+        }
+        //从集合中获取
+        return [];
+    }
+
     public function getReceiveFriendGiftCount($uid, $messageId)
     {
         $where = [

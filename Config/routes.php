@@ -5,12 +5,14 @@
 use FF\Constants\MessageIds;
 
 $config = array(
-    MessageIds::FETCH_FRIENDS => array('/Friend/getFriends'),
+    MessageIds::FETCH_FRIENDS => array('/Friend/fetchFriends'),
     MessageIds::ADD_FRIEND => array('/Friend/addFriend'),
-    MessageIds::FETCH_FRIENDS_REQUESTS => array('/Friend/getFriendsRequests'),
+    MessageIds::FETCH_FRIENDS_REQUESTS => array('/Friend/fetchFriendsRequests'),
     MessageIds::ACCEPT_FRIEND => array('/Friend/acceptFriend'),
     MessageIds::REFUSE_FRIEND => array('/Friend/refuseFriend'),
     MessageIds::DEL_FRIEND => array('/Friend/delFriend'),
+    MessageIds::FETCH_SUGGEST_FRIEND_LIST => array('/Friend/fetchSuggestFriend'),
+    MessageIds::ADD_SUGGEST_FRIENDS => array('/Friend/addSuggestFriends'),
     MessageIds::FETCH_FRIEND_GIVING_STAMP_LIST => array('/Friend/fetchReceiveFriendStampList'),
     MessageIds::FETCH_FRIEND_GIVING_COIN_LIST => array('/Friend/fetchReceiveFriendCoinList'),
     MessageIds::GIVING_FRIEND_STAMP => array('/Friend/givingFriendStamp'),

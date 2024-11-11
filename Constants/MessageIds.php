@@ -14,7 +14,7 @@ class MessageIds
     const CHAT_INVITED_NOTIFY = 1008; //邀请奖励通知
 
     const FETCH_FRIENDS = 100001; //获取好友列表
-    const ADD_FRIEND = 100002; //添加好友通知
+    const ADD_FRIEND = 100002; //发送添加好友请求
     const FETCH_FRIENDS_REQUESTS = 100003; //获取好友请求
     const ACCEPT_FRIEND = 100004; // 同意好友添加
     const REFUSE_FRIEND = 100005; //绝交添加好友
@@ -34,4 +34,6 @@ class MessageIds
     const FETCH_BLL_MESSAGE_STAT_LIST = 100019; //拉取业务信息统计列表
     const CLEAR_BLL_MESSAGE = 100020; //清除业务数据 (玩家登录成功后,就要调用)
     const CLEAR_USER_INFO_REPORT = 100021; //玩家信息上报
+    const FETCH_SUGGEST_FRIEND_LIST = 100022; //获取好友推荐列表
+    const ADD_SUGGEST_FRIENDS = 100023; //批量添加好友请求
 }
