@@ -127,4 +127,9 @@ class Keys
     {
         return self::buildKey('LastChatTime', $uuid);
     }
+
+    public static function suggestFriendSet()
+    {
+        return self::buildKey('SuggestFriendSet');
+    }
 }

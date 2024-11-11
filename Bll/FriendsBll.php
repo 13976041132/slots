@@ -67,7 +67,7 @@ class FriendsBll
         $friends = Bll::friendCache()->getFriendList($uid, $uids, 'fuid,unReadCnt,givingGiftTimes,receiveGiftTimes');
 
         foreach ($userInfos as $fuid => &$userInfo) {
-            $uuid = Bll::friendCache()->makeUUID($uid,$fuid);
+            $uuid = Bll::friendCache()->makeUUID($uid, $fuid);
             // 是否能够发送免费金币
             $userInfo['stampGivingAble'] = !empty($stampList[$fuid]) ? 0 : 1;
             $userInfo['coinGivingAble'] = !empty($coinList[$fuid]) ? 0 : 1;
@@ -437,7 +437,7 @@ class FriendsBll
         $data = Model::userBllRewardData()->fetchAll($where);
 
         $uids = array_column($data, 'triggerUid');
-        $userMap = Bll::user()->getMulti($uids, ['name','level']);
+        $userMap = Bll::user()->getMulti($uids, ['name', 'level']);
 
         $list = [];
         foreach ($data as $row) {
@@ -460,8 +460,31 @@ class FriendsBll
         if (Bll::friends()->getFriends($uid)) {
             return [];
         }
-        //从集合中获取
-        return [];
+        $key = Keys::suggestFriendSet();
+        $pageSize = 10;
+        $popCnt = 30;
+        $suggestUids = [];
+        while (true) {
+            $suids = Dao::redis()->sRandMember($key, $popCnt);
+            foreach ($suids as $suid) {
+                if ($suid == $uid || in_array($suid, $suggestUids)) {
+                    continue;
+                }
+                $fuids = $this->getFriends($suid);
+                if (count($fuids) >= 100) {
+                    Dao::redis()->sRem($key, $suid);
+                }
+                $suggestUids[] = $suid;
+                if (count($suggestUids) == $pageSize) {
+                    break;
+                }
+            }
+
+            if (count($suggestUids) >= $pageSize || count($suids) < $popCnt) {
+                break;
+            }
+        }
+        return $this->formatUserInfo($suggestUids);
     }
 
     public function getReceiveFriendGiftCount($uid, $messageId)

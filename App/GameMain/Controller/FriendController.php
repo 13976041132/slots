@@ -163,6 +163,8 @@ class FriendController extends BaseController
     {
         $uid = $this->getUid();
         $suggestFriends = Bll::friends()->getSuggestFriends($uid);
+
+        return ['list' => $suggestFriends];
     }
 
     /**

@@ -12,6 +12,7 @@ use FF\App\GameMain\Model\Main\FriendsRequestsModel;
 use FF\App\GameMain\Model\Main\UserBllRewardDataModel;
 use FF\App\GameMain\Model\Main\UserInviteDataModel;
 use FF\App\GameMain\Model\Main\UserModel;
+use FF\App\GameMain\Model\Main\SuggestUsersModel;
 use FF\Framework\Mode\Factory;
 
 class Model extends Factory
@@ -69,5 +70,13 @@ class Model extends Factory
     public static function userBllRewardData()
     {
         return self::getInstance('FF\App\GameMain\Model\Main\UserBllRewardDataModel');
+    }
+
+    /**
+     * @return SuggestUsersModel
+     */
+    public static function suggestUser()
+    {
+        return self::getInstance('FF\App\GameMain\Model\Main\SuggestUsersModel');
     }
 }

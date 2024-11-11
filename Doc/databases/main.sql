@@ -59,3 +59,15 @@ CREATE TABLE IF NOT EXISTS `user_bll_reward_data` (
     PRIMARY KEY (`id`),
     KEY (`uid`, `messageId`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户业务奖励数据';
+
+CREATE TABLE IF NOT EXISTS `user_daily_first_login_log` (
+    `date` date  NOT NULL COMMENT '日期',
+    `uid` int(11)  NOT NULL COMMENT '用户ID',
+    PRIMARY KEY (`date`, `uid`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户每日首登记录';
+
+CREATE TABLE IF NOT EXISTS `suggest_users` (
+    `uid` int(11)  NOT NULL COMMENT '用户ID',
+    PRIMARY KEY (`uid`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='推荐用户';
+
