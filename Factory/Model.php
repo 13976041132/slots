@@ -13,6 +13,7 @@ use FF\App\GameMain\Model\Main\UserBllRewardDataModel;
 use FF\App\GameMain\Model\Main\UserInviteDataModel;
 use FF\App\GameMain\Model\Main\UserModel;
 use FF\App\GameMain\Model\Main\SuggestUsersModel;
+use FF\App\GameMain\Model\Main\UserDailyFirstLoginLogModel;
 use FF\Framework\Mode\Factory;
 
 class Model extends Factory
@@ -79,4 +80,13 @@ class Model extends Factory
     {
         return self::getInstance('FF\App\GameMain\Model\Main\SuggestUsersModel');
     }
+
+    /**
+     * @return UserDailyFirstLoginLogModel
+     */
+    public static function userDailyFirstLoginLog()
+    {
+        return self::getInstance('FF\App\GameMain\Model\Main\UserDailyFirstLoginLogModel');
+    }
+
 }

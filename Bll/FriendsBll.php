@@ -6,6 +6,7 @@
 
 namespace FF\Bll;
 
+use Exception;
 use FF\Constants\Exceptions;
 use FF\Constants\MessageIds;
 use FF\Factory\Bll;
@@ -13,9 +14,6 @@ use FF\Factory\Dao;
 use FF\Factory\Keys;
 use FF\Factory\Model;
 use FF\Framework\Core\FF;
-use FF\Framework\Utils\Config;
-use FF\Library\Utils\Utils;
-use Exception;
 
 class FriendsBll
 {
@@ -159,7 +157,7 @@ class FriendsBll
     private function formatUserInfo($uids)
     {
         if (empty($uids)) return array();
-        return Bll::user()->getUserInfoList($uids, 'uid,name,level');
+        return Bll::user()->getUserInfoList($uids, 'uid,name,level,clubId,headId,facebookId');
     }
 
     /**

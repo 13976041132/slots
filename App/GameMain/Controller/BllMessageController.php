@@ -5,6 +5,7 @@ use FF\Constants\MessageIds;
 use FF\Factory\Bll;
 use FF\Factory\Dao;
 use FF\Factory\Keys;
+use FF\Factory\Model;
 
 class BllMessageController extends BaseController
 {
@@ -28,6 +29,8 @@ class BllMessageController extends BaseController
     {
         $uid = $this->getUid();
         Bll::messageNotify()->clearQueueMessage($uid);
+        //记录当前玩家登录过
+        Model::userDailyFirstLoginLog()->record($uid);
         return [];
     }
 

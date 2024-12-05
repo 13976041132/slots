@@ -221,39 +221,6 @@ class FriendController extends BaseController
         return ['list' => $list];
     }
 
-    /**
-     * 赠送好友免费金币
-     */
-    public function givingFriendCoins()
-    {
-        // 参数
-        $uid = $this->getUid();
-        $fUId = (int)$this->getParam('fUId');
-        $coin = (int)$this->getParam('coin');
-        if ($coin <= 0) {
-            FF::throwException(Exceptions::RET_GIVING_COIN_ERROR, 'the giving coin num incorrect');
-        }
-        // 检查是否好友
-        if (!Bll::friends()->isMyFriend($uid, $fUId)) {
-            FF::throwException(Exceptions::RET_SOCIAL_NOT_FRIEND);
-        }
-        $key = Keys::sentFriendCoinsLock($uid, $fUId);
-        if (!Dao::redis()->set($key, 1, ['nx', 'ex' => 1])) {
-            FF::throwException(Exceptions::RET_REPEAT_REQUEST_ERROR, 'please try again later.');
-        }
-        $result = Bll::friends()->checkSendFriendCoins($uid, $fUId);
-        Dao::redis()->del($key);
-        if (!$result) {
-            FF::throwException(Exceptions::RET_SOCIAL_LIMIT_SENT_FRIEND_COINS);
-        }
-        $itemList = Bll::friends()->coinToItemList($coin);
-        Model::userBllRewardData()->record($fUId, $uid, MessageIds::RECEIVE_FRIEND_COINS_NOTIFY, $itemList, 30 * 86400);
-        Bll::friendCache()->batchUpdateFieldByInc($uid, [$fUId], 'givingGiftTimes');
-        Bll::messageNotify()->receiveFriendCoins($fUId, $uid);
-
-        return [];
-    }
-
     public function givingFriendStamp()
     {
         // 参数
@@ -339,5 +306,52 @@ class FriendController extends BaseController
         $inviteCode = $this->getParam('inviteCode');
         Bll::friends()->bindInviter($uid, $inviteCode);
         return [];
+    }
+    /**
+     * 赠送好友免费金币
+     */
+    public function givingFriendsCoins()
+    {
+        // 参数
+        $uid = $this->getUid();
+        $list = $this->getParam('list');
+        if (!is_array($list)) {
+            $list = json_decode($list, true);
+        }
+        if (!is_array($list)) {
+            FF::throwException(Exceptions::PARAM_INVALID_ERROR);
+        }
+        $friends = Bll::friends()->getFriends($uid);
+        foreach ($list as $info) {
+            if (empty($info['fUId']) || empty($info['coin'])) {
+                FF::throwException(Exceptions::PARAM_MISS_ERROR);
+            }
+            if ($info['coin'] <= 0) {
+                FF::throwException(Exceptions::RET_GIVING_COIN_ERROR, 'the giving coin num incorrect');
+            }
+            if (!in_array($info['fUId'], $friends)) {
+                FF::throwException(Exceptions::RET_SOCIAL_NOT_FRIEND);
+            }
+        }
+        $successUIds = [];
+        foreach ($list as $info) {
+            $fUId = $info['fUId'];
+            $coin = min($info['coin'], 100000000);
+            $key = Keys::sentFriendCoinsLock($uid, $fUId);
+            if (!Dao::redis()->set($key, 1, ['nx', 'ex' => 1])) {
+                continue;
+            }
+            $result = Bll::friends()->checkSendFriendCoins($uid, $fUId);
+            Dao::redis()->del($key);
+            if (!$result) {
+                continue;
+            }
+            $itemList = Bll::friends()->coinToItemList($coin);
+            Model::userBllRewardData()->record($fUId, $uid, MessageIds::RECEIVE_FRIEND_COINS_NOTIFY, $itemList, 30 * 86400);
+            Bll::friendCache()->batchUpdateFieldByInc($uid, [$fUId], 'givingGiftTimes');
+            Bll::messageNotify()->receiveFriendCoins($fUId, $uid);
+            $successUIds[] = $fUId;
+        }
+        return ['fUIds' =>$successUIds];
     }
 }

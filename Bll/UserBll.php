@@ -17,12 +17,16 @@ class UserBll extends DBCacheBll
         'name' => ['string', ''],
         'deviceId' => ['string', ''],
         'level' => ['int', 0],
+        'clubId' => ['int', 0],
+        'headId' => ['string', 0],
+        'facebookId' => ['string', ''],
     );
 
     protected $updateFields = array(
         'name' => ['string', ''],
-        'deviceId' => ['string', ''],
         'level' => ['int', ''],
+        'headId' => ['string', ''],
+        'facebookId' => ['string', ''],
     );
 
     public $onlyDQL = true;

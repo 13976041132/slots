@@ -20,7 +20,7 @@ class MessageIds
     const REFUSE_FRIEND = 100005; //绝交添加好友
     const DEL_FRIEND = 100006; //删除好友
     const GIVING_FRIEND_STAMP = 100007; //赠送邮票
-    const GIVING_FRIEND_COINS = 100008; //赠送金币
+    const GIVING_FRIENDS_COINS = 100008; //赠送金币
     const FETCH_FRIEND_GIVING_STAMP_LIST = 100009;//获取朋友赠送邮票记录列表
     const FETCH_FRIEND_GIVING_COIN_LIST = 100010;//获取朋友赠送金币记录列表
     const FETCH_FRIEND_INFO = 100011;//获取朋友信息
