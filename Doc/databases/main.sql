@@ -71,3 +71,12 @@ CREATE TABLE IF NOT EXISTS `suggest_users` (
     PRIMARY KEY (`uid`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='推荐用户';
 
+CREATE TABLE IF NOT EXISTS `user_request_last` (
+    `uid` int(11)  NOT NULL COMMENT '用户ID',
+    `requestId` varchar(32)  NOT NULL COMMENT '请求ID',
+    `messageId` int(11)  NOT NULL COMMENT '消息ID',
+    `request`   text  COMMENT '请求参数信息',
+    `response` text  COMMENT '响应结构',
+    `requestTime` int(11) NOT NULL COMMENT '请求时间',
+    PRIMARY KEY (`uid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='玩家请求数据';

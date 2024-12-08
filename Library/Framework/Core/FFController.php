@@ -32,6 +32,11 @@ class FFController
         //To override
     }
 
+    public function afterResponse($response, $error)
+    {
+        //To override
+    }
+
     /**
      * 设置全部请求参数
      * @param array $params

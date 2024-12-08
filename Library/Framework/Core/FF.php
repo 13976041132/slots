@@ -294,6 +294,10 @@ class FF
             $error = $e;
         }
 
+        if (self::getController() != null) {
+            self::getController()->afterResponse($response, $error);
+        }
+
         self::logRequest($response);
 
         //响应输出

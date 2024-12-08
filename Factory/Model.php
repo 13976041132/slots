@@ -14,6 +14,7 @@ use FF\App\GameMain\Model\Main\UserInviteDataModel;
 use FF\App\GameMain\Model\Main\UserModel;
 use FF\App\GameMain\Model\Main\SuggestUsersModel;
 use FF\App\GameMain\Model\Main\UserDailyFirstLoginLogModel;
+use FF\App\GameMain\Model\Main\UserRequestLastModel;
 use FF\Framework\Mode\Factory;
 
 class Model extends Factory
@@ -89,4 +90,11 @@ class Model extends Factory
         return self::getInstance('FF\App\GameMain\Model\Main\UserDailyFirstLoginLogModel');
     }
 
+    /**
+     * @return UserRequestLastModel
+     */
+    public static function userRequestLast()
+    {
+        return self::getInstance('FF\App\GameMain\Model\Main\UserRequestLastModel');
+    }
 }

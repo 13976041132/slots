@@ -27,6 +27,7 @@ $config = array(
     MessageIds::FETCH_BLL_MESSAGE_STAT_LIST => array('/BllMessage/fetchMsgStatInfo'),
     MessageIds::CLEAR_BLL_MESSAGE => array('/BllMessage/clearBllMessage'),
     MessageIds::CLEAR_USER_INFO_REPORT => array('/User/dataReport'),
+    MessageIds::FETCH_REQUEST_INFO => array('/User/fetchRequestInfo'),
 );
 
 return $config;

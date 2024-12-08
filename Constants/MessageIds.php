@@ -36,4 +36,5 @@ class MessageIds
     const CLEAR_USER_INFO_REPORT = 100021; //玩家信息上报
     const FETCH_SUGGEST_FRIEND_LIST = 100022; //获取好友推荐列表
     const ADD_SUGGEST_FRIENDS = 100023; //批量添加好友请求
+    const FETCH_REQUEST_INFO = 100024; //获取请求的信息
 }

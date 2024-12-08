@@ -45,6 +45,7 @@ class BllMessageController extends BaseController
             'unreadMsgCnt' => $unreadCnt, //未读的消息数量
             'receiveFriendCoinMsgCnt' => $coinTimes, //收到赠送金币消息数量
             'receiveFriendStampMsgCnt' => $stampTimes,//收到赠送邮票消息数量
+            'lastRequestId' => Model::userRequestLast()->getRequestId($uid),//最后请求的id
         ];
     }
 }
