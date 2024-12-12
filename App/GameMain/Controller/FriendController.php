@@ -26,7 +26,7 @@ class FriendController extends BaseController
         $uid = $this->getUid();
         $friends = Bll::friends()->getFriendsInfo($uid);
         return array(
-            'friends' => $friends,
+            'friends' => array_values($friends),
         );
     }
 
@@ -81,7 +81,7 @@ class FriendController extends BaseController
         $requestFriends = Bll::friends()->getFriendsRequestInfo($uid);
 
         return array(
-            'requestFriends' => $requestFriends
+            'requestFriends' => array_values($requestFriends)
         );
     }
 
@@ -164,7 +164,7 @@ class FriendController extends BaseController
         $uid = $this->getUid();
         $suggestFriends = Bll::friends()->getSuggestFriends($uid);
 
-        return ['list' => $suggestFriends];
+        return ['list' => array_values($suggestFriends)];
     }
 
     /**

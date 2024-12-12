@@ -312,10 +312,10 @@ abstract class DBCacheBll
                     continue;
                 }
                 if (!isset($result[$field]) || $result[$field] === '') {
-                    $dataList[$index][$field] = $this->fields[$field][1]; //default value
+                    $dataList[$result[$this->uniqueKey]][$field] = $this->fields[$field][1]; //default value
                 } else {
                     $format = $this->fields[$field][0];
-                    $dataList[$index][$field] = Utils::dataFormat($result[$field], $format);
+                    $dataList[$result[$this->uniqueKey]][$field] = Utils::dataFormat($result[$field], $format);
                 }
             }
         }

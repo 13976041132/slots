@@ -13,6 +13,7 @@ class BllMessageController extends BaseController
     public function fetchMessageList()
     {
         $uid = $this->getUid();
+        Bll::user()->updateUserInfo($uid, ['lastOnlineTime' => time()]);
         //通过队列获取玩家相关业务推送信息
         $key = Keys::bllMessageQueue($uid);
         $result = Dao::redis()->lRange($key, 0, 200);
@@ -31,6 +32,8 @@ class BllMessageController extends BaseController
         Bll::messageNotify()->clearQueueMessage($uid);
         //记录当前玩家登录过
         Model::userDailyFirstLoginLog()->record($uid);
+        Bll::user()->resetCacheData($uid);
+        Bll::user()->updateUserInfo($uid, ['lastOnlineTime' => time()]);
         return [];
     }
 

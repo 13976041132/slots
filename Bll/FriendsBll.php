@@ -70,6 +70,7 @@ class FriendsBll
             $userInfo['stampGivingAble'] = !empty($stampList[$fuid]) ? 0 : 1;
             $userInfo['coinGivingAble'] = !empty($coinList[$fuid]) ? 0 : 1;
             $userInfo['unreadCnt'] = $friends[$uuid]['unReadCnt'] ?? 0;
+            $userInfo['isOnline'] = (int)Bll::user()->isOnline($fuid);
             if (Bll::chatLog()->getLastChatTime($uid, $fuid)) {
                 $userInfo['group'] = self::FRIEND_GROUP_WITHIN_THREE_DAYS;
                 continue;

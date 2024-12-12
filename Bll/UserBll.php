@@ -18,8 +18,9 @@ class UserBll extends DBCacheBll
         'deviceId' => ['string', ''],
         'level' => ['int', 0],
         'clubId' => ['int', 0],
-        'headId' => ['string', 0],
+        'headId' => ['string', ''],
         'facebookId' => ['string', ''],
+        'lastOnlineTime' => ['int', 0],
     );
 
     protected $updateFields = array(
@@ -27,6 +28,7 @@ class UserBll extends DBCacheBll
         'level' => ['int', ''],
         'headId' => ['string', ''],
         'facebookId' => ['string', ''],
+        'lastOnlineTime' => ['int', 0],
     );
 
     public $onlyDQL = true;
@@ -75,6 +77,12 @@ class UserBll extends DBCacheBll
         return $this->getCacheList($uids, $fields);
     }
 
+    public function resetCacheData($uid)
+    {
+        $key = $this->getCacheKey($uid, null);
+        $this->redis()->expire($key, -1);
+        $this->getCacheData($uid);
+    }
     public function updateUserInfo($uid, $data)
     {
         $update = [];
@@ -88,5 +96,22 @@ class UserBll extends DBCacheBll
         if (!$update) return true;
 
         return $this->updateCacheData($uid, $update);
+    }
+
+    /**
+     * 检查用户是否在线
+     */
+    public function isOnline($uid)
+    {
+        $data = $this->getCacheData($uid, 'lastOnlineTime');
+        if (!$data || $data['lastOnlineTime'] == 0) {
+            return false;
+        }
+
+        if ((time() - $data['lastOnlineTime']) > 300) {
+            return false;
+        }
+
+        return true;
     }
 }
