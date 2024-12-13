@@ -18,7 +18,7 @@ class UserBll extends DBCacheBll
         'deviceId' => ['string', ''],
         'level' => ['int', 0],
         'clubId' => ['int', 0],
-        'headId' => ['string', ''],
+        'headId' => ['int', 0],
         'facebookId' => ['string', ''],
         'lastOnlineTime' => ['int', 0],
     );
@@ -26,7 +26,7 @@ class UserBll extends DBCacheBll
     protected $updateFields = array(
         'name' => ['string', ''],
         'level' => ['int', ''],
-        'headId' => ['string', ''],
+        'headId' => ['int', 0],
         'facebookId' => ['string', ''],
         'lastOnlineTime' => ['int', 0],
     );
