@@ -6,6 +6,8 @@ use FF\Extend\MyModel;
 
 class UserBllRewardDataModel extends MyModel
 {
+    const STATUS_NON_AWARD = 0;
+    const STATUS_AWARD = 1;
     public function __construct()
     {
         parent::__construct(DB_MAIN, 'user_bll_reward_data');

@@ -11,8 +11,7 @@ class MessageIds
     const RECEIVE_FRIEND_COINS_NOTIFY = 1005; //赠送好金币通知
     const RECEIVE_FRIEND_STAMP_NOTIFY = 1006; //赠送好邮票通知
     const CHAT_MSG_RECEIVE_NOTIFY = 1007; //聊天信息接收通知
-    const CHAT_INVITED_NOTIFY = 1008; //邀请奖励通知
-
+    const INVITED_BIND_AWARD_NOTIFY = 1008; //邀请奖励通知
     const FETCH_FRIENDS = 100001; //获取好友列表
     const ADD_FRIEND = 100002; //发送添加好友请求
     const FETCH_FRIENDS_REQUESTS = 100003; //获取好友请求
@@ -37,4 +36,5 @@ class MessageIds
     const FETCH_SUGGEST_FRIEND_LIST = 100022; //获取好友推荐列表
     const ADD_SUGGEST_FRIENDS = 100023; //批量添加好友请求
     const FETCH_REQUEST_INFO = 100024; //获取请求的信息
+    const INVITE_AWARD = 100025; //邀请奖励
 }

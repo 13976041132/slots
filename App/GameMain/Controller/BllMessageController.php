@@ -34,6 +34,8 @@ class BllMessageController extends BaseController
         Model::userDailyFirstLoginLog()->record($uid);
         Bll::user()->resetCacheData($uid);
         Bll::user()->updateUserInfo($uid, ['lastOnlineTime' => time()]);
+        //重新加载奖励数据
+        Bll::messageNotify()->loadRewardNotifyMessage($uid);
         return [];
     }
 

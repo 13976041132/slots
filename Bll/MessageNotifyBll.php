@@ -5,11 +5,27 @@ namespace FF\Bll;
 use FF\Constants\MessageIds;
 use FF\Factory\Dao;
 use FF\Factory\Keys;
+use FF\Factory\Model;
+
 class MessageNotifyBll
 {
+    const MESSAGE_IDS = [MessageIds::INVITED_BIND_AWARD_NOTIFY];
     public function clearQueueMessage($uid)
     {
         Dao::redis()->del(Keys::bllMessageQueue($uid));
+    }
+    public function loadRewardNotifyMessage($uid)
+    {
+        $where = [
+            'uid' => $uid, 'expireTime' => ['>=', time()],
+            'messageId' => ['in', self::MESSAGE_IDS], 'status' => 0
+        ];
+        $list = Model::userBllRewardData()->fetchAll($where, 'uid,triggerUid,messageId,time');
+        $messages = [];
+        foreach ($list as $info) {
+            $messages[] = $this->makeData($info['triggerUid'], $info['messageId'], $info['time']);
+        }
+        $this->batchRecordNotifyMsg($uid, $messages);
     }
     public function addFriendRequest($uid, $optUId)
     {
@@ -48,7 +64,7 @@ class MessageNotifyBll
 
     public function invited($uid, $optUId)
     {
-        $data = $this->makeData($optUId, MessageIds::CHAT_INVITED_NOTIFY);
+        $data = $this->makeData($optUId, MessageIds::INVITED_BIND_AWARD_NOTIFY);
         $this->recordNotifyMsg($uid, $data);
     }
     public function receiveChatMsg($uid, $optUId, $content)
@@ -75,12 +91,12 @@ class MessageNotifyBll
             Dao::redis()->expire($key, 3600 * 12);
         }
     }
-    public function makeData($optUId, $messageId)
+    public function makeData($optUId, $messageId, $time = null)
     {
         return array(
             'uid' => $optUId,
             'msgId' => $messageId,
-            'time' => time(),
+            'time' => $time ?: time(),
         );
     }
 }

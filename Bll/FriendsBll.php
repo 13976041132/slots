@@ -338,6 +338,7 @@ class FriendsBll
             if (!$updateRet) {
                 FF::throwException(Exceptions::RET_BIND_INVITER_FAIL, 'bind invite code fail');
             }
+            Model::userBllRewardData()->record($inviterData['uid'], $uid, MessageIds::INVITED_BIND_AWARD_NOTIFY, [], 100 * 86400);
             Dao::db()->commit();
             Bll::messageNotify()->invited($inviterData['uid'], $uid);
         } catch (Exception $e) {

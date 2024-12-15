@@ -28,6 +28,7 @@ $config = array(
     MessageIds::CLEAR_BLL_MESSAGE => array('/BllMessage/clearBllMessage'),
     MessageIds::CLEAR_USER_INFO_REPORT => array('/User/dataReport'),
     MessageIds::FETCH_REQUEST_INFO => array('/User/fetchRequestInfo'),
+    MessageIds::INVITE_AWARD => array('/User/inviteAward'),
 );
 
 return $config;
