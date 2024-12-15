@@ -52,7 +52,7 @@ class UserController extends BaseController
             FF::throwException(Exceptions::FAIL,'award fail');
         }
         $updateWhere = array_merge($where, ['updateTime' => $info['updateTime']]);
-        $result = Model::userBllRewardData()->update($updateWhere, ['status' => UserBllRewardDataModel::STATUS_AWARD]);
+        $result = Model::userBllRewardData()->update(['status' => UserBllRewardDataModel::STATUS_AWARD], $updateWhere);
         if (!$result) {
             FF::throwException(Exceptions::FAIL, 'award fail');
         }
