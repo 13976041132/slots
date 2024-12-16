@@ -31,7 +31,7 @@ class MessageIds
     const READ_ALL_CHAT_MESSAGE = 100017; //设置消息已读
     const FETCH_BLL_MESSAGE_LIST = 100018; //拉取业务信息列表
     const FETCH_BLL_MESSAGE_STAT_LIST = 100019; //拉取业务信息统计列表
-    const CLEAR_BLL_MESSAGE = 100020; //清除业务数据 (玩家登录成功后,就要调用)
+    const USER_LOGIN = 100020; //玩家登录
     const CLEAR_USER_INFO_REPORT = 100021; //玩家信息上报
     const FETCH_SUGGEST_FRIEND_LIST = 100022; //获取好友推荐列表
     const ADD_SUGGEST_FRIENDS = 100023; //批量添加好友请求

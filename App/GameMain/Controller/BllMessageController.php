@@ -21,22 +21,7 @@ class BllMessageController extends BaseController
         foreach ($result as $row) {
             $list[] = json_decode($row, true);
         }
-
         return $list;
-    }
-
-    //登录成功后, 请求这个接口, 清除数据
-    public function clearBllMessage()
-    {
-        $uid = $this->getUid();
-        Bll::messageNotify()->clearQueueMessage($uid);
-        //记录当前玩家登录过
-        Model::userDailyFirstLoginLog()->record($uid);
-        Bll::user()->resetCacheData($uid);
-        Bll::user()->updateUserInfo($uid, ['lastOnlineTime' => time()]);
-        //重新加载奖励数据
-        Bll::messageNotify()->loadRewardNotifyMessage($uid);
-        return [];
     }
 
     //消息统计列表

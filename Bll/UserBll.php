@@ -6,6 +6,8 @@
 namespace FF\Bll;
 
 use FF\App\GameMain\Model\Main\UserModel;
+use FF\Factory\Bll;
+use FF\Factory\Dao;
 use FF\Factory\Keys;
 use FF\Factory\Model;
 use FF\Library\Utils\Utils;
@@ -113,5 +115,35 @@ class UserBll extends DBCacheBll
         }
 
         return true;
+    }
+
+    public function getSessionId($uid)
+    {
+        $key = Keys::sessionId($uid);
+
+        return Dao::redis()->get($key);
+    }
+
+    /**
+     * 设置用户当前的sessionId
+     */
+    public function setSessionId($uid, $sessionId)
+    {
+        $key = Keys::sessionId($uid);
+
+        return Dao::redis()->set($key, $sessionId, 3 * 86400);
+    }
+
+    /**
+     * 清除用户当前的session
+     */
+    public function clearSession($uid)
+    {
+        $key = Keys::sessionId($uid);
+        $sessionId = Dao::redis()->get($key);
+
+        if ($sessionId) {
+            Bll::session()->destroy($sessionId);
+        }
     }
 }

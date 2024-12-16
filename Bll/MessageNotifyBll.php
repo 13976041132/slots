@@ -23,7 +23,7 @@ class MessageNotifyBll
         $list = Model::userBllRewardData()->fetchAll($where, 'uid,triggerUid,messageId,time');
         $messages = [];
         foreach ($list as $info) {
-            $messages[] = $this->makeData($info['triggerUid'], $info['messageId'], $info['time']);
+            $messages[] = json_encode($this->makeData($info['triggerUid'], $info['messageId'], $info['time']), JSON_UNESCAPED_UNICODE);
         }
         $this->batchRecordNotifyMsg($uid, $messages);
     }

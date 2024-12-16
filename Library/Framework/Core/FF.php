@@ -338,7 +338,7 @@ class FF
         $trace = $trace ? $trace : debug_backtrace();
 
         Log::error(array(
-            'uid' => Bll::loginUser()->get('uid'),
+            'uid' => Bll::session()->get('uid'),
             'code' => $code,
             'message' => $message,
             'file' => $file,

@@ -5,6 +5,7 @@
 
 namespace FF\App\GameMain\Controller;
 
+use Exception;
 use FF\Constants\Exceptions;
 use FF\Extend\MyController;
 use FF\Factory\Bll;
@@ -15,7 +16,6 @@ use FF\Framework\Utils\Input;
 use FF\Framework\Utils\Log;
 use FF\Framework\Utils\Output;
 use FF\Library\Utils\Request;
-use Exception;
 
 class BaseController extends MyController
 {
@@ -24,7 +24,7 @@ class BaseController extends MyController
     );
 
     private $filterIgnoreRequestId = array(
-        '/User/fetchRequestInfo', '/BllMessageController/*'
+        '/User/fetchRequestInfo', '/BllMessageController/*','/User/login'
     );
 
     private $apiCallFreqLimits = array();
@@ -59,19 +59,17 @@ class BaseController extends MyController
 
     private function checkUser()
     {
-        $uid = (int)Input::request('u');
-        $deviceId = (string)Input::request('d');
+        $sessionId = Input::request('s');
+        Bll::session()->setSessionId($sessionId);
         if ($this->isInFilter($this->filterNotNeedLogin)) {
             return true;
         }
-
-        $userInfo = Bll::user()->getUserInfo($uid);
-        if (!$userInfo['uid'] || $userInfo['deviceId'] != $deviceId) {
-            Log::error($uid, 'user.log');
-            return false;
+        $session = Bll::session()->getSessionData();
+        if (!$session) {
+            Log::error($sessionId, 'session.log');
         }
-        Bll::loginUser()->setUserInfo($userInfo);
-        return true;
+
+        return $session ? true : false;
     }
 
     private function checkVersion()
@@ -92,7 +90,7 @@ class BaseController extends MyController
 
     public function getUid()
     {
-        return Bll::loginUser()->get('uid');
+        return Bll::session()->get('uid');
     }
     public function afterResponse($resData, $error)
     {

@@ -8,6 +8,8 @@ use FF\Constants\MessageIds;
 use FF\Factory\Bll;
 use FF\Factory\Model;
 use FF\Framework\Core\FF;
+use FF\Framework\Utils\Log;
+use GPBClass\Enum\RET;
 
 class UserController extends BaseController
 {
@@ -57,5 +59,38 @@ class UserController extends BaseController
             FF::throwException(Exceptions::FAIL, 'award fail');
         }
         return [];
+    }
+
+    //玩家登录
+    public function login()
+    {
+        $deviceId = $this->getParam('deviceId');
+        $uid = $this->getParam('uid');
+        $userInfo = Bll::user()->getUserInfo($uid);
+        if (!$userInfo['uid'] || $userInfo['deviceId'] != $deviceId) {
+            Log::error($uid, 'user.log');
+            FF::throwException(Exceptions::RET_ACCOUNT_NOT_EXIST);
+        }
+        $sessionData = array('uid' => $uid, 'deviceId' => $deviceId);
+        $sessionId = Bll::session()->create($uid, $sessionData);
+        Bll::user()->clearSession($uid);
+        Bll::user()->setSessionId($uid, $sessionId);
+        //记录当前玩家登录过
+        Model::userDailyFirstLoginLog()->record($uid);
+        Bll::user()->resetCacheData($uid);
+        Bll::user()->updateUserInfo($uid, ['lastOnlineTime' => time()]);
+        Bll::messageNotify()->clearQueueMessage($uid);
+        Bll::messageNotify()->loadRewardNotifyMessage($uid);
+
+        $unreadCnt = Bll::friends()->getUnreadCount($uid);
+        $coinTimes = Bll::friends()->getReceiveFriendGiftCount($uid, MessageIds::RECEIVE_FRIEND_COINS_NOTIFY);
+        $stampTimes = Bll::friends()->getReceiveFriendGiftCount($uid, MessageIds::RECEIVE_FRIEND_STAMP_NOTIFY);
+        return [
+            'unreadMsgCnt' => $unreadCnt, //未读的消息数量
+            'receiveFriendCoinMsgCnt' => $coinTimes, //收到赠送金币消息数量
+            'receiveFriendStampMsgCnt' => $stampTimes,//收到赠送邮票消息数量
+            'lastRequestId' => Model::userRequestLast()->getRequestId($uid),//最后请求的id
+            'token' => $sessionId
+        ];
     }
 }
