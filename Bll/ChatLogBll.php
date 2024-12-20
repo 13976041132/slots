@@ -16,10 +16,12 @@ class ChatLogBll
         $chatLogList = [];
         foreach ($data as $row) {
             $chatLogList[] = [
+                'id' => $row['id'],
                 'sender' => $row['sender'],
                 'receiver' => $row['receiver'],
                 'sendTime' => $row['time'],
-                'content' => $row['content']
+                'content' => $row['content'],
+                'microtime' => $row['microtime'],
             ];
         }
 
