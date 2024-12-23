@@ -27,7 +27,7 @@ class ChatController extends BaseController
         Bll::messageNotify()->receiveChatMsg($fUid, $uid, $content);
         Bll::chatLog()->updateChatTime($uid, $fUid);
 
-        return [];
+        return Bll::chatLog()->getMsgList($uid, $fUid, 5);
     }
 
     public function fetchMessageList()

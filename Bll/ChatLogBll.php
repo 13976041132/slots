@@ -9,10 +9,10 @@ use FF\Factory\Model;
 
 class ChatLogBll
 {
-    public function getMsgList($uid, $fUid)
+    public function getMsgList($uid, $fUid, $limit = 50)
     {
         $uuid = self::makeUUID($uid, $fUid);
-        $data = Model::chatLog()->GetListByUUID($uuid);
+        $data = Model::chatLog()->GetListByUUID($uuid, $limit);
         $chatLogList = [];
         foreach ($data as $row) {
             $chatLogList[] = [

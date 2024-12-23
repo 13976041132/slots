@@ -11,13 +11,13 @@ class ChatLogModel extends MyModel
         parent::__construct(DB_MAIN, 'chat_log');
     }
 
-    public function GetListByUUID($uuid)
+    public function GetListByUUID($uuid, $limit)
     {
         return $this->db()
             ->select(null)
             ->where(['uuid' => $uuid])
             ->orderBy('microtime desc')
-            ->limit(50, 0)
+            ->limit($limit, 0)
             ->fetchAll();
     }
 }
