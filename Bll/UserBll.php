@@ -21,6 +21,8 @@ class UserBll extends DBCacheBll
         'level' => ['int', 0],
         'clubId' => ['int', 0],
         'headId' => ['int', 0],
+        'vipLevel' => ['int', 0],
+        'coin' => ['double', 0],
         'facebookId' => ['string', ''],
         'lastOnlineTime' => ['int', 0],
     );

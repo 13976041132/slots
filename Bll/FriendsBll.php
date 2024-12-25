@@ -158,7 +158,7 @@ class FriendsBll
     private function formatUserInfo($uids)
     {
         if (empty($uids)) return array();
-        return Bll::user()->getUserInfoList($uids, 'uid,name,level,clubId,headId,facebookId');
+        return Bll::user()->getUserInfoList($uids, 'uid,name,level,clubId,headId,facebookId,coin,vipLevel');
     }
 
     /**
