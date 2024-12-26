@@ -6,6 +6,7 @@
 namespace FF\Bll;
 
 use FF\App\GameMain\Model\Main\UserModel;
+use FF\Constants\MessageIds;
 use FF\Factory\Bll;
 use FF\Factory\Dao;
 use FF\Factory\Keys;
@@ -147,5 +148,17 @@ class UserBll extends DBCacheBll
         if ($sessionId) {
             Bll::session()->destroy($sessionId);
         }
+    }
+    public function fetchMsgStatInfo($uid)
+    {
+        $unreadCnt = Bll::friends()->getUnreadCount($uid);
+        $coinTimes = Bll::friends()->getReceiveFriendGiftCount($uid, MessageIds::RECEIVE_FRIEND_COINS_NOTIFY);
+        $stampTimes = Bll::friends()->getReceiveFriendGiftCount($uid, MessageIds::RECEIVE_FRIEND_STAMP_NOTIFY);
+        return [
+            'unreadMsgCnt' => $unreadCnt, //未读的消息数量
+            'receiveFriendCoinMsgCnt' => $coinTimes, //收到赠送金币消息数量
+            'receiveFriendStampMsgCnt' => $stampTimes,//收到赠送邮票消息数量
+            'requestFriendCnt' => count(Bll::friends()->getRequestFriends($uid)), //好友申请数量
+        ];
     }
 }

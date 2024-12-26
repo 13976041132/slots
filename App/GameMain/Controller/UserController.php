@@ -82,15 +82,13 @@ class UserController extends BaseController
         Bll::messageNotify()->clearQueueMessage($uid);
         Bll::messageNotify()->loadRewardNotifyMessage($uid);
 
-        $unreadCnt = Bll::friends()->getUnreadCount($uid);
-        $coinTimes = Bll::friends()->getReceiveFriendGiftCount($uid, MessageIds::RECEIVE_FRIEND_COINS_NOTIFY);
-        $stampTimes = Bll::friends()->getReceiveFriendGiftCount($uid, MessageIds::RECEIVE_FRIEND_STAMP_NOTIFY);
-        return [
-            'unreadMsgCnt' => $unreadCnt, //未读的消息数量
-            'receiveFriendCoinMsgCnt' => $coinTimes, //收到赠送金币消息数量
-            'receiveFriendStampMsgCnt' => $stampTimes,//收到赠送邮票消息数量
-            'lastRequestId' => Model::userRequestLast()->getRequestId($uid),//最后请求的id
-            'token' => $sessionId
-        ];
+        $msgStatData = Bll::user()->fetchMsgStatInfo($uid);
+        return array_merge(
+            $msgStatData,
+            [
+                'token' => $sessionId,
+                'lastRequestId' => Model::userRequestLast()->getRequestId($uid)
+            ]
+        );
     }
 }
