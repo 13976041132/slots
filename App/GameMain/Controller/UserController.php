@@ -64,14 +64,14 @@ class UserController extends BaseController
     //玩家登录
     public function login()
     {
-        $openId = $this->getParam('openId');
+        $deviceId = $this->getParam('deviceId');
         $uid = $this->getParam('uid');
         $userInfo = Bll::user()->getUserInfo($uid);
-        if (!$userInfo['uid'] || $userInfo['openId'] != $openId) {
+        if (!$userInfo['uid'] || $userInfo['deviceId'] != $deviceId) {
             Log::error($uid, 'user.log');
             FF::throwException(Exceptions::RET_ACCOUNT_NOT_EXIST);
         }
-        $sessionData = array('uid' => $uid, 'openId' => $openId);
+        $sessionData = array('uid' => $uid, 'deviceId' => $deviceId);
         $sessionId = Bll::session()->create($uid, $sessionData);
         Bll::user()->clearSession($uid);
         Bll::user()->setSessionId($uid, $sessionId);

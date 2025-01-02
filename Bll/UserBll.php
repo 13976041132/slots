@@ -18,7 +18,7 @@ class UserBll extends DBCacheBll
     protected $fields = array(
         'uid' => ['int', null],
         'name' => ['string', ''],
-        'openId' => ['string', ''],
+        'deviceId' => ['string', ''],
         'level' => ['int', 0],
         'clubId' => ['int', 0],
         'headId' => ['int', 0],

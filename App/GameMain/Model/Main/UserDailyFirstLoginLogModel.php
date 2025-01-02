@@ -16,6 +16,6 @@ class UserDailyFirstLoginLogModel extends MyModel
     }
     public function record($uid)
     {
-        $this->insert(['uid' => $uid, 'date' => date('Y-m-d')], true);
+        $this->insert(['uid' => $uid, 'date' => date('Y-m-d')]);
     }
 }
