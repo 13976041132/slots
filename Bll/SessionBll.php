@@ -61,7 +61,7 @@ class SessionBll
         return $this->sessionData;
     }
 
-    public function create($uid, $data, $expire = 3 * 86400)
+    public function create($uid, $data, $expire = 86400)
     {
         $this->clean();
 

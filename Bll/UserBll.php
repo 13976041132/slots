@@ -134,7 +134,7 @@ class UserBll extends DBCacheBll
     {
         $key = Keys::sessionId($uid);
 
-        return Dao::redis()->set($key, $sessionId, 3 * 86400);
+        return Dao::redis()->set($key, $sessionId, 86400);
     }
 
     /**
