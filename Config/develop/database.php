@@ -12,6 +12,7 @@ $config = array(
         'username' => FF::getConfig('db.username'),
         'passwd' => FF::getConfig('db.password'),
         'dbname' => FF::getConfig('db.database'),
+        'persistent' => FF::getConfig('db.persistent'),
         'charset' => 'utf8mb4',
     ),
 );
