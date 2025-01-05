@@ -272,9 +272,9 @@ abstract class DBCacheBll
 
             // makeWheres
             if ($wheres) {
-                $wheres = array_merge(array($this->uniqueKey => array('in' => $dirtyUids)), $wheres);
+                $wheres = array_merge(array($this->uniqueKey => array('in', $dirtyUids)), $wheres);
             } else {
-                $wheres = array($this->uniqueKey => array('in' => $dirtyUids));
+                $wheres = array($this->uniqueKey => array('in', $dirtyUids));
             }
 
             // fetchDataFromDB
