@@ -462,16 +462,17 @@ class FriendsBll
         }
         $key = Keys::suggestFriendSet();
         $pageSize = 10;
-        $popCnt = 30;
+        $popCnt = 25;
         $suggestUids = [];
         while (true) {
             $suids = Dao::redis()->sRandMember($key, $popCnt);
-            foreach ($suids as $suid) {
-                if ($suid == $uid || in_array($suid, $suggestUids)) {
+            $diffUids = array_diff($suids,$suggestUids);
+            $userFiendCnt = $this->batchSearchFriendCnt($diffUids);
+            foreach ($userFiendCnt as $suid => $count) {
+                if ($suid == $uid) {
                     continue;
                 }
-                $fuids = $this->getFriends($suid);
-                if (count($fuids) >= 100) {
+                if ($count >= 100) {
                     Dao::redis()->sRem($key, $suid);
                 }
                 $suggestUids[] = $suid;
@@ -479,12 +480,22 @@ class FriendsBll
                     break;
                 }
             }
-
             if (count($suggestUids) >= $pageSize || count($suids) < $popCnt) {
                 break;
             }
         }
         return $this->formatUserInfo($suggestUids);
+    }
+
+    public function batchSearchFriendCnt($uids)
+    {
+        $friendStat = Model::friends()->fetchAll(['uid' => ['in', $uids]], 'uid,count(1) cnt', [], 'uid');
+        $friendStat = array_column($friendStat, 'cnt', 'uid');
+        $userFiendCnt = [];
+        foreach ($uids as $uid) {
+            $userFiendCnt[$uid] = $friendStat[$uid] ?: 0;
+        }
+        return $userFiendCnt;
     }
 
     public function getReceiveFriendGiftCount($uid, $messageId)
