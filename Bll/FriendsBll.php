@@ -456,27 +456,33 @@ class FriendsBll
 
     public function getSuggestFriends($uid)
     {
+        $fuids = $this->getFriends($uid);
         $key = Keys::suggestFriendSet();
         $pageSize = 10;
-        $popCnt = 25;
+        $popCnt = 50;
         $suggestUids = [];
+        $isBreak = false;
         while (true) {
             $suids = Dao::redis()->sRandMember($key, $popCnt);
-            $diffUids = array_diff($suids,$suggestUids);
-            $userFiendCnt = $this->batchSearchFriendCnt($diffUids);
-            foreach ($userFiendCnt as $suid => $count) {
-                if ($suid == $uid) {
-                    continue;
+            $diffUids = array_diff($suids,$suggestUids, $fuids, [$uid]);
+            $userGroup = array_chunk($diffUids, $pageSize + 5);
+            foreach ($userGroup as $uids) {
+                $userFiendCnt = $this->batchSearchFriendCnt($uids);
+                foreach ($userFiendCnt as $suid => $count) {
+                    if ($count >= 100) {
+                        Dao::redis()->sRem($key, $suid);
+                    }
+                    $suggestUids[] = $suid;
+                    if (count($suggestUids) == $pageSize) {
+                        $isBreak = true;
+                        break;
+                    }
                 }
-                if ($count >= 100) {
-                    Dao::redis()->sRem($key, $suid);
-                }
-                $suggestUids[] = $suid;
-                if (count($suggestUids) == $pageSize) {
+                if ($isBreak) {
                     break;
                 }
             }
-            if (count($suggestUids) >= $pageSize || count($suids) < $popCnt) {
+            if ($isBreak || count($suids) < $popCnt) {
                 break;
             }
         }
