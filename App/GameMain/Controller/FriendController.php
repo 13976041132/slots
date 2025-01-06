@@ -37,16 +37,16 @@ class FriendController extends BaseController
     public function addFriend()
     {
         $uid = $this->getUid();
-        $searchUId = (int)$this->getParam('searchUId');
+        $searchUid = (int)$this->getParam('searchUid');
         $requestScene = (int)$this->getParam('requestScene', false, 0);
 
         // 防止添加自己
-        if ($uid == $searchUId) {
+        if ($uid == $searchUid) {
             FF::throwException(Exceptions::RET_SOCIAL_FRIENDS_ACCEPT_FAILED);
         }
 
         // 检查用户角色是否存在
-        $searchRole = Bll::user()->getUserInfo($searchUId, 'uid');
+        $searchRole = Bll::user()->getUserInfo($searchUid, 'uid');
         if (empty($searchRole['uid'])) {
             FF::throwException(Exceptions::RET_ACCOUNT_NOT_EXIST);
         }
@@ -58,15 +58,15 @@ class FriendController extends BaseController
         }
 
         // 检查是否已经是好友
-        if (in_array($searchUId, $friends)) {
+        if (in_array($searchUid, $friends)) {
             FF::throwException(Exceptions::RET_SOCIAL_FRIENDS_ADDED);
         }
 
         // 发送申请, 并通知接收用户ID
-        $addRet = Bll::friends()->addFriendRequest($uid, $searchUId, $requestScene);
+        $addRet = Bll::friends()->addFriendRequest($uid, $searchUid, $requestScene);
         if ($addRet) {
             //好友申请通知
-            Bll::messageNotify()->AddFriendRequest($searchUId, $uid);
+            Bll::messageNotify()->AddFriendRequest($searchUid, $uid);
         }
         // 成功发送
         return array();
@@ -93,23 +93,23 @@ class FriendController extends BaseController
     {
         // 参数
         $uid = $this->getUid();
-        $reqUId = (int)$this->getParam('reqUId');
+        $reqUid = (int)$this->getParam('reqUid');
 
         // 获取用户好友列表，检查当前用户好友是否满100
         $myFriends = Bll::friends()->getFriends($uid);
         if (count($myFriends) >= 100) FF::throwException(Exceptions::RET_SOCIAL_FRIENDS_IS_FULL, 'The number of friends has reached its limit.');
 
         // 获取对方用户好友列表，检查对方用户好友是否满100
-        $reqFriends = Bll::friends()->getFriends($reqUId);
+        $reqFriends = Bll::friends()->getFriends($reqUid);
         if (count($reqFriends) >= 100) FF::throwException(Exceptions::RET_SOCIAL_FRIENDS_IS_FULL, 'The number of friends has reached its limit.');
 
         // 满足条件，建立好友关系
-        $result = Bll::friends()->addFriend($uid, $reqUId);
+        $result = Bll::friends()->addFriend($uid, $reqUid);
 
         // 建立失败
         if (!$result) FF::throwException(Exceptions::RET_SOCIAL_FRIENDS_ACCEPT_FAILED, 'Fail to accept');
 
-        Bll::messageNotify()->accessFriend($reqUId, $uid);
+        Bll::messageNotify()->accessFriend($reqUid, $uid);
 
         return array(
             'friends' => Bll::friends()->getFriendsInfo($uid)
@@ -123,12 +123,12 @@ class FriendController extends BaseController
     {
         // 参数
         $uid = $this->getUid();
-        $refuseUId = (int)$this->getParam('refuseUId');
+        $refuseUid = (int)$this->getParam('refuseUid');
 
-        $result = Bll::friends()->refuseFriendRequest($uid, $refuseUId);
+        $result = Bll::friends()->refuseFriendRequest($uid, $refuseUid);
         if (!$result) FF::throwException(Exceptions::RET_SOCIAL_FRIENDS_ACCEPT_FAILED, 'Fail to refuse');
 
-        Bll::messageNotify()->refuseFriend($refuseUId, $uid);
+        Bll::messageNotify()->refuseFriend($refuseUid, $uid);
         // 拒绝成功
         return array();
     }
@@ -141,15 +141,15 @@ class FriendController extends BaseController
     {
         // 参数
         $uid = $this->getUid();
-        $delUId = (int)$this->getParam('delUId');
+        $delUid = (int)$this->getParam('delUid');
 
         // 直接删除好友关系
-        $result = Bll::friends()->delFriend($uid, $delUId);
+        $result = Bll::friends()->delFriend($uid, $delUid);
 
         // 删除失败
         if (!$result) FF::throwException(Exceptions::RET_SOCIAL_FRIENDS_DELETE_FAILED, 'Fail to delete');
 
-        Bll::messageNotify()->delFriend($delUId, $uid);
+        Bll::messageNotify()->delFriend($delUid, $uid);
 
         return array(
             'friends' => Bll::friends()->getFriendsInfo($uid)
@@ -225,7 +225,7 @@ class FriendController extends BaseController
     {
         // 参数
         $uid = $this->getUid();
-        $fUId = (int)$this->getParam('fUId');
+        $fUid = (int)$this->getParam('fUid');
         $itemList = $this->getParam('itemList');
         if (!is_array($itemList)) {
             $itemList = json_decode($itemList, true);
@@ -243,23 +243,23 @@ class FriendController extends BaseController
             }
         }
         // 检查是否好友
-        if (!Bll::friends()->isMyFriend($uid, $fUId)) {
+        if (!Bll::friends()->isMyFriend($uid, $fUid)) {
             FF::throwException(Exceptions::RET_SOCIAL_NOT_FRIEND);
         }
 
-        $key = Keys::sentFriendStampLock($uid, $fUId);
+        $key = Keys::sentFriendStampLock($uid, $fUid);
         if (!Dao::redis()->set($key, 1, ['nx', 'ex' => 1])) {
             FF::throwException(Exceptions::RET_REPEAT_REQUEST_ERROR, 'please try again later.');
         }
-        $result = Bll::friends()->checkSendFriendStamp($uid, $fUId);
+        $result = Bll::friends()->checkSendFriendStamp($uid, $fUid);
         Dao::redis()->del($key);
         if (!$result) {
             FF::throwException(Exceptions::RET_SOCIAL_LIMIT_SENT_FRIEND_STAMP);
         }
 
-        Model::userBllRewardData()->record($fUId, $uid, MessageIds::RECEIVE_FRIEND_STAMP_NOTIFY, $itemList, 30 * 86400);
-        Bll::friendCache()->batchUpdateFieldByInc($uid, [$fUId], 'givingGiftTimes');
-        Bll::messageNotify()->receiveFriendStamp($fUId, $uid);
+        Model::userBllRewardData()->record($fUid, $uid, MessageIds::RECEIVE_FRIEND_STAMP_NOTIFY, $itemList, 30 * 86400);
+        Bll::friendCache()->batchUpdateFieldByInc($uid, [$fUid], 'givingGiftTimes');
+        Bll::messageNotify()->receiveFriendStamp($fUid, $uid);
         return [];
     }
 
@@ -323,35 +323,35 @@ class FriendController extends BaseController
         }
         $friends = Bll::friends()->getFriends($uid);
         foreach ($list as $info) {
-            if (empty($info['fUId']) || empty($info['coin'])) {
+            if (empty($info['fUid']) || empty($info['coin'])) {
                 FF::throwException(Exceptions::PARAM_MISS_ERROR);
             }
             if ($info['coin'] <= 0) {
                 FF::throwException(Exceptions::RET_GIVING_COIN_ERROR, 'the giving coin num incorrect');
             }
-            if (!in_array($info['fUId'], $friends)) {
+            if (!in_array($info['fUid'], $friends)) {
                 FF::throwException(Exceptions::RET_SOCIAL_NOT_FRIEND);
             }
         }
-        $successUIds = [];
+        $successUids = [];
         foreach ($list as $info) {
-            $fUId = $info['fUId'];
+            $fUid = $info['fUid'];
             $coin = min($info['coin'], 100000000);
-            $key = Keys::sentFriendCoinsLock($uid, $fUId);
+            $key = Keys::sentFriendCoinsLock($uid, $fUid);
             if (!Dao::redis()->set($key, 1, ['nx', 'ex' => 1])) {
                 continue;
             }
-            $result = Bll::friends()->checkSendFriendCoins($uid, $fUId);
+            $result = Bll::friends()->checkSendFriendCoins($uid, $fUid);
             Dao::redis()->del($key);
             if (!$result) {
                 continue;
             }
             $itemList = Bll::friends()->coinToItemList($coin);
-            Model::userBllRewardData()->record($fUId, $uid, MessageIds::RECEIVE_FRIEND_COINS_NOTIFY, $itemList, 30 * 86400);
-            Bll::friendCache()->batchUpdateFieldByInc($uid, [$fUId], 'givingGiftTimes');
-            Bll::messageNotify()->receiveFriendCoins($fUId, $uid);
-            $successUIds[] = $fUId;
+            Model::userBllRewardData()->record($fUid, $uid, MessageIds::RECEIVE_FRIEND_COINS_NOTIFY, $itemList, 30 * 86400);
+            Bll::friendCache()->batchUpdateFieldByInc($uid, [$fUid], 'givingGiftTimes');
+            Bll::messageNotify()->receiveFriendCoins($fUid, $uid);
+            $successUids[] = $fUid;
         }
-        return ['fUIds' =>$successUIds];
+        return ['fUids' =>$successUids];
     }
 }
