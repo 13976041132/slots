@@ -456,10 +456,6 @@ class FriendsBll
 
     public function getSuggestFriends($uid)
     {
-        //存在好友 则不能推荐
-        if (Bll::friends()->getFriends($uid)) {
-            return [];
-        }
         $key = Keys::suggestFriendSet();
         $pageSize = 10;
         $popCnt = 25;
