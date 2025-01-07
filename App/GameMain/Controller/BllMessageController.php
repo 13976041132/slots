@@ -16,7 +16,7 @@ class BllMessageController extends BaseController
         Bll::user()->updateUserInfo($uid, ['lastOnlineTime' => time()]);
         //通过队列获取玩家相关业务推送信息
         $key = Keys::bllMessageQueue($uid);
-        $result = Dao::redis()->lRange($key, 0, 200);
+        $result = Dao::redis()->lPop($key,  200);
         $list = [];
         foreach ($result as $row) {
             $list[] = json_decode($row, true);
