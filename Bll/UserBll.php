@@ -26,6 +26,7 @@ class UserBll extends DBCacheBll
         'coin' => ['double', 0],
         'facebookId' => ['string', ''],
         'lastOnlineTime' => ['int', 0],
+        'region' => ['string', ''],
     );
 
     protected $updateFields = array(
