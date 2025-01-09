@@ -310,7 +310,7 @@ class FriendsBll
         return $requestsSentTimes;
     }
 
-    public function bindInviter($uid, $inviteCode)
+    public function bindInviter($uid, $inviter, $inviteCode)
     {
         try {
             Dao::db()->transaction();
@@ -322,10 +322,19 @@ class FriendsBll
             if ($userInviteData['invitedBy']) {
                 FF::throwException(Exceptions::RET_HAS_BIND_INVITER_ERROR, 'inviter has already been bound');
             }
-            $inviterData = Model::userInviteData()->getOne(['code' => $inviteCode]);
-            if (!$inviterData) {
+            if ($inviteCode) {
+                $inviterData = Model::userInviteData()->getOne(['code' => $inviteCode]);
+            } else {
+                $inviterData = Model::userInviteData()->getOne(['uid' => $inviter]);
+            }
+            if (!$inviterData && $inviteCode) {
                 FF::throwException(Exceptions::RET_INVITE_CODE_NOT_EXISTS_ERROR, 'invite code not exists');
             }
+
+            if (!$inviterData && $inviter) {
+                FF::throwException(Exceptions::RET_INVITE_CODE_NOT_EXISTS_ERROR, 'inviter not exists');
+            }
+
             if ($inviterData['uid'] == $uid) {
                 FF::throwException(Exceptions::RET_DENY_BIND_MYSELF_CODE_ERROR);
             }

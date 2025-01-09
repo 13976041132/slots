@@ -303,8 +303,13 @@ class FriendController extends BaseController
     public function bindInviter()
     {
         $uid = $this->getUid();
-        $inviteCode = $this->getParam('inviteCode');
-        Bll::friends()->bindInviter($uid, $inviteCode);
+        $inviteCode = $this->getParam('inviteCode', false, '');
+        $inviter = $this->getParam('inviter',false, '');
+        if (!$inviteCode && !$inviter) {
+            FF::throwException(Exceptions::PARAM_MISS_ERROR, 'params miss');
+        }
+
+        Bll::friends()->bindInviter($uid, $inviter, $inviteCode);
         return [];
     }
     /**
