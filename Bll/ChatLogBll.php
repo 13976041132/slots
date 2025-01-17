@@ -17,6 +17,7 @@ class ChatLogBll
         foreach ($data as $row) {
             $chatLogList[] = [
                 'id' => $row['id'],
+                'status' => $row['status'],
                 'sender' => $row['sender'],
                 'receiver' => $row['receiver'],
                 'sendTime' => $row['time'],
