@@ -348,12 +348,31 @@ class FriendsBll
                 FF::throwException(Exceptions::RET_BIND_INVITER_FAIL, 'bind invite code fail');
             }
             Model::userBllRewardData()->record($inviterData['uid'], $uid, MessageIds::INVITED_BIND_AWARD_NOTIFY, [], 100 * 86400);
+            $this->autoAddFriendByInviter($uid, $inviterData['uid']);
             Dao::db()->commit();
             Bll::messageNotify()->invited($inviterData['uid'], $uid);
         } catch (Exception $e) {
             Dao::db()->rollback();
             FF::throwException($e->getCode(), $e->getMessage());
         }
+    }
+
+    public function autoAddFriendByInviter($uid, $inviter)
+    {
+        if ($this->isMyFriend($uid, $inviter)) {
+            return;
+        }
+        // 获取用户好友列表，检查当前用户好友是否满100
+        $myFriends = Bll::friends()->getFriends($uid);
+        if (count($myFriends) >= 100) {
+            return;
+        }
+        // 获取对方用户好友列表，检查对方用户好友是否满100
+        $reqFriends = Bll::friends()->getFriends($inviter);
+        if (count($reqFriends) >= 100) {
+            return;
+        }
+        $this->addFriend($uid, $inviter);
     }
 
     public function awardFriendCoins($uid, $ids)
