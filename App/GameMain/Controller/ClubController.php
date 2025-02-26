@@ -1,0 +1,241 @@
+<?php
+
+namespace FF\App\GameMain\Controller;
+
+use FF\Constants\Exceptions;
+use FF\Factory\Bll;
+use FF\Factory\Model;
+use FF\Framework\Core\FF;
+
+class ClubController extends BaseController
+{
+    //获取俱乐部列表
+    public function fetchSuggestList()
+    {
+        $count = (int)$this->getParam('count', false, 10);
+        return array_values(Bll::club()->getSuggestList($count));
+    }
+
+    public function searchClubList()
+    {
+        $keyword = (string)$this->getParam('keyword');
+        return Bll::club()->searchClubList($keyword);
+    }
+
+    //创建俱乐部
+    public function createClub()
+    {
+        $params = $this->getParams();
+        $uid = $this->getUid();
+        $clubId = Bll::club()->createClub($uid, $params);
+        return Bll::club()->getInfo($clubId);
+    }
+
+    //获取俱乐部信息
+    public function fetchClubInfo()
+    {
+        $uid = $this->getUid();
+        $userClubInfo = Model::clubUsers()->getOneById($uid);
+        if (!$userClubInfo) {
+            FF::throwException(Exceptions::RET_CLUB_NOT_JOIN_ERROR);
+        }
+        return Bll::club()->getInfo($userClubInfo['clubId']);
+    }
+
+    //加入俱乐部
+    public function joinClub()
+    {
+        $uid = $this->getUid();
+        $clubId = $this->getParam('clubId');
+        Bll::club()->joinClub($uid, $clubId);
+        return [];
+    }
+
+    //退出俱乐部
+    public function quitClub()
+    {
+        $uid = $this->getUid();
+        Bll::club()->quitClub($uid);
+        return [];
+    }
+
+    //邀请进入俱乐部
+    public function inviteJoinClub()
+    {
+        $uid = $this->getUid();
+        $tuid = (int)$this->getParam('tuid');
+        Bll::club()->inviteJoinClub($uid, $tuid);
+        return [];
+    }
+
+    //接受邀请加入俱乐部
+    public function acceptInviteJoinClub()
+    {
+        $uid = $this->getUid();
+        $clubId = (int)$this->getParam('clubId');
+        $invitedBy = (int)$this->getParam('invitedBy');
+        Bll::club()->acceptInviteJoinClub($uid, $clubId, $invitedBy);
+        return [];
+    }
+
+    public function refuseInviteJoinClub()
+    {
+        $uid = $this->getUid();
+        $clubId = $this->getParam('clubId');
+        $invitedBy = $this->getParam('invitedBy');
+        Bll::club()->refuseInviteJoinClub($uid, $clubId, $invitedBy);
+        return [];
+    }
+
+    //获取俱乐部成员列表
+    public function fetchMemberList()
+    {
+        $uid = $this->getUid();
+        $clubId = (int)$this->getParam('clubId', false,  0);
+        $page = (int)$this->getParam('page', false,  1);
+        $pageSize = (int)$this->getParam('pageSize', false,  10);
+        return Bll::club()->getMemberList($uid, $clubId, $page, $pageSize);
+    }
+
+    //解散俱乐部
+    public function dissolveClub()
+    {
+        $uid = $this->getUid();
+        Bll::club()->dissolveClub($uid);
+        return [];
+    }
+
+    //发言
+    public function chat()
+    {
+        $uid = $this->getUid();
+        $content = $this->getParam('content');
+        Bll::club()->chat($uid, $content);
+        return [];
+    }
+
+    //修改俱乐部信息
+    public function updateClubInfo()
+    {
+        $uid = $this->getUid();
+        $params = $this->getParams();
+        $clubId = Bll::club()->updateClubInfo($uid, $params);
+        return Bll::club()->getInfo($clubId);
+    }
+
+    //设置禁言状态
+    public function setMuteStatus()
+    {
+        $uid = $this->getUid();
+        $tuid = $this->getParam('tuid');
+        Bll::club()->setMuteStatus($uid, $tuid);
+        return [];
+    }
+
+    //踢出俱乐部成员
+    public function kickOutClubMember()
+    {
+        $uid = $this->getUid();
+        $tuid = $this->getParam('tuid');
+        Bll::club()->kickOutClubMember($uid, $tuid);
+        return [];
+    }
+
+    //成员捐赠金币
+    public function donateCoins()
+    {
+        $uid = $this->getUid();
+        $coins = (int)$this->getParam('coins');
+        return Bll::club()->donateCoins($uid, $coins);
+    }
+
+    //成员积分上报
+    public function pointsReport()
+    {
+        $uid = $this->getUid();
+        $points = (int)$this->getParam('points');
+        return Bll::club()->pointsReport($uid, $points);
+    }
+
+    //获取俱乐部排行榜
+    public function fetchClubRankList()
+    {
+        $uid = $this->getUid();
+        $rankList = Bll::rank()->getList(Bll::rank()->getClubType(), 0, 20);
+        $clubIds = array_keys($rankList);
+        if (empty($clubIds)) {
+            return [];
+        }
+        $clubList = Bll::clubCache()->getClubList($clubIds);
+        $rank = 1;
+        $list = [];
+        $myRank = 0;
+        $myClubId = Bll::club()->getClubIdByUid($uid);
+        foreach ($rankList as $clubId => $score) {
+            if (empty($clubList[$clubId])) continue;
+            if ($myClubId == $clubId) {
+                $myRank = $rank;
+            }
+            $list[] = [
+                'points' => (int)$score,
+                'rank' => $rank++,
+                'clubName' => $clubList[$clubId]['clubName'],
+                'clubId' => $clubId,
+                'dan' => $clubList[$clubId]['dan'],
+                'level' => $clubList[$clubId]['level'],
+                'memberCount' => $clubList[$clubId]['memberCnt'],
+                'headId' => $clubList[$clubId]['headId'],
+            ];
+        }
+        return ['rankList' => $list, 'myRank' => $myRank];
+    }
+
+    //掉落拼图碎片
+    public function dropPuzzle()
+    {
+        $uid = $this->getUid();
+        $pieceId = Bll::club()->dropPuzzle($uid);
+        return ['pieceId' => $pieceId];
+    }
+
+    //发布援助
+    public function publishHelp()
+    {
+        $uid = $this->getUid();
+        $type = $this->getParam('type');
+        Bll::club()->publishHelp($uid, $type);
+    }
+
+    //jackpot上报
+    public function jackpotReport()
+    {
+        $uid = $this->getUid();
+        $coins = $this->getParam('coins');
+        Bll::club()->jackpotReport($uid, $coins);
+        return [];
+    }
+
+    //俱乐部机台收集积分上报
+    public function machinePointsReport()
+    {
+        $uid = $this->getUid();
+        $points = (int)$this->getParam('points');
+        Bll::club()->machinePointsCollect($uid, $points);
+        return [];
+    }
+
+    public function fetchMachinePointsRankList()
+    {
+        return Bll::club()->fetchMachinePointsRankList($this->getUid());
+    }
+
+    public function fetchDanSummary()
+    {
+        return Model::clubs()->fetchAll([],'count(1) as count, dan',[],'dan');
+    }
+
+    public function fetchHistoryRankList()
+    {
+        return Model::clubRankLog()->fetchAll([], '*', ['time' => 'asc']);
+    }
+}

@@ -10,8 +10,12 @@ use FF\Bll\FriendsBll;
 use FF\Bll\LoginUserBll;
 use FF\Bll\SessionBll;
 use FF\Bll\UserBll;
+use FF\Bll\ClubBll;
+use FF\Bll\ClubUserBll;
+use FF\Bll\RankBll;
 use FF\Bll\MessageNotifyBll;
 use FF\Bll\FriendCacheBll;
+use FF\Bll\ClubCacheBll;
 use FF\Framework\Mode\Factory;
 
 class Bll extends Factory
@@ -39,7 +43,6 @@ class Bll extends Factory
     {
         return self::getInstance('FF\Bll\FriendCacheBll');
     }
-
 
     /**
      * @return UserBll
@@ -71,5 +74,37 @@ class Bll extends Factory
     public static function loginUser()
     {
         return self::getInstance('FF\Bll\LoginUserBll');
+    }
+
+    /**
+     * @return ClubBll
+     */
+    public static function club()
+    {
+        return self::getInstance('FF\Bll\ClubBll');
+    }
+
+    /**
+     * @return ClubCacheBll
+     */
+    public static function clubCache()
+    {
+        return self::getInstance('FF\Bll\ClubCacheBll');
+    }
+
+    /**
+     * @return ClubUserBll
+     */
+    public static function clubUser()
+    {
+        return self::getInstance('FF\Bll\ClubUserBll');
+    }
+
+    /**
+     * @return RankBll
+     */
+    public static function rank()
+    {
+        return self::getInstance('FF\Bll\RankBll');
     }
 }

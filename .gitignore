@@ -8,3 +8,5 @@
 /Config/common
 /Config/tables-csv-md5-develop.php
 /Scripts/test.php
+/vendor
+/Config/application.ini

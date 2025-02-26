@@ -132,4 +132,40 @@ class Keys
     {
         return self::buildKey('SuggestFriendSet');
     }
+    public static function suggestClubSet()
+    {
+        return self::buildKey('SuggestClubSet');
+    }
+    public static function clubChatInfo($clubId)
+    {
+        return self::buildKey('ClubChatInfo');
+    }
+    public static function rank($type)
+    {
+        return self::buildKey('Rank', $type);
+    }
+
+    public static function clubboxPoints($clubId, $date)
+    {
+        return self::buildKey('ClubBoxPoints', $clubId, $date);
+    }
+
+    public static function puzzle($clubId, $date)
+    {
+        return self::buildKey('Puzzle', $clubId, $date);
+    }
+    public static function clubPuzzle($clubId, $date)
+    {
+        return self::buildKey('clubPuzzle', $clubId, $date);
+    }
+
+    public static function clubInfo($clubId)
+    {
+        return self::buildKey('ClubInfo', $clubId);
+    }
+
+    public static function lastHelpTime($uid, $type)
+    {
+        return self::buildKey('LastHelpTime', $uid, $type);
+    }
 }

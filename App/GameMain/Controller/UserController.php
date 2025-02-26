@@ -28,7 +28,7 @@ class UserController extends BaseController
         $info = Model::userRequestLast()->getOneById($uid);
 
         if(!$info || $info['requestId'] != $requestId) {
-            FF::throwException(Exceptions::FAIL);
+            FF::throwException(Exceptions::FAILED);
         }
 
         return [
@@ -51,12 +51,12 @@ class UserController extends BaseController
         ];
         $info = Model::userBllRewardData()->fetchOne($where);
         if (!$info) {
-            FF::throwException(Exceptions::FAIL,'award fail');
+            FF::throwException(Exceptions::FAILED,'award fail');
         }
         $updateWhere = array_merge($where, ['updateTime' => $info['updateTime']]);
         $result = Model::userBllRewardData()->update(['status' => UserBllRewardDataModel::STATUS_AWARD], $updateWhere);
         if (!$result) {
-            FF::throwException(Exceptions::FAIL, 'award fail');
+            FF::throwException(Exceptions::FAILED, 'award fail');
         }
         return [];
     }
@@ -81,14 +81,28 @@ class UserController extends BaseController
         Bll::user()->updateUserInfo($uid, ['lastOnlineTime' => time()]);
         Bll::messageNotify()->clearQueueMessage($uid);
         Bll::messageNotify()->loadRewardNotifyMessage($uid);
-
         $msgStatData = Bll::user()->fetchMsgStatInfo($uid);
         return array_merge(
             $msgStatData,
             [
                 'token' => $sessionId,
-                'lastRequestId' => Model::userRequestLast()->getRequestId($uid)
+                'lastRequestId' => Model::userRequestLast()->getRequestId($uid),
+                'clubID' => Bll::club()->getClubIdByUid($uid),
             ]
         );
+    }
+
+    //查询玩家的数据
+    public function fetchUserInfo()
+    {
+        $uid = $this->getParam('uid');
+        $userInfo = Model::user()->getOneById($uid);
+        if (!$userInfo) {
+            FF::throwException(Exceptions::RET_ACCOUNT_NOT_EXIST);
+        }
+        $userClubInfo = Bll::clubUser()->getInfo($uid);
+        if(isset($userClubInfo['clubId'])){
+            $clubInfo = Bll::clubCache()->getInfo($userClubInfo['clubId']);
+        }
     }
 }

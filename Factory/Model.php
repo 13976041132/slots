@@ -5,16 +5,20 @@
 
 namespace FF\Factory;
 
-use FF\App\GameMain\Model\Main\AccountModel;
 use FF\App\GameMain\Model\Main\ChatLogModel;
+use FF\App\GameMain\Model\Main\ClubChatLogModel;
+use FF\App\GameMain\Model\Main\ClubsModel;
+use FF\App\GameMain\Model\Main\ClubUsersModel;
 use FF\App\GameMain\Model\Main\FriendsModel;
 use FF\App\GameMain\Model\Main\FriendsRequestsModel;
+use FF\App\GameMain\Model\Main\SuggestUsersModel;
 use FF\App\GameMain\Model\Main\UserBllRewardDataModel;
+use FF\App\GameMain\Model\Main\UserDailyFirstLoginLogModel;
 use FF\App\GameMain\Model\Main\UserInviteDataModel;
 use FF\App\GameMain\Model\Main\UserModel;
-use FF\App\GameMain\Model\Main\SuggestUsersModel;
-use FF\App\GameMain\Model\Main\UserDailyFirstLoginLogModel;
 use FF\App\GameMain\Model\Main\UserRequestLastModel;
+use FF\App\GameMain\Model\Main\UserClubRequestLogModel;
+use FF\App\GameMain\Model\Main\ClubRankLogModel;
 use FF\Framework\Mode\Factory;
 
 class Model extends Factory
@@ -25,14 +29,6 @@ class Model extends Factory
     public static function user()
     {
         return self::getInstance('FF\App\GameMain\Model\Main\UserModel');
-    }
-
-    /**
-     * @return AccountModel
-     */
-    public static function account()
-    {
-        return self::getInstance('FF\App\GameMain\Model\Main\AccountModel');
     }
 
     /**
@@ -96,5 +92,43 @@ class Model extends Factory
     public static function userRequestLast()
     {
         return self::getInstance('FF\App\GameMain\Model\Main\UserRequestLastModel');
+    }
+
+    /**
+     * @return ClubsModel
+     */
+    public static function clubs()
+    {
+        return self::getInstance('FF\App\GameMain\Model\Main\ClubsModel');
+    }
+    /**
+     * @return ClubChatLogModel
+     */
+    public static function clubChatLog()
+    {
+        return self::getInstance('FF\App\GameMain\Model\Main\ClubChatLogModel');
+    }
+    /**
+     * @return ClubUsersModel
+     */
+    public static function clubUsers()
+    {
+        return self::getInstance('FF\App\GameMain\Model\Main\ClubUsersModel');
+    }
+
+    /**
+     * @return UserClubRequestLogModel
+     */
+    public static function userClubRequestLog()
+    {
+        return self::getInstance('FF\App\GameMain\Model\Main\UserClubRequestLogModel');
+    }
+
+    /**
+     * @return ClubRankLogModel
+     */
+    public static function clubRankLog()
+    {
+        return self::getInstance('FF\App\GameMain\Model\Main\ClubRankLogModel');
     }
 }

@@ -2,10 +2,12 @@
 
 namespace FF\Bll;
 
+use FF\Constants\Exceptions;
 use FF\Factory\Bll;
 use FF\Factory\Dao;
 use FF\Factory\Keys;
 use FF\Factory\Model;
+use FF\Framework\Core\FF;
 
 class ChatLogBll
 {
@@ -75,4 +77,23 @@ class ChatLogBll
         return Dao::redis()->get($key);
     }
 
+    public function checkChatContent($content)
+    {
+        if(!is_string($content)) {
+            FF::throwException(Exceptions::RET_CHAT_CONTENT_INVALID, 'chat content invalid');
+        }
+
+        if (empty($content)) {
+            FF::throwException(Exceptions::RET_CHAT_CONTENT_EMPTY, 'chat content empty');
+        }
+
+        if (strlen($content) > 256) {
+            FF::throwException(Exceptions::RET_CHAT_CONTENT_TOO_LONG, 'chat content too long');
+        }
+
+        //判断聊天是否有表情
+        if (preg_match('/[\x{1F600}-\x{1F64F}]/u', $content)) {
+            FF::throwException(Exceptions::RET_CHAT_CONTENT_HAS_EMOJI, 'chat content has emoji');
+        }
+    }
 }

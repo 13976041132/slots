@@ -13,6 +13,8 @@ class ChatController extends BaseController
         $uid = $this->getUid();
         $fUid = (int)$this->getParam('fUid');
         $content = (string)$this->getParam('content');
+        Bll::chatLog()->checkChatContent($content);
+
         if ($uid == $fUid) {
             FF::throwException(Exceptions::RET_CHAT_DENY_SEND_MYSELF);
         }

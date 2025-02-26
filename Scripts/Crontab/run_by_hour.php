@@ -6,3 +6,8 @@
 include __DIR__ . '/../common.php';
 
 include __DIR__ . '/sync_suggest_friend.php';
+
+include __DIR__ . '/sync_suggest_club.php';
+
+include __DIR__ . '/init_club_act_data.php';
+

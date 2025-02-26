@@ -10,10 +10,12 @@ use FF\Factory\Model;
 class MessageNotifyBll
 {
     const MESSAGE_IDS = [MessageIds::INVITED_BIND_AWARD_NOTIFY];
+
     public function clearQueueMessage($uid)
     {
         Dao::redis()->del(Keys::bllMessageQueue($uid));
     }
+
     public function loadRewardNotifyMessage($uid)
     {
         $where = [
@@ -27,6 +29,7 @@ class MessageNotifyBll
         }
         $this->batchRecordNotifyMsg($uid, $messages);
     }
+
     public function addFriendRequest($uid, $optUId)
     {
         $data = $this->makeData($optUId, MessageIds::ADD_FRIEND_REQUEST_NOTIFY);
@@ -56,6 +59,7 @@ class MessageNotifyBll
         $data = $this->makeData($optUId, MessageIds::RECEIVE_FRIEND_COINS_NOTIFY);
         $this->recordNotifyMsg($uid, $data);
     }
+
     public function receiveFriendStamp($uid, $optUId)
     {
         $data = $this->makeData($optUId, MessageIds::RECEIVE_FRIEND_STAMP_NOTIFY);
@@ -67,6 +71,39 @@ class MessageNotifyBll
         $data = $this->makeData($optUId, MessageIds::INVITED_BIND_AWARD_NOTIFY);
         $this->recordNotifyMsg($uid, $data);
     }
+
+    //加入俱乐部失败
+    public function clubJoinFail($uid, $optUId, $clubName)
+    {
+        $data = $this->makeData($optUId, MessageIds::JOIN_CLUB_FAIL_NOTIFY, [$clubName]);
+        $this->recordNotifyMsg($uid, $data);
+    }
+
+    public function clubJoinSuccess($uid, $optUId, $clubName)
+    {
+        $data = $this->makeData($optUId, MessageIds::JOIN_CLUB_SUCCESS_NOTIFY, [$clubName]);
+        $this->recordNotifyMsg($uid, $data);
+    }
+
+    public function refuseJoinClub($uid, $optUId, $clubName)
+    {
+        $data = $this->makeData($optUId, MessageIds::REFUSE_JOIN_CLUB_NOTIFY, [$clubName]);
+        $this->recordNotifyMsg($uid, $data);
+    }
+
+    public function clubMute($uid, $optUId, $status)
+    {
+        $messageId = $status == ClubBll::MUTE_STATUS_ACTIVE ? MessageIds::CLUB_MUTE_NOTIFY : MessageIds::CLUB_MUTE_CANCEL_NOTIFY;
+        $data = $this->makeData($optUId, $messageId);
+        $this->recordNotifyMsg($uid, $data);
+    }
+
+    public function kickOutClub($uid, $optUId)
+    {
+        $data = $this->makeData($optUId, MessageIds::CLUB_KICK_OUT_NOTIFY);
+        $this->recordNotifyMsg($uid, $data);
+    }
+
     public function receiveChatMsg($uid, $optUId, $content)
     {
         $data = $this->makeData($optUId, MessageIds::CHAT_MSG_RECEIVE_NOTIFY);
@@ -82,6 +119,12 @@ class MessageNotifyBll
             Dao::redis()->expire($key, 3600 * 12);
         }
     }
+
+    public function pushNotifyMsg($uid, $optUId, $messageId, $content = [])
+    {
+        $data = $this->makeData($optUId, $messageId, $content);
+        $this->recordNotifyMsg($uid, $data);
+    }
     public function batchRecordNotifyMsg($uid, $groupData)
     {
         $key = Keys::bllMessageQueue($uid);
@@ -91,12 +134,14 @@ class MessageNotifyBll
             Dao::redis()->expire($key, 3600 * 12);
         }
     }
-    public function makeData($optUId, $messageId, $time = null)
+
+    public function makeData($optUId, $messageId, $content = [])
     {
         return array(
             'uid' => $optUId,
             'msgId' => $messageId,
-            'time' => $time ?: time(),
+            'time' => time(),
+            'content' => $content
         );
     }
 }

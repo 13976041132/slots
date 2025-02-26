@@ -13,6 +13,7 @@ class BllMessageController extends BaseController
     public function fetchMessageList()
     {
         $uid = $this->getUid();
+        $userInfo = Bll::user()->getUserInfo($uid);
         Bll::user()->updateUserInfo($uid, ['lastOnlineTime' => time()]);
         //通过队列获取玩家相关业务推送信息
         $key = Keys::bllMessageQueue($uid);

@@ -80,3 +80,77 @@ CREATE TABLE IF NOT EXISTS `user_request_last` (
     `requestTime` int(11) NOT NULL COMMENT '请求时间',
     PRIMARY KEY (`uid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='玩家请求数据';
+
+CREATE TABLE IF NOT EXISTS `clubs` (
+    `clubId`   int(11)  NOT NULL AUTO_INCREMENT,
+    `creator`  int(11)  NOT NULL COMMENT '创建者',
+    `type` int(11)  NOT NULL default 1 COMMENT '1:私有 2:公开',
+    `level`    int(11)  NOT NULL default 1 COMMENT '等级',
+    `clubName` varchar(32) NOT NULL  COMMENT '俱乐部名称',
+    `headId`   int(11)  NOT NULL default 1 COMMENT '头像ID',
+    `memberCnt` int(11)  NOT NULL default 1 COMMENT '成员数量',
+    `vipLimit`  int(11)  NOT NULL default 0 COMMENT 'vip限制',
+    `coins`     BIGINT  NOT NULL default 0 COMMENT '金币',
+    `dan`       tinyint(2)  NOT NULL default 0 COMMENT '段位',
+    `donateTimes` int(11)  NOT NULL default 0 COMMENT '捐赠次数',
+    `createTime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updateTime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT '更新时间',
+    UNIQUE KEY `unique_creator`(`creator`),
+    UNIQUE KEY `unique_club_name` (`clubName`),
+    PRIMARY KEY (`clubId`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=10000 DEFAULT CHARSET=utf8mb4 COMMENT='俱乐部信息';
+CREATE TABLE IF NOT EXISTS `club_users` (
+    `clubId`   int(11)  NOT NULL COMMENT '俱乐部ID',
+    `uid`      int(11)  NOT NULL COMMENT '用户',
+    `role`     int(11)  NOT NULL default 5 COMMENT '1:Leader 2:Co-Leader,3:Donate MVP 4:Points MVP 5:Member',
+    `coins`    BIGINT NOT NULL default 0 COMMENT '捐赠的金币',
+    `points`      int(11)  NOT NULL COMMENT '积分',
+    `muteStatus` int(11)  NOT NULL default 0 COMMENT '0:可以发言 1:禁言',
+    `createTime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '加入的时间',
+    `updateTime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT '更新时间',
+    PRIMARY KEY (`uid`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=10000 DEFAULT CHARSET=utf8mb4 COMMENT='俱乐部成员';
+
+CREATE TABLE IF NOT EXISTS `club_chat_log` (
+    `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+    `clubId`   int(11)  NOT NULL COMMENT '俱乐部ID',
+    `content` text COMMENT '内容',
+    `sender` int(11) NOT NULL  COMMENT '发送者',
+    `time` int(11) NOT NULL COMMENT '创建时间',
+    `microtime` varchar(13) NOT NULL COMMENT '毫秒时间戳',
+    PRIMARY KEY (`id`),
+    KEY (`clubId`),
+    KEY (`microtime`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='俱乐部聊天记录';
+
+CREATE TABLE IF NOT EXISTS `club_puzzle_log` (
+    `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+    `clubId`   int(11)  NOT NULL COMMENT '俱乐部ID',
+    `uid` int(11)  NOT NULL COMMENT '用户',
+    `puzzleId` int(11) NOT NULL COMMENT '拼图ID',
+    `actDate` int(11) NOT NULL COMMENT '活动日期',
+    `time` int(11) NOT NULL COMMENT '创建时间',
+    PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='俱乐部拼图记录';
+
+CREATE TABLE IF NOT EXISTS `user_club_request_log` (
+    `clubId` int(11)  NOT NULL COMMENT '俱乐部ID',
+    `uid` int(11)  NOT NULL COMMENT '用户ID',
+    `invitedBy` int(11) NOT NULL COMMENT '邀请者',
+    `status` int(11)  NOT NULL default 1 COMMENT '1:申请中,2.加入,3:拒绝',
+    `requestTime` datetime DEFAULT NULL COMMENT '申请时间',
+    PRIMARY KEY (`clubId`,`uid`,`invitedBy`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='俱乐部申请记录';
+
+CREATE TABLE IF NOT EXISTS `club_rank_log` (
+    `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+    `clubId` int(11)  NOT NULL COMMENT '俱乐部ID',
+    `season` int(11)  NOT NULL COMMENT '赛季',
+    `rank` int(11)  NOT NULL COMMENT '排名',
+    `poins` int(11)  NOT NULL COMMENT '积分',
+    `rewardCoins` BIGINT NOT NULL DEFAULT 0 COMMENT '奖励的金币',
+    `time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '排名时间',
+    PRIMARY KEY (`id`),
+    KEY (`clubId`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='俱乐部排行榜记录';
+

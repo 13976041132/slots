@@ -20,7 +20,6 @@ class UserBll extends DBCacheBll
         'name' => ['string', ''],
         'deviceId' => ['string', ''],
         'level' => ['int', 0],
-        'clubId' => ['int', 0],
         'headId' => ['int', 0],
         'headFrameId' => ['int', 0],
         'vipLevel' => ['int', 0],
@@ -121,6 +120,16 @@ class UserBll extends DBCacheBll
 
         return true;
     }
+
+    public function isOnlineByLoginTime($loginTime)
+    {
+        if ((time() - $loginTime) > 300) {
+            return false;
+        }
+        return true;
+    }
+
+
 
     public function getSessionId($uid)
     {
