@@ -77,6 +77,7 @@ CREATE TABLE IF NOT EXISTS `user_request_last` (
     `messageId` int(11)  NOT NULL COMMENT '消息ID',
     `request`   text  COMMENT '请求参数信息',
     `response` text  COMMENT '响应结构',
+    `secet`
     `requestTime` int(11) NOT NULL COMMENT '请求时间',
     PRIMARY KEY (`uid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='玩家请求数据';
@@ -116,8 +117,13 @@ CREATE TABLE IF NOT EXISTS `club_chat_log` (
     `clubId`   int(11)  NOT NULL COMMENT '俱乐部ID',
     `content` text COMMENT '内容',
     `sender` int(11) NOT NULL  COMMENT '发送者',
+    `type` int(11) NOT NULL default 1 COMMENT '0:聊天 1:coin 2:邮票',
+    `helpers` varchar(255) NOT NULL default '' COMMENT '帮助者',
+    `helpLimit` tinyint(2) NOT NULL default 0 COMMENT '上限',
+    `itemList` text  COMMENT '奖励信息',
     `time` int(11) NOT NULL COMMENT '创建时间',
     `microtime` varchar(13) NOT NULL COMMENT '毫秒时间戳',
+    `updateTime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT '更新时间',
     PRIMARY KEY (`id`),
     KEY (`clubId`),
     KEY (`microtime`)
@@ -145,12 +151,42 @@ CREATE TABLE IF NOT EXISTS `user_club_request_log` (
 CREATE TABLE IF NOT EXISTS `club_rank_log` (
     `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
     `clubId` int(11)  NOT NULL COMMENT '俱乐部ID',
-    `season` int(11)  NOT NULL COMMENT '赛季',
-    `rank` int(11)  NOT NULL COMMENT '排名',
-    `poins` int(11)  NOT NULL COMMENT '积分',
+    `season` int(11)  NOT NULL DEFAULT 0 COMMENT '赛季',
+    `rank` int(11)  NOT NULL DEFAULT 0 COMMENT '排名',
+    `poins` int(11)  NOT NULL DEFAULT 0 COMMENT '积分',
+    `dan` int(11)  NOT NULL DEFAULT 0 COMMENT '段位',
     `rewardCoins` BIGINT NOT NULL DEFAULT 0 COMMENT '奖励的金币',
     `time` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '排名时间',
     PRIMARY KEY (`id`),
     KEY (`clubId`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='俱乐部排行榜记录';
+
+CREATE TABLE IF NOT EXISTS `club_rewards` (
+    `set` varchar(16) NOT NULL COMMENT '集合id',
+    `clubId` int(11)  NOT NULL COMMENT '俱乐部ID',
+    `uid` int(11)  NOT NULL DEFAULT 0 COMMENT '用户ID',
+    `type` int(11)  NOT NULL COMMENT '类型',
+    `progress` int(11)  NOT NULL DEFAULT 0 COMMENT '节点',
+    `totalpoints` int(11)  NOT NULL DEFAULT 0 COMMENT '积分',
+    `points` int(11)  NOT NULL DEFAULT 0 COMMENT '我的积分',
+    `status` int(11)  NOT NULL DEFAULT 0 COMMENT '状态, 0: 未领取 1:领取, 2:不可领取',
+    `totalCoin` BIGINT NOT NULL DEFAULT 0 COMMENT '总金币',
+    `itemList` text COMMENT '奖励的道具',
+    `expireTime` int(11) NOT NULL default 0 COMMENT '过期时间',
+    `extData` text COMMENT '额外数据',
+    `createTime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updateTime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT '更新时间',
+    PRIMARY KEY (`uid`, `set`),
+    key (`set`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='俱乐部奖励';
+
+CREATE TABLE IF NOT EXISTS `club_jackpot_log` (
+    `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+    `clubId` int(11)  NOT NULL COMMENT '俱乐部ID',
+    `uid` int(11)  NOT NULL DEFAULT 0 COMMENT '用户ID',
+    `coins` BIGINT NOT NULL DEFAULT 0 COMMENT '奖励的金币',
+    `rewardCoins` BIGINT NOT NULL DEFAULT 0 COMMENT '奖励的金币',
+    `hitTime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '时间',
+    PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='jackpot记录';
 

@@ -342,7 +342,7 @@ class FriendController extends BaseController
         foreach ($list as $info) {
             $fUid = $info['fUid'];
             $coin = min($info['coin'], 100000000);
-            $key = Keys::sentFriendCoinsLock($uid, $fUid);
+            $key = Keys::sendFriendCoinsLock($uid, $fUid);
             if (!Dao::redis()->set($key, 1, ['nx', 'ex' => 1])) {
                 continue;
             }
@@ -359,4 +359,34 @@ class FriendController extends BaseController
         }
         return ['fUids' =>$successUids];
     }
+
+    //一键添加俱乐部为好友
+    public function oneClickAddClubFriend()
+    {
+        $uid = $this->getUid();
+        $friends = Bll::friends()->getFriends($uid);
+        $clubId = Bll::club()->getClubIdByUid($uid);
+        if (!$clubId) {
+            FF::throwException(Exceptions::RET_CLUB_NOT_EXISTS_ERROR);
+        }
+        $memberUids = Bll::club()->getClubMembers($uid);
+        // 遍历推荐好友列表
+        foreach ($memberUids as $memberUid) {
+            // 获取用户好友列表，检查当前用户好友是否满100
+            if (count($friends) >= 100) {
+                break;
+            }
+
+            // 检查是否已经是好友
+            if (in_array($memberUid, $friends)) {
+                continue;
+            }
+            // 发送申请, 并通知接收用户ID
+            Bll::friends()->addFriendRequest($uid, $memberUid, FriendsBll::REQUEST_SCENE_SUGGEST);
+            Bll::messageNotify()->addFriendRequest($memberUid, $uid);
+        }
+        // 成功发送
+        return array();
+    }
+
 }

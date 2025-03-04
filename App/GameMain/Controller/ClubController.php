@@ -110,7 +110,9 @@ class ClubController extends BaseController
     {
         $uid = $this->getUid();
         $content = $this->getParam('content');
-        Bll::club()->chat($uid, $content);
+        $type = $this->getParam('type', false,  0);
+
+        Bll::club()->chat($uid, $type, $content);
         return [];
     }
 
@@ -169,13 +171,8 @@ class ClubController extends BaseController
         $clubList = Bll::clubCache()->getClubList($clubIds);
         $rank = 1;
         $list = [];
-        $myRank = 0;
-        $myClubId = Bll::club()->getClubIdByUid($uid);
         foreach ($rankList as $clubId => $score) {
             if (empty($clubList[$clubId])) continue;
-            if ($myClubId == $clubId) {
-                $myRank = $rank;
-            }
             $list[] = [
                 'points' => (int)$score,
                 'rank' => $rank++,
@@ -187,7 +184,7 @@ class ClubController extends BaseController
                 'headId' => $clubList[$clubId]['headId'],
             ];
         }
-        return ['rankList' => $list, 'myRank' => $myRank];
+        return ['rankList' => $list, 'myRank' => Bll::club()->getMyClubRank($uid)];
     }
 
     //掉落拼图碎片
@@ -237,5 +234,31 @@ class ClubController extends BaseController
     public function fetchHistoryRankList()
     {
         return Model::clubRankLog()->fetchAll([], '*', ['time' => 'asc']);
+    }
+
+    public function fetchClubRewardList()
+    {
+        $uid = $this->getUid();
+        return Bll::club()->getClubRewardList($uid);
+    }
+    public function fetchClubRewardInfo()
+    {
+        $uid = $this->getUid();
+        $set = (string)$this->getParam('set');
+        return Bll::club()->getClubRewardInfo($uid,$set);
+    }
+
+    public function claimClubReward()
+    {
+        $uid = $this->getUid();
+        $sets = $this->getParam('sets');
+        if (!is_array($sets)) {
+            $sets = json_decode($sets);
+        }
+        if (count($sets) > 100) {
+            FF::throwException(Exceptions::PARAM_INVALID_ERROR);
+        }
+        $itemList = Bll::club()->claimClubReward($uid, $sets);
+        return ['itemList' => $itemList];
     }
 }

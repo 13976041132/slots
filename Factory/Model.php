@@ -19,6 +19,8 @@ use FF\App\GameMain\Model\Main\UserModel;
 use FF\App\GameMain\Model\Main\UserRequestLastModel;
 use FF\App\GameMain\Model\Main\UserClubRequestLogModel;
 use FF\App\GameMain\Model\Main\ClubRankLogModel;
+use FF\App\GameMain\Model\Main\ClubRewardsModel;
+use FF\App\GameMain\Model\Main\ClubJackpotLogModel;
 use FF\Framework\Mode\Factory;
 
 class Model extends Factory
@@ -130,5 +132,21 @@ class Model extends Factory
     public static function clubRankLog()
     {
         return self::getInstance('FF\App\GameMain\Model\Main\ClubRankLogModel');
+    }
+
+    /**
+     * @return ClubRewardsModel
+     */
+    public static function clubRewards()
+    {
+        return self::getInstance('FF\App\GameMain\Model\Main\ClubRewardsModel');
+    }
+
+    /**
+     * @return ClubJackpotLogModel
+     */
+    public static function clubJackpotLog()
+    {
+        return self::getInstance('FF\App\GameMain\Model\Main\ClubJackpotLogModel');
     }
 }

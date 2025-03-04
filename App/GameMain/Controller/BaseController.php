@@ -9,7 +9,6 @@ use Exception;
 use FF\Constants\Exceptions;
 use FF\Extend\MyController;
 use FF\Factory\Bll;
-use FF\Factory\Model;
 use FF\Framework\Core\FF;
 use FF\Framework\Utils\Config;
 use FF\Framework\Utils\Input;
@@ -20,11 +19,11 @@ use FF\Library\Utils\Request;
 class BaseController extends MyController
 {
     private $filterNotNeedLogin = array(
-        '/User/login', '/ApiTest/*', '/Version/*','/Public/eventReport'
+        '/User/login', '/ApiTest/*', '/Version/*', '/Public/eventReport'
     );
 
     private $filterIgnoreRequestId = array(
-        '/User/fetchRequestInfo', '/BllMessageController/*','/User/login'
+        '/User/fetchRequestInfo', '/BllMessageController/*', '/User/login'
     );
 
     private $apiCallFreqLimits = array();
@@ -90,7 +89,7 @@ class BaseController extends MyController
 
     public function getUid()
     {
-        return Bll::session()->get('uid');
+        return (int)Bll::session()->get('uid');
     }
     public function afterResponse($resData, $error)
     {
@@ -103,7 +102,7 @@ class BaseController extends MyController
         }
         $params = $controller ? $controller->getParams() : $_REQUEST;
 
-        if(empty(Input::request('q')) || empty(Input::request('c'))) {
+        if (empty(Input::request('q')) || empty(Input::request('c'))) {
             return;
         }
         if (!FF::getRouter()->isValid()) {
@@ -119,15 +118,6 @@ class BaseController extends MyController
             $response = array('code' => $error->getCode(), 'message' => $error->getMessage(), 'data' => '');
         }
 
-        $log = [
-            'uid' => $uid,
-            'request' => $params ?? '{}',
-            'messageId' => (int)Input::request('c'),
-            'requestId' => (string)Input::request('q'),
-            'response' => json_encode($response),
-            'requestTime' => time(),
-        ];
-
-        Model::userRequestLast()->insert($log, true);
+        Bll::userRequestLast()->save($uid, $params, $response);
     }
 }

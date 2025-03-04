@@ -1,4 +1,7 @@
 <?php
+
+use FF\Middleware\Kernel;
+
 /**
  * 常用方法
  */
@@ -402,5 +405,24 @@ function dir_remove($dir, $remove_self = true, $excludeItems = array())
     if ($remove_self) {
         rmdir($dir);
     }
+}
+
+function middleware($middleware)
+{
+    return function () use ($middleware) {
+        $handle = Kernel::getMiddleware($middleware);
+        call_user_func([$handle, 'handle']);
+    };
+}
+
+//生成随机字符串
+function createNonceStr($length = 16)
+{
+    $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    $str = "";
+    for ($i = 0; $i < $length; $i++) {
+        $str .= substr($chars, mt_rand(0, strlen($chars) - 1), 1);
+    }
+    return $str;
 }
 

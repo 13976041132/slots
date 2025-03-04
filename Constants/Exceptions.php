@@ -10,6 +10,8 @@ class Exceptions extends Exception
 
     const SUCCESS = 0; //成功
     const FAILED = 1; //失败
+    const FAILED_SIGN = 2; //签名失败
+    const MIDDLEWARE_NOT_EXIST = 2; //中间件不存在
     const SYSTEM_ERROR = 500; //系统错误
     const PARAM_INVALID_ERROR = 10000; //参数无效
     const PARAM_MISS_ERROR = 10001; //缺少参数
@@ -59,4 +61,11 @@ class Exceptions extends Exception
     const RET_CLUB_PUZZLE_FINISH_ERROR = 10045; //俱乐部拼图已完成
     const RET_CLUB_PUBLISH_HELP_COOL_DOWN = 10046; //俱乐部发布求助冷却中
     const RET_CLUB_PUBLISH_HELP_TYPE_ERROR = 10047;//发布援助类型有误
+    const RET_SEASON_REWARD_EXPIRED_ERROR = 10048; //赛季奖励已过期
+
+    const RET_CHAT_HELP_NOT_EXIST_ERROR = 10049; //求助不存在
+    const RET_CHAT_HELP_SELF_ERROR = 10050; //不能帮助自己
+    const RET_CHAT_HELP_FINISHED_ERROR = 10051; //已完成帮助
+    const RET_CHAT_HELP_LIMIT_ERROR = 10052; //已达到帮助上限
+    const RET_CHAT_HELP_FAIL_ERROR = 10053; //帮助失败
 }

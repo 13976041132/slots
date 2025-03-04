@@ -16,6 +16,7 @@ use FF\Bll\RankBll;
 use FF\Bll\MessageNotifyBll;
 use FF\Bll\FriendCacheBll;
 use FF\Bll\ClubCacheBll;
+use FF\Bll\UserRequestLastBll;
 use FF\Framework\Mode\Factory;
 
 class Bll extends Factory
@@ -106,5 +107,13 @@ class Bll extends Factory
     public static function rank()
     {
         return self::getInstance('FF\Bll\RankBll');
+    }
+
+    /**
+     * @return UserRequestLastBll
+     */
+    public static function userRequestLast()
+    {
+        return self::getInstance('FF\Bll\UserRequestLastBll');
     }
 }

@@ -80,6 +80,9 @@ class UserBll extends DBCacheBll
      */
     public function getUserInfoList(array $uids, $fields = null)
     {
+        if (!$uids) {
+            return [];
+        }
         return $this->getCacheList($uids, $fields);
     }
 

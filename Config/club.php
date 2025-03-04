@@ -1,34 +1,14 @@
 <?php
 
-$config = [
-    1 => [
-        'totalUser' => 100,
-        'levelCoins' => 100,
+return [
+    'jackpotExpireTime' => 86400 * 2,
+    'jackpotBonusRate' => 0.05,
+    'helpLimit' => [
+        1 => 5,//金币援助
+        2 => 1,//邮票援助
     ],
-    2 => [
-        'totalUser' => 120,
-        'levelCoins' => 400,
-    ],
-    3 => [
-        'totalUser' => 130,
-        'levelCoins' => 600,
-    ],
-    4 => [
-        'totalUser' => 140,
-        'levelCoins' => 700,
-    ],
-    5 => [
-        'totalUser' => 150,
-        'levelCoins' => 800,
-    ],
-    6 => [
-        'totalUser' => 160,
-        'levelCoins' => 900,
-    ],
-    7 => [
-        'totalUser' => 170,
-        'levelCoins' => 900,
+    'publishHelp' => [
+        'coolTime' => 4 * 3600,
+        'duration' => 86400,//发布持续时间
     ],
 ];
-
-return $config;

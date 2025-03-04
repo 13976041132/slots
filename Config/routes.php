@@ -56,7 +56,18 @@ $config = array(
     MessageIds::FETCH_CLUB_SEARCH_LIST => array('/Club/searchClubList'),
     MessageIds::FETCH_CLUB_DAN_SUMMARY => array('/Club/fetchDanSummary'),
     MessageIds::FETCH_CLUB_HISTORY_RANK_LIST => array('/Club/fetchHistoryRankList'),
+    MessageIds::ONE_CLICK_ADD_CLUB_FRIENDS => array('/Friend/oneClickAddClubFriend'),
+    MessageIds::FETCH_CLUB_REWARD_LIST => array('/Club/fetchClubRewardList'),
+    MessageIds::FETCH_CLUB_REWARD_INFO => array('/Club/fetchClubRewardInfo'),
+    MessageIds::CLAIM_CLUB_REWARD => array('/Club/claimClubReward'),
 
+
+
+
+
+
+
+    MessageIds::FETCH_USER_INFO => array('/User/fetchUserInfo', middleware('checkSignature')),
 );
 
 return $config;

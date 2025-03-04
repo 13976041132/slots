@@ -93,9 +93,9 @@ class Keys
     {
         return self::buildKey('SentFriendCoins', $uid, $type);
     }
-    public static function sentFriendCoinsLock($uid, $fuid)
+    public static function sendFriendCoinsLock($uid, $fuid)
     {
-        return self::buildKey('SentFriendCoinsLock', $uid, $fuid);
+        return self::buildKey('SendFriendCoinsLock', $uid, $fuid);
     }
     public static function awardFriendCoinsLock($uid)
     {
@@ -168,4 +168,25 @@ class Keys
     {
         return self::buildKey('LastHelpTime', $uid, $type);
     }
+
+    public static function clubMember($clubId)
+    {
+        return self::buildKey('clubMember', $clubId);
+    }
+
+    public static function userTopRank($set)
+    {
+        return self::buildKey('UserTopRank', $set);
+    }
+
+    public static function clubAwardLock($uid)
+    {
+        return self::buildKey('ClubAwardLock', $uid);
+    }
+
+    public static function clubUserJackpotStat($date)
+    {
+        return self::buildKey('ClubUserJackpotStat', $date);
+    }
+
 }

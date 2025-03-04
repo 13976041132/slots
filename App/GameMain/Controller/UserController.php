@@ -3,6 +3,7 @@
 namespace FF\App\GameMain\Controller;
 
 use FF\App\GameMain\Model\Main\UserBllRewardDataModel;
+use FF\Bll\ClubBll;
 use FF\Constants\Exceptions;
 use FF\Constants\MessageIds;
 use FF\Factory\Bll;
@@ -27,13 +28,13 @@ class UserController extends BaseController
         $requestId = $this->getParam('requestId');
         $info = Model::userRequestLast()->getOneById($uid);
 
-        if(!$info || $info['requestId'] != $requestId) {
+        if (!$info || $info['requestId'] != $requestId) {
             FF::throwException(Exceptions::FAILED);
         }
 
         return [
             'messageId' => $info['messageId'],
-            'request' => json_decode($info['request'], true) ? : [],
+            'request' => json_decode($info['request'], true) ?: [],
             'response' => json_decode($info['response'], true) ?: [],
             'requestTime' => $info['requestTime'] ? date('Y-m-d H:i:s', $info['requestTime']) : '',
         ];
@@ -51,7 +52,7 @@ class UserController extends BaseController
         ];
         $info = Model::userBllRewardData()->fetchOne($where);
         if (!$info) {
-            FF::throwException(Exceptions::FAILED,'award fail');
+            FF::throwException(Exceptions::FAILED, 'award fail');
         }
         $updateWhere = array_merge($where, ['updateTime' => $info['updateTime']]);
         $result = Model::userBllRewardData()->update(['status' => UserBllRewardDataModel::STATUS_AWARD], $updateWhere);
@@ -82,27 +83,62 @@ class UserController extends BaseController
         Bll::messageNotify()->clearQueueMessage($uid);
         Bll::messageNotify()->loadRewardNotifyMessage($uid);
         $msgStatData = Bll::user()->fetchMsgStatInfo($uid);
+        Model::userRequestLast()->getOneById($uid);
+
         return array_merge(
             $msgStatData,
             [
                 'token' => $sessionId,
-                'lastRequestId' => Model::userRequestLast()->getRequestId($uid),
+                'lastRequestId' => Bll::userRequestLast()->getRequestId(),
                 'clubID' => Bll::club()->getClubIdByUid($uid),
+                'secretKey' => Bll::userRequestLast()->touchSecretKey($uid),
             ]
         );
     }
-
     //查询玩家的数据
     public function fetchUserInfo()
     {
-        $uid = $this->getParam('uid');
-        $userInfo = Model::user()->getOneById($uid);
+        $uid = $this->getUid();
+        $tuid = $this->getParam('tuid');
+        $userInfo = Model::user()->getOneById($tuid);
         if (!$userInfo) {
             FF::throwException(Exceptions::RET_ACCOUNT_NOT_EXIST);
         }
-        $userClubInfo = Bll::clubUser()->getInfo($uid);
-        if(isset($userClubInfo['clubId'])){
-            $clubInfo = Bll::clubCache()->getInfo($userClubInfo['clubId']);
+        $info = array(
+            'uid' => $userInfo['uid'],
+            'coin' => $userInfo['coin'] ?? 0,
+            'name' => $userInfo['name'],
+            'level' => $userInfo['level'],
+            'headId' => $userInfo['headId'] ?? 0,
+            'headFrameId' => $userInfo['headFrameId'] ?? 0,
+            'vipLevel' => $userInfo['vipLevel'] ?? 0,
+            'region' => $userInfo['region'] ?? 0,
+            'facebookId' => $userInfo['facebookId'] ?? 0,
+            'friendFlag' => Bll::friends()->isMyFriend($uid, $tuid),
+            'achieveInfo' => $userInfo['achieve'] ?? [],
+            'clubInfo' => [],
+        );
+
+        $userClubInfo = Bll::clubUser()->getInfo($tuid);
+        $clubInfo = [];
+        if (!empty($userClubInfo['clubId'])) {
+            $clubInfo = Bll::clubCache()->getInfo($userClubInfo['clubId'], 'headId,clubName,clubId,dan');
         }
+        if(!$clubInfo) {
+            return $info;
+        }
+        $clubRoleIds = explode(',', $userClubInfo['role'] ?? '');
+        $roleNames = [];
+        foreach ($clubRoleIds as $clubRoleId) {
+            if (!isset(ClubBll::$clubRoleMapName[$clubRoleId])) {
+                continue;
+            }
+            $roleNames[] = ClubBll::$clubRoleMapName[$clubRoleId];
+        }
+        $clubInfo['roleName'] = implode(',', $roleNames);
+        $clubInfo['muteStatus'] = $userClubInfo['muteStatus'] ?? 0;
+        $clubInfo['points'] = $userClubInfo['points'] ?? 0;
+        $info['clubInfo'] = $clubInfo;
+        return $info;
     }
 }

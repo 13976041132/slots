@@ -21,6 +21,9 @@ class MessageIds
     const CLUB_INVITE_JOIN_NOTIFY = 1014; //俱乐部邀请加入通知
     const CLUB_INVITE_JOIN_SUCCESS_NOTIFY = 1015; //俱乐部邀请加入成功通知
     const CLUB_INVITE_JOIN_REFUSE_NOTIFY = 1016; //俱乐部邀请加入拒绝通知
+    //帮助通知
+    const CLUB_MEMBER_HELP_NOTIFY = 1017; //帮助通知
+    const CLUB_PUBLISH_HELP_FINISH_NOTIFY = 1017; //发布求助完成通知
     const FETCH_FRIENDS = 100001; //获取好友列表
     const ADD_FRIEND = 100002; //发送添加好友请求
     const FETCH_FRIENDS_REQUESTS = 100003; //获取好友请求
@@ -92,4 +95,18 @@ class MessageIds
 
     //获取俱乐部历史排名
     const FETCH_CLUB_HISTORY_RANK_LIST = 100051;
+
+    //一键添加俱乐部为好友
+    const ONE_CLICK_ADD_CLUB_FRIENDS = 100052;
+
+    //获取用户信息
+    const FETCH_USER_INFO = 100053;
+
+    const FETCH_CLUB_REWARD_LIST = 100054; //获取俱乐部奖励列表
+
+    const FETCH_CLUB_REWARD_INFO = 100055; //获取俱乐部墙奖励信息
+
+    //领取俱乐部墙奖励信息
+    const CLAIM_CLUB_REWARD = 100056;
+
 }
