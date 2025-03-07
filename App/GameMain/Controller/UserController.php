@@ -87,7 +87,8 @@ class UserController extends BaseController
             $msgStatData,
             [
                 'token' => $sessionId,
-                'lastRequestId' => Model::userRequestLast()->getRequestId($uid)
+                'lastRequestId' => Model::userRequestLast()->getRequestId($uid),
+                'friendList' => Bll::friends()->getFriendsInfo($uid),
             ]
         );
     }
