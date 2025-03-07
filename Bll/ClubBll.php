@@ -29,12 +29,11 @@ class ClubBll
     const REQUEST_STATUS_INVITE = 1;
     const REQUEST_STATUS_ACCEPT = 2;
     const REQUEST_STATUS_REFUSE = 3;
-    const  CHAT_TYPE_PUBLISH_HELP_COIN = 1;
-    const  CHAT_TYPE_PUBLISH_HELP_STAMP = 2;
-
+    const  PUBLISH_HELP_TYPE_COIN = 1;
+    const  PUBLISH_HELP_TYPE_STAMP = 2;
     private static $publishHelpType = [
-        self::CHAT_TYPE_PUBLISH_HELP_STAMP,
-        self::CHAT_TYPE_PUBLISH_HELP_COIN,
+        self::PUBLISH_HELP_TYPE_STAMP,
+        self::PUBLISH_HELP_TYPE_COIN,
     ];
     public static $clubRoleMapName = [
         self::ROLE_LEADER => 'LEADER',
@@ -44,18 +43,16 @@ class ClubBll
         self::ROLE_MEMBER => '',
     ];
 
+    public static $clubHelpRewardTypeMap = [
+        self::PUBLISH_HELP_TYPE_COIN => self::CLUB_REWARD_TYPE_PUBLISH_HELP_COINS
+    ];
     const CLUB_REWARD_TYPE_JACKPOT = 1; //jackpot
     const CLUB_REWARD_TYPE_BOX_RANK = 2; //ClubChest
     const CLUB_REWARD_TYPE_PIECE_NODE = 3; //俱乐部活动奖励
     const CLUB_REWARD_TYPE_RANK = 4; //Club League
     const CLUB_REWARD_TYPE_PUBLISH_HELP_COINS = 5; //发布帮助金币奖励
     const CLUB_REWARD_TYPE_PUBLISH_HELP_STAMP = 6;//发布帮助邮票奖励
-
-
-    protected static $clubChatHelpRewardTypeMap = [
-        self::CHAT_TYPE_PUBLISH_HELP_COIN => self::CLUB_REWARD_TYPE_PUBLISH_HELP_COINS,
-        self::CHAT_TYPE_PUBLISH_HELP_STAMP => self::CLUB_REWARD_TYPE_PUBLISH_HELP_STAMP,
-    ];
+    const CLUB_REWARD_TYPE_GAME_POINT_RANK = 7; //游戏积分排名
 
     //获取俱乐部列表
     public function getSuggestList($count)
@@ -234,7 +231,7 @@ class ClubBll
         if ($clubId == $info['clubId']) {
             $fields = 'uid,role,points,coins';
         }
-        $memberList = Model::clubUsers()->fetchAll(['clubId' => $clubId], $fields, ['createTime' => 'ASC'], '', $pageSize, $offset);
+        $memberList = Model::clubUsers()->fetchAll(['clubId' => $clubId], $fields, ['joinTime' => 'ASC'], '', $pageSize, $offset);
         if (!$memberList) {
             return [];
         }
@@ -304,7 +301,7 @@ class ClubBll
         Bll::messageNotify()->clubMute($tuid, $uid, !$memberInfo['muteStatus']);
     }
 
-    public function chat($uid, $type, $content)
+    public function chat($uid, $content)
     {
         Bll::chatLog()->checkChatContent($content);
         $info = Model::clubUsers()->getOneById($uid);
@@ -315,31 +312,36 @@ class ClubBll
         if ($info['muteStatus'] == self::MUTE_STATUS_ACTIVE) {
             FF::throwException(Exceptions::RET_CHAT_FORBIDDEN_ERROR);
         }
-        $expireTime = 0;
-        if (in_array($type, [self::CHAT_TYPE_PUBLISH_HELP_COIN, self::CHAT_TYPE_PUBLISH_HELP_STAMP])) {
-            $expireTime = $this->publishHelp($uid, $type);
-        }
-
-        $helpLimit = Config::get('club', 'helpLimit/' . $type, false);
+        $userInfo = Bll::user()->getUserInfo($uid, ['name', 'headId', 'headFrameId']);
         $insert = [
             'clubId' => $info['clubId'],
             'content' => $content,
             'sender' => $uid,
-            'type' => $type,
-            'time' => time(),
-            'expireTime' => $expireTime,
-            'helpLimit' => $helpLimit ?: 0,
+            'headId' => $userInfo[$uid]['headId'] ?? 0,
+            'headFrameId' => $userInfo[$uid]['headFrameId'] ?? 0,
+            'name' => $userInfo[$uid]['name'] ?? 0,
+            'chatTime' => time(),
             'microtime' => floor(_microtime()),
         ];
-
-        if (!Model::clubChatLog()->insert($insert)) {
+        $chatId = Model::clubChatLog()->insert($insert);
+        if (!$chatId) {
             FF::throwException(Exceptions::FAILED);
         }
-        $key = Keys::clubChatInfo($info['clubId']);
-        Dao::redis()->hMSet($key, ['chatTime' => $insert['time'], 'sender' => $uid]);
-        Dao::redis()->expire($key, 120);
+
+        $this->cacheChat(array_merge($insert,['chatId' => $chatId]));
     }
 
+    public function cacheChat($chatData)
+    {
+        $key = Keys::clubChatInfo($chatData['clubId']);
+        Dao::redis()->hMSet($key, ['chatTime' => time(), 'sender' => $chatData['sender']]);
+        Dao::redis()->expire($key, 120);
+        $chatKey = Keys::clubChatList($chatData['clubId']);
+        Dao::redis()->lPush($chatKey, json_encode($chatData));
+        if (Dao::redis()->lLen($chatKey) > 200) {
+            Dao::redis()->lTrim($chatKey, 0, 200);
+        }
+    }
     public function updateClubInfo($uid, $params)
     {
         $this->checkClubParams($params);
@@ -493,13 +495,69 @@ class ClubBll
             FF::throwException(Exceptions::RET_CLUB_NOT_EXISTS_ERROR);
         }
 
-        $key = Keys::lastHelpTime($uid, $type);
-        $coolTime = Config::get('club', 'publishHelp/coolTime');
+        $key = Keys::publishHelpTime($uid, $type);
+        $coolTime = Config::get('club-option', 'publishHelp/coolTime');
         if (!Dao::redis()->set($key, time(), ['nx', 'ex' => $coolTime])) {
             FF::throwException(Exceptions::RET_CLUB_PUBLISH_HELP_COOL_DOWN);
         }
-        $duration = Config::get('club', 'publishHelp/duration');
-        return $duration + time();
+        $duration = Config::get('club-option', 'publishHelp/duration');
+        $helpLimit = Config::get('club-option', 'helpLimit/'.$type);
+        $data = [
+            'clubId' => $info['clubId'],
+            'uid' => $uid,
+            'type' => $type,
+            'helpLimit' => $helpLimit,
+            'itemList' => '{}',
+            'expireTime' => $duration + time(),
+        ];
+
+        if (!Model::clubPublishHelpData()->insert($data)) {
+            FF::throwException(Exceptions::RET_PUBLISH_HELP_FAIL_ERROR);
+        }
+
+        return $this->getPublishHelpList($info['clubId'], 1, 10);
+    }
+
+    public function getPublishHelpList($clubId, $page, $pageSize)
+    {
+        $pageSize = max(min($pageSize, 50), 10);
+        $offset = ($page > 0 ? ($page - 1) : 0) * $pageSize;
+        $where = ['clubId' => $clubId, 'expireTime' => ['>', time()]];
+        $info = Model::clubPublishHelpData()->fetchOne($where, 'count(1) as count');
+        $data = [
+            'list' => [],
+            'total' => $info['count'],
+            'page' => $page,
+            'pageSize' => $pageSize,
+        ];
+        if (!$info['count']) {
+            return $data;
+        }
+        $list = Model::clubPublishHelpData()->fetchAll($where, null, ['id' => 'desc'], [], $pageSize, $offset);
+        $helpers = [];
+        foreach ($list as $row) {
+            $helpers = array_merge($helpers, explode(',', $row['helpers']));
+        }
+        $helpers = array_flip(array_filter($helpers));
+        $userList = Bll::user()->getUserInfoList(array_keys($helpers),'name,headId,headFrameId');
+        foreach ($list as &$row) {
+            $row['publishId'] = $row['id'];
+            unset($row['id']);
+            $row['itemList'] = json_decode($row['itemList'], true) ? : [];
+            if (!$row['helpers']) continue;
+            $helperIds = explode(',', $row['helpers']);
+            $helperList = [];
+            foreach ($helperIds as $helperId) {
+                if(!isset($userList[$helperId])) {
+                    continue;
+                }
+                $helperList[] = $userList[$helperId];
+            }
+            $row['helpers'] = $helperList;
+        }
+        $data['list'] = $list;
+
+        return $data;
     }
 
     public function jackpotReport($uid, $coins)
@@ -509,7 +567,7 @@ class ClubBll
             return;
         }
 
-        $bonusRate = Config::get('club', 'jackpotBonusRate');
+        $bonusRate = Config::get('club-option', 'jackpotBonusRate');
         $data = [
             'clubId' => $clubId,
             'uid' => $uid,
@@ -616,7 +674,7 @@ class ClubBll
         $list = [];
         foreach ($rewardList as $reward) {
             $row = [
-                'set' => $reward['set'],
+                'set' => (string)$reward['set'],
                 'type' => $reward['type'],
                 'progress' => $reward['progress'],
                 'ttl' => $reward['expireTime'] - $time,
@@ -682,7 +740,6 @@ class ClubBll
         if (!$rewardInfo || $rewardInfo['expireTime'] < time()) {
             FF::throwException(Exceptions::RET_SEASON_REWARD_EXPIRED_ERROR);
         }
-        $userStatList = [];
         switch ($rewardInfo['type']) {
             case self::CLUB_REWARD_TYPE_JACKPOT:
                 $userStatList = $this->getUserJackpotStat($rewardInfo['createTime']);
@@ -767,23 +824,23 @@ class ClubBll
         return $list;
     }
 
-    public function chatHelp($uid, $chatId)
+    public function helpMember($uid, $publishId)
     {
-        $chatInfo = Model::chatLog()->getOneById($chatId);
-        if (!$chatId) {
+        $publishInfo = Model::clubPublishHelpData()->getOneById($publishId);
+        if (!$publishInfo) {
             FF::throwException(Exceptions::RET_CHAT_HELP_NOT_EXIST_ERROR);
         }
 
-        if ($chatInfo['expireTime'] && $chatInfo['expireTime'] < time()) {
+        if ($publishInfo['expireTime'] && $publishInfo['expireTime'] < time()) {
             FF::throwException(Exceptions::RET_CHAT_HELP_NOT_EXIST_ERROR);
         }
 
-        if ($uid == $chatInfo['sender']) {
+        if ($uid == $publishInfo['uid']) {
             FF::throwException(Exceptions::RET_CHAT_HELP_SELF_ERROR);
         }
-        $helpers = $chatInfo['helpers'] ? explode(',', $chatInfo['helpers']) : [];
+        $helpers = $publishInfo['helpers'] ? explode(',', $publishInfo['helpers']) : [];
 
-        if (count($helpers) >= $chatInfo['helpLimit']) {
+        if (count($helpers) >= $publishInfo['helpLimit']) {
             FF::throwException(Exceptions::RET_CHAT_HELP_LIMIT_ERROR);
         }
 
@@ -791,40 +848,65 @@ class ClubBll
             FF::throwException(Exceptions::RET_CHAT_HELP_FINISHED_ERROR);
         }
         $helpers[] = $uid;
-        $where = ['id' => $chatId, 'updateTime' => $chatInfo['updateTime']];
-        $result = Model::chatLog()->update(['helpers' => implode(',', $helpers)], $where);
+        $where = ['id' => $publishId, 'updateTime' => $publishInfo['updateTime']];
+        $result = Model::clubChatLog()->update(['helpers' => implode(',', $helpers)], $where);
 
         if (!$result) {
             FF::throwException(Exceptions::RET_CHAT_HELP_FAIL_ERROR);
         }
-        if (count($helpers) < $chatInfo['helpLimit']) {
-            Bll::messageNotify()->pushNotifyMsg($chatInfo['sender'], $uid, MessageIds::CLUB_MEMBER_HELP_NOTIFY, [$chatId]);
-            return;
+        if (count($helpers) < $publishInfo['helpLimit']) {
+            Bll::messageNotify()->pushNotifyMsg($publishInfo['uid'], $uid, MessageIds::CLUB_MEMBER_HELP_NOTIFY, [$publishId]);
+        } else {
+            Bll::messageNotify()->pushNotifyMsg($publishInfo['uid'], $publishInfo, MessageIds::CLUB_PUBLISH_HELP_FINISH_NOTIFY);
+            $this->recordHelpReward($publishInfo);
         }
-        Bll::messageNotify()->pushNotifyMsg($chatInfo['sender'], $chatId, MessageIds::CLUB_PUBLISH_HELP_FINISH_NOTIFY);
-        $this->recordHelpReward($chatInfo);
+        $helperList = Bll::user()->getUserInfoList($helpers, ['uid', 'name', 'headId', 'headFrameId']);
+        return ['helperList' => $helperList, 'helpLimit' => $publishInfo['helpLimit'], 'publishId' => $publishId];
     }
 
-    public function recordHelpReward($chatInfo)
+    public function getChatList($uid, $lastChatId = 0)
     {
-        if (!isset(self::$clubChatHelpRewardTypeMap[$chatInfo['type']])) {
-            return;
+        $info = Model::clubUsers()->getOneById($uid);
+        if (!$info) {
+            FF::throwException(Exceptions::RET_CLUB_NOT_JOIN_ERROR);
         }
-        $helpers = $chatInfo['helpers'] ? explode(',', $chatInfo['helpers']) : [];
+        $clubInfo = $this->getInfo($info['clubId']);
+        if (!$clubInfo) {
+            FF::throwException(Exceptions::RET_CLUB_NOT_EXISTS_ERROR);
+        }
+
+        $chatKey = Keys::clubChatList($info['clubId']);
+        $list = Dao::redis()->lRange($chatKey, 0, 99);
+
+        foreach ($list as $key => $row) {
+            $row = json_decode($row, true);
+            if ($lastChatId >= $row['chatId']) {
+                unset($list[$key]);
+                continue;
+            }
+            $list[$key] = $row;
+        }
+        array_multisort(array_column($list, 'chatId'), SORT_ASC, $list);
+
+        return $list;
+    }
+
+    public function recordHelpReward($publishInfo)
+    {
+        $helpers = $publishInfo['helpers'] ? explode(',', $publishInfo['helpers']) : [];
         $extData = [];
         foreach ($helpers as $helper) {
             $extData[] = ['uid' => $helper];
         }
-
-        $type = self::$clubChatHelpRewardTypeMap[$chatInfo['type']];
+        $type = self::$clubHelpRewardTypeMap[$publishInfo['type']];
         $data = [
-            'clubId' => $chatInfo['clubId'],
-            'uid' => $chatInfo['sender'],
+            'clubId' => $publishInfo['clubId'],
+            'uid' => $publishInfo['uid'],
             'set' => $this->makeClubRewardSet($type),
             'type' => $type,
             'progress' => 0,
             'expireTime' => 0,
-            'itemList' => $chatInfo['itemList'],
+            'itemList' => $publishInfo['itemList'],
             'extData' => $extData,
         ];
 
@@ -833,6 +915,22 @@ class ClubBll
 
     public function makeClubRewardSet($type)
     {
-        return $type . microtime(true);
+        return $type . microtime(true) * 1000 . mt_rand(1000, 9999);
+    }
+
+    public function getDanSummaryData()
+    {
+        $key = Keys::clubDanStat();
+        $data = Dao::redis()->hGetAll($key);
+        $list = [];
+        foreach ($data as $k => $v) {
+            $list[] = ['dan' => $k, 'count' => $v];
+        }
+        if (!$list) {
+            $list = Model::clubs()->fetchAll([], 'count(1) count,dan', [], 'dan');
+            $data = array_column($list, 'count', 'dan');
+            Dao::redis()->hMSet($key, $data);
+        }
+        return $list;
     }
 }

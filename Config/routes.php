@@ -60,12 +60,10 @@ $config = array(
     MessageIds::FETCH_CLUB_REWARD_LIST => array('/Club/fetchClubRewardList'),
     MessageIds::FETCH_CLUB_REWARD_INFO => array('/Club/fetchClubRewardInfo'),
     MessageIds::CLAIM_CLUB_REWARD => array('/Club/claimClubReward'),
-
-
-
-
-
-
+    MessageIds::CLUB_HELP_MEMBER => array('/Club/helpMember'),
+    MessageIds::FETCH_CLUB_CHAT_LIST => array('/Club/fetchClubChatList'),
+    MessageIds::FETCH_CLUB_PUBLISH_HELP_LIST => array('/Club/fetchPublishHelpList'),
+    MessageIds::CLUB_DAN_SUMMARY => array('/Club/danSummary'),
 
     MessageIds::FETCH_USER_INFO => array('/User/fetchUserInfo', middleware('checkSignature')),
 );

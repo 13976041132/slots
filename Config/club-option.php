@@ -11,4 +11,6 @@ return [
         'coolTime' => 4 * 3600,
         'duration' => 86400,//发布持续时间
     ],
+
+    'dan' => ['min' => 1, 'max' => 11],
 ];

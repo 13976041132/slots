@@ -140,6 +140,12 @@ class Keys
     {
         return self::buildKey('ClubChatInfo');
     }
+
+    public static function clubChatList($clubId)
+    {
+        return self::buildKey('ClubChatList',$clubId);
+    }
+
     public static function rank($type)
     {
         return self::buildKey('Rank', $type);
@@ -164,9 +170,9 @@ class Keys
         return self::buildKey('ClubInfo', $clubId);
     }
 
-    public static function lastHelpTime($uid, $type)
+    public static function publishHelpTime($uid, $type)
     {
-        return self::buildKey('LastHelpTime', $uid, $type);
+        return self::buildKey('PublishHelpTime', $uid, $type);
     }
 
     public static function clubMember($clubId)
@@ -188,5 +194,8 @@ class Keys
     {
         return self::buildKey('ClubUserJackpotStat', $date);
     }
-
+    public static function clubDanStat()
+    {
+        return self::buildKey('ClubDanStat');
+    }
 }

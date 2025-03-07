@@ -110,10 +110,10 @@ class ClubController extends BaseController
     {
         $uid = $this->getUid();
         $content = $this->getParam('content');
-        $type = $this->getParam('type', false,  0);
+        Bll::club()->chat($uid, $content);
+        $list =  Bll::club()->getChatList($uid);
 
-        Bll::club()->chat($uid, $type, $content);
-        return [];
+        return ['list' => $list];
     }
 
     //修改俱乐部信息
@@ -200,7 +200,7 @@ class ClubController extends BaseController
     {
         $uid = $this->getUid();
         $type = $this->getParam('type');
-        Bll::club()->publishHelp($uid, $type);
+        return Bll::club()->publishHelp($uid, $type);
     }
 
     //jackpot上报
@@ -260,5 +260,38 @@ class ClubController extends BaseController
         }
         $itemList = Bll::club()->claimClubReward($uid, $sets);
         return ['itemList' => $itemList];
+    }
+
+    public function helpMember()
+    {
+        $uid = $this->getUid();
+        $publishId = $this->getParam('publishId');
+        return Bll::club()->helpMember($uid, $publishId);
+    }
+
+    public function fetchClubChatList()
+    {
+        $uid = $this->getUid();
+        $lastChatId = (int)$this->getParam('lastChatId',false,0);
+        $list = Bll::club()->getChatList($uid, $lastChatId);
+        return ['list' => $list];
+    }
+
+    public function fetchPublishHelpList()
+    {
+        $uid = $this->getUid();
+        $page = (int)$this->getParam('page', false, 1);
+        $pageSize = (int)$this->getParam('pageSize', false, 50);
+        $clubId = Bll::club()->getClubIdByUid($uid);
+        if ($clubId == 0){
+            FF::throwException(Exceptions::RET_CLUB_NOT_EXISTS_ERROR);
+        }
+        return Bll::club()->getPublishHelpList($clubId, $page, $pageSize);
+    }
+
+    public function danSummary()
+    {
+        $list = Bll::club()->getDanSummaryData();
+        return ['list' => $list];
     }
 }

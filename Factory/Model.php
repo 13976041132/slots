@@ -21,6 +21,7 @@ use FF\App\GameMain\Model\Main\UserClubRequestLogModel;
 use FF\App\GameMain\Model\Main\ClubRankLogModel;
 use FF\App\GameMain\Model\Main\ClubRewardsModel;
 use FF\App\GameMain\Model\Main\ClubJackpotLogModel;
+use FF\App\GameMain\Model\Main\ClubPublishHelpDataModel;
 use FF\Framework\Mode\Factory;
 
 class Model extends Factory
@@ -148,5 +149,13 @@ class Model extends Factory
     public static function clubJackpotLog()
     {
         return self::getInstance('FF\App\GameMain\Model\Main\ClubJackpotLogModel');
+    }
+
+    /**
+     * @return ClubPublishHelpDataModel
+     */
+    public static function clubPublishHelpData()
+    {
+        return self::getInstance('FF\App\GameMain\Model\Main\ClubPublishHelpDataModel');
     }
 }

@@ -62,10 +62,10 @@ class Exceptions extends Exception
     const RET_CLUB_PUBLISH_HELP_COOL_DOWN = 10046; //俱乐部发布求助冷却中
     const RET_CLUB_PUBLISH_HELP_TYPE_ERROR = 10047;//发布援助类型有误
     const RET_SEASON_REWARD_EXPIRED_ERROR = 10048; //赛季奖励已过期
-
     const RET_CHAT_HELP_NOT_EXIST_ERROR = 10049; //求助不存在
     const RET_CHAT_HELP_SELF_ERROR = 10050; //不能帮助自己
     const RET_CHAT_HELP_FINISHED_ERROR = 10051; //已完成帮助
     const RET_CHAT_HELP_LIMIT_ERROR = 10052; //已达到帮助上限
     const RET_CHAT_HELP_FAIL_ERROR = 10053; //帮助失败
+    const RET_PUBLISH_HELP_FAIL_ERROR = 10054; //发布求助失败
 }

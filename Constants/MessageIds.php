@@ -23,7 +23,8 @@ class MessageIds
     const CLUB_INVITE_JOIN_REFUSE_NOTIFY = 1016; //俱乐部邀请加入拒绝通知
     //帮助通知
     const CLUB_MEMBER_HELP_NOTIFY = 1017; //帮助通知
-    const CLUB_PUBLISH_HELP_FINISH_NOTIFY = 1017; //发布求助完成通知
+    const CLUB_PUBLISH_HELP_FINISH_NOTIFY = 1018; //发布求助完成通知
+    const CLUB_CHAT_NOTIFY = 1019; //俱乐部发言通知
     const FETCH_FRIENDS = 100001; //获取好友列表
     const ADD_FRIEND = 100002; //发送添加好友请求
     const FETCH_FRIENDS_REQUESTS = 100003; //获取好友请求
@@ -108,5 +109,14 @@ class MessageIds
 
     //领取俱乐部墙奖励信息
     const CLAIM_CLUB_REWARD = 100056;
+
+    //帮助玩家发布的请求
+    const CLUB_HELP_MEMBER = 100057;
+
+    //获取俱乐部聊天列表
+    const FETCH_CLUB_CHAT_LIST = 100058;
+
+    const FETCH_CLUB_PUBLISH_HELP_LIST = 100059; //获取俱乐部发布帮助列表
+    const CLUB_DAN_SUMMARY = 100060; //俱乐部段位汇总
 
 }
