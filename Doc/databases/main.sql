@@ -139,13 +139,15 @@ CREATE TABLE IF NOT EXISTS `club_puzzle_log` (
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='俱乐部拼图记录';
 
 CREATE TABLE IF NOT EXISTS `user_club_request_log` (
+    `uuid` varchar(36) NOT NULL COMMENT 'uuid',
     `clubId` int(11)  NOT NULL COMMENT '俱乐部ID',
     `uid` int(11)  NOT NULL COMMENT '用户ID',
     `invitedBy` int(11) NOT NULL COMMENT '邀请者',
     `status` int(11)  NOT NULL default 1 COMMENT '1:申请中,2.加入,3:拒绝',
-    `requestTime` datetime DEFAULT NULL COMMENT '申请时间',
-    PRIMARY KEY (`clubId`,`uid`,`invitedBy`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='俱乐部申请记录';
+    `inviteTime` datetime DEFAULT NULL COMMENT '邀请时间',
+    PRIMARY KEY (`uuid`),
+    UNIQUE KEY (`clubId`,`uid`,`invitedBy`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='俱乐部邀请记录';
 
 CREATE TABLE IF NOT EXISTS `club_rank_log` (
     `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -197,7 +199,7 @@ CREATE TABLE IF NOT EXISTS `club_publish_help_data` (
     `helpers` varchar(255) NOT NULL default '' COMMENT '帮助者',
     `helpLimit` tinyint(2) NOT NULL default 0 COMMENT '上限',
     `itemList` text  COMMENT '奖励信息',
-    `status` int(11)  NOT NULL DEFAULT 0 COMMENT '0:正常, 1:完成',
+    `status` int(11)  NOT NULL DEFAULT 0 COMMENT '0:进行中, 1:完成 2:失败',
     `expireTime` int(11) NOT NULL default 0 COMMENT '过期时间',
     `createTime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updateTime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT '更新时间',

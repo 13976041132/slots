@@ -198,4 +198,13 @@ class Keys
     {
         return self::buildKey('ClubDanStat');
     }
+
+    public static function clubSeasonDate()
+    {
+        return self::buildKey('ClubSeasonDate');
+    }
+    public static function clubLastSeasonDate()
+    {
+        return self::buildKey('ClubLastSeasonDate');
+    }
 }

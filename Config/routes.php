@@ -64,6 +64,9 @@ $config = array(
     MessageIds::FETCH_CLUB_CHAT_LIST => array('/Club/fetchClubChatList'),
     MessageIds::FETCH_CLUB_PUBLISH_HELP_LIST => array('/Club/fetchPublishHelpList'),
     MessageIds::CLUB_DAN_SUMMARY => array('/Club/danSummary'),
+    MessageIds::FETCH_CLUB_PUZZLE_INFO => array('/Club/fetchPuzzleInfo'),
+    MessageIds::FETCH_CLUB_USER_INVITE_LIST => array('/Club/fetchUserInviteList'),
+    MessageIds::FETCH_CLUB_MEMBER_INFO => array('/Club/fetchMemberInfo'),
 
     MessageIds::FETCH_USER_INFO => array('/User/fetchUserInfo', middleware('checkSignature')),
 );

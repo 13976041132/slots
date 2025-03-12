@@ -112,11 +112,13 @@ class MessageIds
 
     //帮助玩家发布的请求
     const CLUB_HELP_MEMBER = 100057;
-
     //获取俱乐部聊天列表
     const FETCH_CLUB_CHAT_LIST = 100058;
-
     const FETCH_CLUB_PUBLISH_HELP_LIST = 100059; //获取俱乐部发布帮助列表
     const CLUB_DAN_SUMMARY = 100060; //俱乐部段位汇总
+    const FETCH_CLUB_PUZZLE_INFO = 100061; //获取俱乐部拼图信息
+    const FETCH_CLUB_USER_INVITE_LIST = 100062; //获取俱乐部邀请列表
+    const FETCH_CLUB_MEMBER_INFO = 100063; //获取俱乐部成员信息
+
 
 }

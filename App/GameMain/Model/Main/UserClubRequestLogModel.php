@@ -14,9 +14,9 @@ class UserClubRequestLogModel extends MyModel
     public function addRequest($uid ,$clubId, $invitedBy)
     {
         $time = now();
-        $update = "`requestTime` = '{$time}', `status` = 1";
-        $sql = "INSERT INTO {$this->table()} VALUES ({$clubId}, {$uid}, {$invitedBy}, 1, '{$time}') ON DUPLICATE KEY UPDATE {$update}";
-
+        $uuid = implode('-',[$clubId,$uid,$invitedBy]);
+        $update = "`inviteTime` = '{$time}', `status` = 1";
+        $sql = "INSERT INTO {$this->table()} VALUES ({$uuid}, {$clubId}, {$uid}, {$invitedBy}, 1, '{$time}') ON DUPLICATE KEY UPDATE {$update}";
         return $this->db()->query($sql);
     }
 }

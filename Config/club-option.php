@@ -11,6 +11,13 @@ return [
         'coolTime' => 4 * 3600,
         'duration' => 86400,//发布持续时间
     ],
+    'season' => [
+        'duration' => 14
+    ],
+    //宝箱活动周期
+    'boxAct' => [
+        'duration' => 7,//宝箱活动周期
+    ],
 
     'dan' => ['min' => 1, 'max' => 11],
 ];

@@ -11,18 +11,6 @@ use FF\Factory\Keys;
 
 class RankBll
 {
-    public function getClubBoxType($clubId)
-    {
-        $date = Bll::club()->getCurrBoxActDate();
-        return 'Box:' . $clubId. ':' . $date;
-    }
-
-    public function getClubMachinePointsType($clubId)
-    {
-        $date = Bll::club()->getCurrBoxActDate();
-        return 'machinePoints:' . $clubId. ':' . $date;
-    }
-
     public function setScore($uuid, $type, $score)
     {
         $key = Keys::rank($type);
@@ -43,8 +31,22 @@ class RankBll
         return $rank === false ? 0 : ($rank + 1);
     }
 
+    //获取俱乐部赛季时间
     public function getClubType()
     {
-        return 'Club';
+        $date = Bll::club()->getSeasonDate();
+        return 'ClubSeason:' . $date;
     }
+
+    public function getClubChestType($clubId)
+    {
+        $date = Bll::club()->getChestActDate();
+        return 'ClubChest:' . $clubId. ':' . $date;
+    }
+
+    public function getClubEventType($clubId)
+    {
+        return 'ClubEvent:' . $clubId . ':' . date('Ymd');
+    }
+
 }

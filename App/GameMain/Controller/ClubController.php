@@ -72,18 +72,16 @@ class ClubController extends BaseController
     public function acceptInviteJoinClub()
     {
         $uid = $this->getUid();
-        $clubId = (int)$this->getParam('clubId');
-        $invitedBy = (int)$this->getParam('invitedBy');
-        Bll::club()->acceptInviteJoinClub($uid, $clubId, $invitedBy);
+        $uuid = (string)$this->getParam('uuid');
+        Bll::club()->acceptInviteJoinClub($uid, $uuid);
         return [];
     }
 
     public function refuseInviteJoinClub()
     {
         $uid = $this->getUid();
-        $clubId = $this->getParam('clubId');
-        $invitedBy = $this->getParam('invitedBy');
-        Bll::club()->refuseInviteJoinClub($uid, $clubId, $invitedBy);
+        $uuid = (string)$this->getParam('uuid');
+        Bll::club()->refuseInviteJoinClub($uid, $uuid);
         return [];
     }
 
@@ -226,11 +224,6 @@ class ClubController extends BaseController
         return Bll::club()->fetchMachinePointsRankList($this->getUid());
     }
 
-    public function fetchDanSummary()
-    {
-        return Model::clubs()->fetchAll([],'count(1) as count, dan',[],'dan');
-    }
-
     public function fetchHistoryRankList()
     {
         return Model::clubRankLog()->fetchAll([], '*', ['time' => 'asc']);
@@ -293,5 +286,25 @@ class ClubController extends BaseController
     {
         $list = Bll::club()->getDanSummaryData();
         return ['list' => $list];
+    }
+
+    public function fetchUserInviteList()
+    {
+        $uid = $this->getUid();
+        $list = Bll::club()->fetchUserInviteList($uid);
+        return ['list' => $list];
+    }
+
+    public function fetchPuzzleInfo()
+    {
+        $uid = $this->getUid();
+        return Bll::club()->getPuzzleInfo($uid);
+    }
+
+    public function fetchMemberInfo()
+    {
+        $uid = $this->getUid();
+        $muid = (int)$this->getParam('muid', false, $uid);
+        return Bll::club()->getMemberInfo($muid);
     }
 }
