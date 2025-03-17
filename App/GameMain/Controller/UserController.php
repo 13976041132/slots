@@ -92,6 +92,7 @@ class UserController extends BaseController
                 'lastRequestId' => Bll::userRequestLast()->getRequestId(),
                 'clubId' => Bll::club()->getClubIdByUid($uid),
                 'secretKey' => Bll::userRequestLast()->touchSecretKey($uid),
+                'friendList' => Bll::friends()->getFriendsInfo($uid),
             ]
         );
     }
@@ -127,14 +128,8 @@ class UserController extends BaseController
         if(!$clubInfo) {
             return $info;
         }
-        $clubRoleIds = explode(',', $userClubInfo['role'] ?? '');
+        //todo
         $roleNames = [];
-        foreach ($clubRoleIds as $clubRoleId) {
-            if (!isset(ClubBll::$clubRoleMapName[$clubRoleId])) {
-                continue;
-            }
-            $roleNames[] = ClubBll::$clubRoleMapName[$clubRoleId];
-        }
         $clubInfo['roleName'] = implode(',', $roleNames);
         $clubInfo['muteStatus'] = $userClubInfo['muteStatus'] ?? 0;
         $clubInfo['points'] = $userClubInfo['points'] ?? 0;

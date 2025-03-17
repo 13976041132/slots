@@ -114,12 +114,18 @@ class FriendsBll
     public function delFriend($uid, $fUid)
     {
         $result = Bll::friendCache()->delFriend($uid, $fUid);
-        // 修改redis
-        if ($result > 0) {
-            $this->renewFriends($uid);
-            $this->renewFriends($fUid);
+
+        if ($result) {
+            return $result;
         }
 
+        $this->renewFriends($uid);
+        $this->renewFriends($fUid);
+        $where = array(
+            'uid' => array('in', [$uid, $fUid]),
+            'triggerUid' => array('in', [$uid, $fUid])
+        );
+        Model::userBllRewardData()->delete($where, 0);
         return $result;
     }
 
@@ -492,7 +498,7 @@ class FriendsBll
         $isBreak = false;
         while (true) {
             $suids = Dao::redis()->sRandMember($key, $popCnt);
-            $diffUids = array_diff($suids,$suggestUids, $fuids, [$uid]);
+            $diffUids = array_diff($suids, $suggestUids, $fuids, [$uid]);
             $userGroup = array_chunk($diffUids, $pageSize + 5);
             foreach ($userGroup as $uids) {
                 $userFiendCnt = $this->batchSearchFriendCnt($uids);
