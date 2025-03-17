@@ -60,7 +60,7 @@ class ClubCacheBll extends DBCacheBll
         $this->updateCacheData($clubId, $data, null, true);
     }
 
-    public function updateClubByInc($clubId, $field, $value)
+    public function updateClubByInc($clubId, $field, $value, $newValue = 0)
     {
         $result = $this->updateFieldByInc($clubId, $field, $value, '', $newValue);
         if ($result) {

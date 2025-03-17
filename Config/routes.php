@@ -67,6 +67,7 @@ $config = array(
     MessageIds::FETCH_CLUB_PUZZLE_INFO => array('/Club/fetchPuzzleInfo'),
     MessageIds::FETCH_CLUB_USER_INVITE_LIST => array('/Club/fetchUserInviteList'),
     MessageIds::FETCH_CLUB_MEMBER_INFO => array('/Club/fetchMemberInfo'),
+    MessageIds::FETCH_CLUB_GAME_INFO => array('/Club/fetchGameInfo'),
 
     MessageIds::FETCH_USER_INFO => array('/User/fetchUserInfo', middleware('checkSignature')),
 );

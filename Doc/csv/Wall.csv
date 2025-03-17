@@ -1,0 +1,8 @@
+ID,奖励类型,奖励存储时间
+ID,RewardType,RewardTime
+int,int,int
+1,1,24
+2,2,168
+3,3,168
+4,4,48
+5,5,48

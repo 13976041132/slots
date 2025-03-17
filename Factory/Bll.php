@@ -17,6 +17,8 @@ use FF\Bll\MessageNotifyBll;
 use FF\Bll\FriendCacheBll;
 use FF\Bll\ClubCacheBll;
 use FF\Bll\UserRequestLastBll;
+use FF\Bll\ConfigBll;
+use FF\Bll\ClubOptionBll;
 use FF\Framework\Mode\Factory;
 
 class Bll extends Factory
@@ -27,6 +29,14 @@ class Bll extends Factory
     public static function session()
     {
         return self::getInstance('FF\Bll\SessionBll');
+    }
+
+    /**
+     * @return ConfigBll
+     */
+    public static function config()
+    {
+        return self::getInstance('FF\Bll\ConfigBll');
     }
 
     /**
@@ -115,5 +125,13 @@ class Bll extends Factory
     public static function userRequestLast()
     {
         return self::getInstance('FF\Bll\UserRequestLastBll');
+    }
+
+    /**
+     * @return ClubOptionBll
+     */
+    public static function clubOption()
+    {
+        return self::getInstance('FF\Bll\ClubOptionBll');
     }
 }

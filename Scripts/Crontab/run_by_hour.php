@@ -9,5 +9,7 @@ include __DIR__ . '/sync_suggest_friend.php';
 
 include __DIR__ . '/sync_suggest_club.php';
 
-include __DIR__ . '/init_club_act_data.php';
+include __DIR__ . '/init_club_season_data.php';
+
+include __DIR__ . '/club_user_role_update.php';
 

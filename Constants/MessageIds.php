@@ -25,6 +25,8 @@ class MessageIds
     const CLUB_MEMBER_HELP_NOTIFY = 1017; //帮助通知
     const CLUB_PUBLISH_HELP_FINISH_NOTIFY = 1018; //发布求助完成通知
     const CLUB_CHAT_NOTIFY = 1019; //俱乐部发言通知
+    const CLUB_LEVEL_UP_NOTIFY = 1020; //俱乐部升级通知
+
     const FETCH_FRIENDS = 100001; //获取好友列表
     const ADD_FRIEND = 100002; //发送添加好友请求
     const FETCH_FRIENDS_REQUESTS = 100003; //获取好友请求
@@ -119,6 +121,5 @@ class MessageIds
     const FETCH_CLUB_PUZZLE_INFO = 100061; //获取俱乐部拼图信息
     const FETCH_CLUB_USER_INVITE_LIST = 100062; //获取俱乐部邀请列表
     const FETCH_CLUB_MEMBER_INFO = 100063; //获取俱乐部成员信息
-
-
+    const FETCH_CLUB_GAME_INFO = 100064; //获取俱乐部游戏信息
 }

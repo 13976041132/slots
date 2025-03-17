@@ -34,8 +34,8 @@ class RankBll
     //获取俱乐部赛季时间
     public function getClubType()
     {
-        $date = Bll::club()->getSeasonDate();
-        return 'ClubSeason:' . $date;
+        $id = Bll::clubOption()->getSeasonId();
+        return 'ClubSeason:' . $id;
     }
 
     public function getClubChestType($clubId)
@@ -44,9 +44,14 @@ class RankBll
         return 'ClubChest:' . $clubId. ':' . $date;
     }
 
-    public function getClubEventType($clubId)
+    public function getClubEventType($clubId, $machineId)
     {
-        return 'ClubEvent:' . $clubId . ':' . date('Ymd');
+        return 'ClubEvent:' . $clubId . ':' . $machineId . date('Ymd');
     }
 
+    public function getClubSeasonUserPointType($clubId)
+    {
+        $id = Bll::clubOption()->getSeasonId();
+        return 'ClubSeason:' . $id . ':' . $clubId;
+    }
 }

@@ -12,8 +12,8 @@ class CsvReader extends FileReader
 {
     private $rowIndex = 0;
     private $header = null;
-    protected $headerRowIndex = 1;
-
+    protected $headerRowIndex = 2;
+    protected $bodyRowIndex = 4;
     public function close()
     {
         parent::close();
@@ -82,10 +82,13 @@ class CsvReader extends FileReader
         //对于非首行数据，转换为关联数组
         if ($this->header) {
             $this->rowIndex++;
-            if (count($row) != count($this->header)) {
+            if ($this->rowIndex < $this->bodyRowIndex) {
+                return [];
+            }
+            if (count($row) != count((array)$this->header)) {
                 FF::throwException(Code::FAILED, 'Values is not matched with header on row ' . $this->rowIndex);
             }
-            $row = array_combine($this->header, $row);
+            $row = array_combine((array)$this->header, $row);
         }
 
         return $row;
@@ -117,8 +120,12 @@ class CsvReader extends FileReader
         $this->readHeader();
 
         while (1) {
-            if (!$row = $this->readRow()) {
+            $row = $this->readRow();
+            if ($row === null) {
                 break;
+            }
+            if($this->rowIndex < $this->bodyRowIndex) {
+                continue;
             }
             $data[] = $row;
         }

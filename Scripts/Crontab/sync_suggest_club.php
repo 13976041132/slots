@@ -13,5 +13,3 @@ $clubIds = array_column($clubList, 'clubId');
 if ($clubIds) {
     Dao::redis()->sAdd($key, ...$clubIds);
 }
-
-

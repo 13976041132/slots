@@ -199,12 +199,8 @@ class Keys
         return self::buildKey('ClubDanStat');
     }
 
-    public static function clubSeasonDate()
+    public static function clubMachinePointData($clubId)
     {
-        return self::buildKey('ClubSeasonDate');
-    }
-    public static function clubLastSeasonDate()
-    {
-        return self::buildKey('ClubLastSeasonDate');
+        return self::buildKey('ClubMachinePointData',$clubId, date('Ymd'));
     }
 }

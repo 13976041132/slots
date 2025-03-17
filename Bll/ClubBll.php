@@ -16,32 +16,18 @@ use FF\Framework\Utils\Config;
 class ClubBll
 {
     const ROLE_LEADER = 1;
-    const ROLE_CO_LEADER = 2;
-    const ROLE_DONATE_MVP = 3;
-    const ROLE_POINTS_MVP = 4;
-    const ROLE_MEMBER = 5;
 
     const TYPE_PRIVATE = 1;
     const TYPE_PUBLIC = 2;
     //禁言
     const MUTE_STATUS_ACTIVE = 1;
-    const MUTE_STATUS_INACTIVE = 0;
 
     const REQUEST_STATUS_INVITE = 1;
     const REQUEST_STATUS_ACCEPT = 2;
     const REQUEST_STATUS_REFUSE = 3;
     const  PUBLISH_HELP_TYPE_COIN = 1;
-    const  PUBLISH_HELP_TYPE_STAMP = 2;
     private static $publishHelpType = [
-        self::PUBLISH_HELP_TYPE_STAMP,
         self::PUBLISH_HELP_TYPE_COIN,
-    ];
-    public static $clubRoleMapName = [
-        self::ROLE_LEADER => 'LEADER',
-        self::ROLE_CO_LEADER => 'CO LEADER',
-        self::ROLE_DONATE_MVP => 'DONATE MVP',
-        self::ROLE_POINTS_MVP => 'POINTS MVP',
-        self::ROLE_MEMBER => '',
     ];
 
     public static $clubHelpRewardTypeMap = [
@@ -53,6 +39,7 @@ class ClubBll
     const CLUB_REWARD_TYPE_RANK = 4; //Club League
     const CLUB_REWARD_TYPE_PUBLISH_HELP_COINS = 5; //发布帮助金币奖励
     const CLUB_REWARD_TYPE_PUBLISH_HELP_STAMP = 6;//发布帮助邮票奖励
+
     const CLUB_REWARD_TYPE_GAME_POINT_RANK = 7; //游戏积分排名
 
     //获取俱乐部列表
@@ -119,7 +106,11 @@ class ClubBll
         if (!$clubInfo) {
             FF::throwException(Exceptions::RET_CLUB_NOT_EXISTS_ERROR);
         }
-
+        //获取人数上限
+        $memLimit = Config::get('club/level', $clubInfo['level'] . '/member', false);
+        if ($clubInfo['memberCnt'] >= $memLimit) {
+            FF::throwException(Exceptions::RET_CLUB_MEMBER_LIMIT_ERROR);
+        }
         if ($clubInfo['type'] == self::TYPE_PRIVATE && !$invitedBy) {
             FF::throwException(Exceptions::RET_CLUB_NOT_ALLOW_JOIN_ERROR);
         }
@@ -132,14 +123,23 @@ class ClubBll
         if (Model::clubUsers()->getOneById($uid)) {
             FF::throwException(Exceptions::RET_USER_ALREADY_IN_CLUB_ERROR);
         }
-
-        $flag = Model::clubUsers()->insert(['clubId' => $clubId, 'uid' => $uid]);
-        if (!$flag) {
+        Dao::db()->transaction();
+        try {
+            $flag = Model::clubUsers()->insert(['clubId' => $clubId, 'uid' => $uid]);
+            if (!$flag) {
+                FF::throwException(Exceptions::RET_CLUB_JOIN_FAILED_ERROR);
+            }
+            $newValue = 0;
+            $result = Bll::clubCache()->updateClubByInc($clubInfo['clubId'], 'memberCnt', 1, $newValue);
+            if (!$result || $newValue > $memLimit) {
+                FF::throwException(Exceptions::RET_CLUB_JOIN_FAILED_ERROR);
+            }
+            Dao::redis()->sAdd(Keys::clubMember($clubId), $uid);
+            Dao::db()->commit();
+        } catch (Exception $e) {
+            Dao::db()->rollback();
             FF::throwException(Exceptions::RET_CLUB_JOIN_FAILED_ERROR);
         }
-
-        Model::clubs()->update(['memberCnt' => ['+=', 1]], ['clubId' => $clubId]);
-        Dao::redis()->sAdd(Keys::clubMember($clubId), $uid);
     }
 
     //拒绝加入俱乐部
@@ -177,7 +177,8 @@ class ClubBll
         if (!Model::clubUsers()->delete(['uid' => $uid])) {
             FF::throwException(Exceptions::FAILED);
         }
-        Model::clubs()->update(['memberCnt' => ['-=', 1]], ['clubId' => $info['clubId']]);
+
+        Bll::clubCache()->updateClubByInc($info['clubId'], 'memberCnt', -1);
         Dao::redis()->sRem(Keys::clubMember($info['clubId']), $uid);
     }
 
@@ -238,13 +239,17 @@ class ClubBll
         if (!$memberList) {
             return [];
         }
+
+        $topInfo = Bll::rank()->getList(Bll::rank()->getClubSeasonUserPointType($clubId), 0, 0);
+        $pointTop1 = $topInfo ? array_keys($topInfo)[0] : 0;
         $uids = array_column($memberList, 'uid');
         $userList = Bll::user()->getUserInfoList($uids, ['name', 'level', 'headId', 'headFrameId', 'lastOnlineTime']);
         foreach ($memberList as &$member) {
             if (empty($userList[$member['uid']])) {
                 continue;
             }
-            $member['roleName'] = self::$clubRoleMapName[$member['role']] ?? '';
+            $roles = $this->getUserRoles($member['uid'], $clubInfo['level'], $pointTop1, $clubInfo['topDonor'], $clubInfo['creator']);
+            $member['roleName'] = implode(',', $roles);
             $member = array_merge($member, $userList[$member['uid']]);
             $member['isOnline'] = Bll::user()->isOnlineByLoginTime($userList[$member['uid']]['lastOnlineTime']);
         }
@@ -285,6 +290,8 @@ class ClubBll
         Model::clubs()->delete(['clubId' => $info['clubId']]);
         //删除俱乐部
         Dao::redis()->del(Keys::clubMember($info['clubId']));
+        //删除俱乐部排行榜
+
     }
 
     public function setMuteStatus($uid, $tuid)
@@ -413,6 +420,7 @@ class ClubBll
         if (!$result) {
             FF::throwException(Exceptions::FAILED);
         }
+
         Model::clubUsers()->update(['coins' => ['+=', $coins]], ['uid' => $uid]);
 
         return $this->getInfo($info['clubId']);
@@ -422,6 +430,9 @@ class ClubBll
     {
         if ($points <= 0) {
             FF::throwException(Exceptions::PARAM_INVALID_ERROR);
+        }
+        if (!Bll::clubOption()->getSeasonDate()) {
+            FF::throwException(Exceptions::RET_CLUB_SEASON_NOT_OPEN_ERROR);
         }
         $info = Bll::clubUser()->getInfo($uid);
         if (!$info) {
@@ -434,18 +445,22 @@ class ClubBll
         Model::clubUsers()->update(['points' => ['+=', $points]], ['uid' => $uid]);
 
         $this->addUserChestPoints($info['clubId'], $uid, $points);
+        $this->addUserSeasonPoints($info['clubId'], $uid, $points);
         $this->addSeasonPoints($info['clubId'], $points);
         $seasonPoints = $this->addChestPoints($info['clubId'], $points);
-        Bll::rank()->setScore($uid, Bll::rank()->getClubEventType($info['clubId']), $points);
         return [
-            'seasonPoints' => (int)$seasonPoints,
-            'totalPoints' => (int)$seasonPoints + 100,
+            'seasonPoints' => (int)$seasonPoints
         ];
     }
 
     public function addSeasonPoints($clubId, $points)
     {
         Bll::rank()->setScore($clubId, Bll::rank()->getClubType(), $points);
+    }
+
+    public function addUserSeasonPoints($clubId, $uid, $points)
+    {
+        Bll::rank()->setScore($uid, Bll::rank()->getClubSeasonUserPointType($clubId), $points);
     }
 
     public function addChestPoints($clubId, $points)
@@ -470,12 +485,12 @@ class ClubBll
             FF::throwException(Exceptions::RET_CLUB_NOT_EXISTS_ERROR);
         }
 
-        $key = Keys::puzzle($info['clubId'], $this->getSeasonDate());
+        $key = Keys::puzzle($info['clubId'], Bll::clubOption()->getSeasonId());
         $pieceId = (int)Dao::redis()->lPop($key);
         if (!$pieceId) {
             FF::throwException(Exceptions::RET_CLUB_PUZZLE_FINISH_ERROR);
         }
-        $key = Keys::clubPuzzle($info['clubId'], $this->getSeasonDate());
+        $key = Keys::clubPuzzle($info['clubId'], Bll::clubOption()->getSeasonId());
         Dao::redis()->hSet($key, $pieceId, $uid);
 
         return $pieceId;
@@ -526,7 +541,7 @@ class ClubBll
             'uid' => $uid,
             'type' => $type,
             'helpLimit' => $helpLimit,
-            'itemList' => '{}',
+            'itemList' => Bll::clubOption()->getRequestItem($uid),
             'expireTime' => $duration + time(),
         ];
 
@@ -589,7 +604,7 @@ class ClubBll
             return;
         }
 
-        $bonusRate = Config::get('club-option', 'jackpotBonusRate');
+        $bonusRate = Config::get('club/common', 'coefficient');
         $data = [
             'clubId' => $clubId,
             'uid' => $uid,
@@ -599,22 +614,27 @@ class ClubBll
         Model::clubJackpotLog()->insert($data);
     }
 
-    public function machinePointsCollect($uid, $points)
+    public function machinePointsCollect($uid, $machineId, $points)
     {
+        if (!Bll::clubOption()->getGameDate()) {
+            return [];
+        }
         $info = Model::clubUsers()->getOneById($uid);
         if (!$info) {
-            FF::throwException(Exceptions::RET_CLUB_NOT_JOIN_ERROR);
+            return [];
         }
         $clubInfo = $this->getInfo($info['clubId']);
         if (!$clubInfo) {
-            FF::throwException(Exceptions::RET_CLUB_NOT_EXISTS_ERROR);
+            return [];
         }
-        $rankType = Bll::rank()->getClubEventType($info['clubId']);
+        $rankType = Bll::rank()->getClubEventType($info['clubId'], $machineId);
 
         Bll::rank()->setScore($uid, $rankType, $points);
+        $key = Keys::clubMachinePointData($info['clubId']);
+        Dao::redis()->hIncrBy($key, $machineId, $points);
     }
 
-    public function fetchMachinePointsRankList($uid)
+    public function fetchMachinePointsRankList($uid, $machineId)
     {
         $info = Model::clubUsers()->getOneById($uid);
         if (!$info) {
@@ -624,7 +644,7 @@ class ClubBll
         if (!$clubInfo) {
             FF::throwException(Exceptions::RET_CLUB_NOT_EXISTS_ERROR);
         }
-        $rankType = Bll::rank()->getClubEventType($info['clubId']);
+        $rankType = Bll::rank()->getClubEventType($info['clubId'], $machineId);
         $rankList = Bll::rank()->getList($rankType, 0, 20);
         $uids = array_keys($rankList);
         if (empty($uids)) {
@@ -643,7 +663,7 @@ class ClubBll
             ];
         }
 
-        return ['rankList' => $list, 'myRank' => $this->getMyPointRank($uid, $info['clubId'])];
+        return ['rankList' => $list, 'myRank' => $this->getMyPointRank($uid, $info['clubId'], $machineId)];
     }
 
     public function getMyClubRank($uid)
@@ -652,9 +672,9 @@ class ClubBll
         return $myClubId ? Bll::rank()->getRank($myClubId, Bll::rank()->getClubType()) : 0;
     }
 
-    public function getMyPointRank($uid, $clubId)
+    public function getMyPointRank($uid, $clubId, $machineId)
     {
-        $rankType = Bll::rank()->getClubEventType($clubId);
+        $rankType = Bll::rank()->getClubEventType($clubId, $machineId);
         return Bll::rank()->getRank($uid, $rankType);
     }
 
@@ -993,7 +1013,7 @@ class ClubBll
         if (!$clubId) {
             FF::throwException(Exceptions::RET_CLUB_NOT_JOIN_ERROR);
         }
-        $key = Keys::clubPuzzle($clubId, $this->getSeasonDate());
+        $key = Keys::clubPuzzle($clubId, Bll::clubOption()->getSeasonId());
         $data = Dao::redis()->hGetAll($key);
         $pieces = array_keys($data);
         $myPieces = [];
@@ -1011,6 +1031,14 @@ class ClubBll
         if (!$memberInfo) {
             FF::throwException(Exceptions::RET_CLUB_NOT_JOIN_ERROR);
         }
+        $clubInfo = $this->getInfo($memberInfo['clubId']);
+        if (!$clubInfo) {
+            FF::throwException(Exceptions::RET_CLUB_NOT_EXISTS_ERROR);
+        }
+
+        $topInfo = Bll::rank()->getList(Bll::rank()->getClubSeasonUserPointType($clubInfo['clubId']), 0, 0);
+        $pointTop1 = $topInfo ? array_keys($topInfo)[0] : 0;
+        $roles = $this->getUserRoles($memberInfo['uid'], $clubInfo, $pointTop1);
         $key = Keys::publishHelpTime($muid, self::PUBLISH_HELP_TYPE_COIN);
         $ttl = Dao::redis()->ttl($key);
         $userInfo = Bll::user()->getUserInfo($muid, ['name', 'level', 'headId', 'headFrameId', 'lastOnlineTime']);
@@ -1018,7 +1046,7 @@ class ClubBll
             'phCoolTime' => $ttl > 0 ? time() + $ttl : 0,
             'points' => $memberInfo['points'],
             'isOnline' => Bll::user()->isOnlineByLoginTime($userInfo['lastOnlineTime']),
-            'roleName' => self::$clubRoleMapName[$memberInfo['role']] ?? '',
+            'roleName' => implode(',', $roles),
             'name' => $userInfo['name'],
             'level' => $userInfo['level'],
             'headId' => $userInfo['headId'],
@@ -1026,24 +1054,29 @@ class ClubBll
             'muid' => $muid,
         ];
     }
-    public function getSeasonDate()
+
+    public function getGameInfo($uid)
     {
-        $key = Keys::clubSeasonDate();
-        $seasonDate = Dao::redis()->get($key);
-        if (!$seasonDate && strtotime($seasonDate) < time()) {
-            $this->recordLastSeasonTime($seasonDate);
-            $seasonDate = $this->calcSeasonTime();
-            Dao::redis()->set($key, $seasonDate, 86400 * 20);
+        $clubId = $this->getClubIdByUid($uid);
+        if (!$clubId) {
+            FF::throwException(Exceptions::RET_CLUB_NOT_JOIN_ERROR);
         }
-        return date('Ymd', $seasonDate);
-    }
-    public function recordLastSeasonTime($seasonDate)
-    {
-        if(!$seasonDate) {
-            return;
+        $gameCycle = Bll::clubOption()->getGameDate();
+
+        if (!$gameCycle) {
+            return [];
         }
-        $key = Keys::clubLastSeasonDate();
-        Dao::redis()->set($key, $seasonDate,7 * 86400);
+
+        $key = Keys::clubMachinePointData($clubId);
+        $data = Dao::redis()->hGetAll($key);
+        $list = [];
+        $machineList = Config::get('club/common', 'machineList');
+        foreach ($machineList as $machineId) {
+            $list[] = ['machineId' => $machineId, 'points' => $data[$machineId] ?? 0];
+        }
+        $isOpen = Bll::clubOption()->isGameOpen();
+        $shortEndTime = $isOpen ? strtotime(date('Y-m-d 23:59:59')) : 0;
+        return array_merge($gameCycle, ['isOpen' => $isOpen, 'shortEndTime' => $shortEndTime, 'machinePoints' => $list]);
     }
     function calcSeasonTime($weekNum = 2)
     {
@@ -1057,5 +1090,48 @@ class ClubBll
 
         $days = $weekNum * 7;
         return strtotime("+{$days} days", $lastMonday);
+    }
+
+    protected function getUserRoles($uid, $clubInfo, $topPoint)
+    {
+        $roles = [];
+        $clubRoles = Config::get('club/levels', $clubInfo['level'] . '/title', false);
+        if (!$clubRoles) {
+            return [];
+        }
+        foreach ($clubRoles as $clubRole) {
+            switch (strtolower($clubRole)) {
+                case 'leader':
+                    if ($uid == $clubInfo['creator']) {
+                        $roles[] = $clubRole;
+                    }
+                    break;
+                case 'points mvp':
+                    if ($topPoint == $uid) {
+                        $roles[] = $clubRole;
+                    }
+                    break;
+                case 'donate mvp':
+                    if ($clubInfo['topDonor'] == $uid) {
+                        $roles[] = $clubRole;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        return $roles ?: ['Member'];
+    }
+
+    public function initPuzzle($clubId, $id)
+    {
+        if ($id == 0) {
+            return;
+        }
+        $pieces = range(1, 50);
+        $key = Keys::puzzle($clubId, $id);
+        Dao::redis()->del($key);
+        array_shift($pieces);
+        Dao::redis()->rPush($key, ...$pieces);
     }
 }

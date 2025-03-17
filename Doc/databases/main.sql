@@ -77,7 +77,6 @@ CREATE TABLE IF NOT EXISTS `user_request_last` (
     `messageId` int(11)  NOT NULL COMMENT '消息ID',
     `request`   text  COMMENT '请求参数信息',
     `response` text  COMMENT '响应结构',
-    `secet`
     `requestTime` int(11) NOT NULL COMMENT '请求时间',
     PRIMARY KEY (`uid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='玩家请求数据';
@@ -93,6 +92,7 @@ CREATE TABLE IF NOT EXISTS `clubs` (
     `vipLimit`  int(11)  NOT NULL default 0 COMMENT 'vip限制',
     `coins`     BIGINT  NOT NULL default 0 COMMENT '金币',
     `dan`       tinyint(2)  NOT NULL default 0 COMMENT '段位',
+    `topDonor` int(11) DEFAULT NULL default 0 COMMENT '捐赠最多的玩家ID',
     `donateTimes` int(11)  NOT NULL default 0 COMMENT '捐赠次数',
     `createTime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updateTime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT '更新时间',
@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS `club_users` (
     `uid`      int(11)  NOT NULL COMMENT '用户',
     `role`     int(11)  NOT NULL default 5 COMMENT '1:Leader 2:Co-Leader,3:Donate MVP 4:Points MVP 5:Member',
     `coins`    BIGINT NOT NULL default 0 COMMENT '捐赠的金币',
-    `points`      int(11)  NOT NULL COMMENT '积分',
+    `points`   int(11)  NOT NULL COMMENT '积分',
     `muteStatus` int(11)  NOT NULL default 0 COMMENT '0:可以发言 1:禁言',
     `joinTime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '加入的时间',
     `updateTime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT '更新时间',
@@ -204,7 +204,7 @@ CREATE TABLE IF NOT EXISTS `club_publish_help_data` (
     `createTime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updateTime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    key (`clubId`),
+    key (`clubId`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='发布帮助数据';
 
 

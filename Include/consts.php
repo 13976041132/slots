@@ -9,3 +9,5 @@ const DB_ANALYSIS = 'analysis';
 const DB_CONFIG = 'config';
 const DB_LOG = 'log';
 const DB_TEST = 'test';
+
+const ITEM_COIN = 60010101;

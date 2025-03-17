@@ -215,13 +215,15 @@ class ClubController extends BaseController
     {
         $uid = $this->getUid();
         $points = (int)$this->getParam('points');
-        Bll::club()->machinePointsCollect($uid, $points);
+        $machineId = (int)$this->getParam('machineId');
+        Bll::club()->machinePointsCollect($uid, $machineId, $points);
         return [];
     }
 
     public function fetchMachinePointsRankList()
     {
-        return Bll::club()->fetchMachinePointsRankList($this->getUid());
+        $machineId = (int)$this->getParam('machineId');
+        return Bll::club()->fetchMachinePointsRankList($this->getUid(), $machineId);
     }
 
     public function fetchHistoryRankList()
@@ -306,5 +308,11 @@ class ClubController extends BaseController
         $uid = $this->getUid();
         $muid = (int)$this->getParam('muid', false, $uid);
         return Bll::club()->getMemberInfo($muid);
+    }
+    //获取开发机台的积分信息
+    public function fetchGameInfo()
+    {
+        $uid = $this->getUid();
+        return Bll::club()->getGameInfo($uid);
     }
 }

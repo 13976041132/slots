@@ -68,4 +68,5 @@ class Exceptions extends Exception
     const RET_CHAT_HELP_LIMIT_ERROR = 10052; //已达到帮助上限
     const RET_CHAT_HELP_FAIL_ERROR = 10053; //帮助失败
     const RET_PUBLISH_HELP_FAIL_ERROR = 10054; //发布求助失败
+    const RET_CLUB_SEASON_NOT_OPEN_ERROR = 10055; //俱乐部赛季未开启
 }
