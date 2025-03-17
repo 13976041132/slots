@@ -83,15 +83,14 @@ class UserController extends BaseController
         Bll::messageNotify()->clearQueueMessage($uid);
         Bll::messageNotify()->loadRewardNotifyMessage($uid);
         $msgStatData = Bll::user()->fetchMsgStatInfo($uid);
-        Model::userRequestLast()->getOneById($uid);
-
+        Bll::userRequestLast()->clean($uid);
         return array_merge(
             $msgStatData,
             [
                 'token' => $sessionId,
                 'lastRequestId' => Bll::userRequestLast()->getRequestId(),
                 'clubId' => Bll::club()->getClubIdByUid($uid),
-                'secretKey' => Bll::userRequestLast()->touchSecretKey($uid),
+                'secretKey' => Bll::userRequestLast()->touchSecretKey(false, true),
                 'friendList' => Bll::friends()->getFriendsInfo($uid),
             ]
         );

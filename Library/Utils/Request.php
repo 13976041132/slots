@@ -8,8 +8,8 @@ namespace FF\Library\Utils;
 use FF\Framework\Common\Code;
 use FF\Framework\Common\Format;
 use FF\Framework\Core\FF;
-use FF\Framework\Utils\Config;
 use FF\Framework\Utils\Input;
+use FF\Framework\Utils\Router;
 
 class Request
 {
@@ -35,7 +35,7 @@ class Request
         if (self::$msgCfg === null) {
             $msgId = self::getMsgId();
             if (!$msgId) return null;
-            $config = Config::get('routes', $msgId);
+            $config = Router::getRouteByMsgId($msgId);
             if (!$config) {
                 $message = "Config routes => {$msgId} is missed";
                 FF::throwException(Code::CONFIG_MISSED, $message);
@@ -55,14 +55,7 @@ class Request
 
     public static function getRoute()
     {
-        $config = self::getMsgConfig();
-        return $config ? $config[0] : null;
-    }
-
-    public static function getProto()
-    {
-        $config = self::getMsgConfig();
-        return $config ? $config[1] : null;
+        return self::getMsgConfig();
     }
 
     public static function getMessage()

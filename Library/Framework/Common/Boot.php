@@ -30,6 +30,7 @@ include(PATH_FWK . '/Common/Const.php');
 include(PATH_FWK . '/Common/Functions.php');
 include(PATH_FWK . '/Common/Handler.php');
 include(PATH_FWK . '/Common/Autoload.php');
+include(PATH_CFG . '/routes.php');
 include(PATH_FWK . '/Core/FF.php');
 
 FF::init();

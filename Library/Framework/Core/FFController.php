@@ -32,7 +32,7 @@ class FFController
         //To override
     }
 
-    public function afterResponse($response, $error)
+    public function afterResponse(&$response, $error)
     {
         //To override
     }

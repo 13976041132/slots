@@ -22,6 +22,7 @@ class ClubOptionBll extends Bll
         }
         return [];
     }
+
     public function getGameDate()
     {
         $gameCycle = Config::get('club/common', 'gameCycle');
@@ -31,7 +32,7 @@ class ClubOptionBll extends Bll
                 continue;
             }
             if (($date >= $row[0] && $date <= $row[1]) || $date < $row[0]) {
-                return ['startDate'=> $row[0], 'endDate' => $row[1]];
+                return ['startDate' => $row[0], 'endDate' => $row[1]];
             }
         }
         return [];
@@ -80,5 +81,63 @@ class ClubOptionBll extends Bll
         }
 
         return $isLevelUp;
+    }
+
+    public function isSeasonSettle(&$seasonId)
+    {
+        $seasonConfig = Config::get('club/season');
+        $yesterday = yesterday();
+        foreach ($seasonConfig as $row) {
+            if (count($row) != 2) {
+                continue;
+            }
+            if ($yesterday == $row[1]) {
+                $seasonId = $row['id'];
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function getLeagueInfo($dan, $rank)
+    {
+        $config = Config::get('club/league', $dan, false);
+        if (!$config) {
+            return [];
+        }
+        foreach ($config as $row) {
+            if (count($row['level']) == 1 && $row['level'][0] == $rank) {
+                return $row;
+            }
+            if (count($row['level']) == 2 && ($row['level'][0] <= $rank || $row['level'][1] >= $rank)) {
+                return $row;
+            }
+        }
+    }
+
+    public function getDanIdByDanName($danName)
+    {
+        $config = Config::get('club/grade');
+        foreach ($config as $row) {
+            if ($row['grade'] == $danName) {
+                return $row['gradeId'];
+            }
+        }
+        return 0;
+    }
+    public function getClubRewardTime($type, $clubLevel)
+    {
+        $rewardTime = Config::get('club/wall', "{$type}/rewardTime", false);
+        $timeLimit = Config::get('club/level', "{$clubLevel}/timeLimit", false);
+        $rewardTime = $rewardTime ?: 24;
+        $timeLimit = $timeLimit ?: 0;
+        return $rewardTime + $timeLimit;
+    }
+
+    public function getChestActDate()
+    {
+        $weekDay = date('N');
+        $time = strtotime("+" . (7 - $weekDay) . " days");
+        return date('Ymd', $time);
     }
 }

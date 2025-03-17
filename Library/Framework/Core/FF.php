@@ -252,6 +252,12 @@ class FF
         return $space . '\\' . $routes['controller'] . 'Controller';
     }
 
+
+    public static function getMiddlewareClass($middleware)
+    {
+        return 'FF\\Middleware\\'.$middleware;
+    }
+
     /**
      * 判断是否是生产环境
      * @return bool
@@ -284,7 +290,18 @@ class FF
             self::getRouter()->initRoute();
             $controller = self::getController();
             $method = self::getRouter()->getMethod();
-            $response = call_user_func(array($controller, $method));
+            $middlewares = self::getRouter()->getMiddlewares();
+
+            $next = function () use ($controller, $method) {
+                return call_user_func(array($controller, $method));
+            };
+            foreach (array_reverse($middlewares) as $middleware) {
+                $middlewareClass = self::getMiddlewareClass($middleware);
+                $next = function () use ($middlewareClass, $next) {
+                    return (new $middlewareClass)->handle($next);
+                };
+            }
+            $response = $next();
             if (is_int($response)) {
                 $error = new \Exception('', $response);
             } elseif (is_string($response)) {

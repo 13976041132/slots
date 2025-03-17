@@ -12,6 +12,7 @@ class FFRouter
     protected $path = '';
     protected $controller = '';
     protected $method = '';
+    protected $middlewares = [];
     protected $rules = array();
     protected $isValid = false;
 
@@ -72,16 +73,18 @@ class FFRouter
         $this->path = $routes['path'];
         $this->controller = $routes['controller'];
         $this->method = $routes['method'];
+        $this->middlewares = $routes['middlewares'];
         $this->isValid = true;
     }
 
     /**
      * 解析路由
-     * @param string $route
+     * @param array $routeInfo
      * @return array|null
      */
-    private function parseRoute($route)
+    private function parseRoute($routeInfo)
     {
+        $route = $routeInfo['route'] ?? '';
         $route = str_replace('//', '/', $route);
         if (substr($route, -1) == '/') $route = substr($route, 0, -1);
         if (substr($route, 0, 1) != '/') $route = '/' . $route;
@@ -110,7 +113,8 @@ class FFRouter
             'route' => $route,
             'path' => $path,
             'controller' => $controller,
-            'method' => $method
+            'method' => $method,
+            'middlewares' => $routeInfo['middlewares'] ?? []
         );
 
         if (!$this->checkRoute($routes)) {
@@ -155,7 +159,8 @@ class FFRouter
             'route' => $this->route,
             'path' => $this->path,
             'controller' => $this->controller,
-            'method' => $this->method
+            'method' => $this->method,
+            'middlewares' => $this->middlewares
         );
     }
 
@@ -193,6 +198,11 @@ class FFRouter
     public function getMethod()
     {
         return $this->method;
+    }
+
+    public function getMiddlewares()
+    {
+        return $this->middlewares;
     }
 
     /**

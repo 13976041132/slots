@@ -91,7 +91,7 @@ class BaseController extends MyController
     {
         return (int)Bll::session()->get('uid');
     }
-    public function afterResponse($resData, $error)
+    public function afterResponse(&$resData, $error)
     {
         if ($this->isInFilter($this->filterIgnoreRequestId)) {
             return;
@@ -102,7 +102,11 @@ class BaseController extends MyController
         }
         $params = $controller ? $controller->getParams() : $_REQUEST;
 
-        if (empty(Input::request('q')) || empty(Input::request('c'))) {
+        if (empty(Input::request('c'))) {
+            return;
+        }
+
+        if (empty(Input::request('q')) && !Bll::userRequestLast()->getSecretStatus()) {
             return;
         }
         if (!FF::getRouter()->isValid()) {
@@ -118,6 +122,7 @@ class BaseController extends MyController
             $response = array('code' => $error->getCode(), 'message' => $error->getMessage(), 'data' => '');
         }
 
-        Bll::userRequestLast()->save($uid, $params, $response);
+        Bll::userRequestLast()->save();
+        $resData['secretKey'] = Bll::userRequestLast()->get('secretKey');
     }
 }

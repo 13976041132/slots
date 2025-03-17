@@ -168,18 +168,18 @@ class ConfigBll
                 $parts = explode(',', $reward);
                 return [
                     'itemId' => (int)$parts[0], // 道具 ID
-                    'amount' => (int)$parts[1], // 奖励数量
+                    'count' => (int)$parts[1], // 奖励数量
                 ];
             }, explode('|', $record['NodeReward']));
 
             // 解析节点道具奖励（int[]）
             $row['nodeProps'] = array_map(function ($prop) {
-                $parts = explode(',', $prop);
+                $parts = explode('|', $prop);
                 return [
                     'itemId' => (int)$parts[0], // 道具 ID
                     'count' => (int)$parts[1], // 道具数量
                 ];
-            }, explode('|', $record['NodeProps']));
+            }, [$record['NodeProps']]);
 
             $config[$row['id']] = $row;
         }
@@ -202,7 +202,7 @@ class ConfigBll
             $row['activityAddition'] = $record['ActivityAddition'] !== '' ? (float)$record['ActivityAddition'] : 0;
 
             // 解析周边系统权益（int[]）
-            $row['systemAddition'] = $record['SystemAddition'] !== '' ? array_map('intval', explode(',', $record['SystemAddition'])) : [];
+            $row['systemAddition'] = $record['SystemAddition'] !== '' ? array_map('intval', explode('|', $record['SystemAddition'])) : [];
 
             // 解析膨胀系数（int）
             $row['expansion'] = $record['Expansion'] !== '' ? (int)$record['Expansion'] : 0;
@@ -220,26 +220,21 @@ class ConfigBll
         $records = Utils::loadCsv($sourceFile);
         $config = array();
         foreach ($records as $record) {
-            $row['id'] = (int)$record['ID'];
             $row['gradeId'] = (int)$record['Grade_Id'];
             $row['gradeLevel'] = $record['Grade_Level'];
 
             // 解析排名等级（int[]）
-            $row['level'] = array_map('intval', explode(',', $record['Level']));
-
+            $row['level'] = array_map('intval', explode('|', $record['Level']));
+            $parts = explode('|', $record['Reward_Props']);
             // 解析道具奖励（int[]）
-            $row['rewardProps'] = array_map(function ($prop) {
-                $parts = explode('|', $prop);
-                return [
-                    'itemId' => (int)$parts[0], // 道具 ID
-                    'amount' => (int)$parts[1], // 道具数量
-                ];
-            }, explode(',', $record['Reward_Props']));
-
+            $row['rewardProps'] = [
+                'itemId' => (int)$parts[0], // 道具 ID
+                'count' => (int)$parts[1], // 道具数量
+            ];
             $row['rewardGrade'] = $record['Reward_Grade'];
             $row['rewardId'] = (int)$record['Reward_Id'];
 
-            $config[$row['id']] = $row;
+            $config[$row['gradeId']][] = $row;
         }
         $this->createConfigFile('club/league', $config);
     }
@@ -273,7 +268,7 @@ class ConfigBll
             // 解析特殊称谓数量（可为空）
             $row['coLeaderLimit'] = $record['CoLeaderLimit'] !== '' ? (int)$record['CoLeaderLimit'] : 0;
 
-            $config[$row['id']] = $row;
+            $config[$row['clubLevel']] = $row;
         }
         $this->createConfigFile('club/level', $config);
     }
@@ -288,7 +283,7 @@ class ConfigBll
             $parts = explode('|', $record['RequestCoin']);
             $row['requestCoin'] = [
                 'itemId' => (int)$parts[0], // 道具 ID
-                'amount' => (int)$parts[1], // 金币数量
+                'count' => (int)$parts[1], // 金币数量
             ];
 
             $config[$row['id']] = $row;
@@ -319,11 +314,10 @@ class ConfigBll
         $records = Utils::loadCsv($sourceFile);
         $config = array();
         foreach ($records as $record) {
-            $row['id'] = (int)$record['ID'];
             $row['rewardType'] = (int)$record['RewardType'];
             $row['rewardTime'] = (int)$record['RewardTime'];
 
-            $config[$row['id']] = $row;
+            $config[$row['rewardType']] = $row;
         }
         $this->createConfigFile('club/wall', $config);
     }

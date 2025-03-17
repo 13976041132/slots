@@ -29,7 +29,7 @@ class ClubCacheBll extends DBCacheBll
     /**
      * @return ClubsModel
      */
-    function model($uid)
+    function model($uuid)
     {
         return Model::clubs();
     }

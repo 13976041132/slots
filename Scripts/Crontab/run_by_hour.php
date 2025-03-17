@@ -13,3 +13,5 @@ include __DIR__ . '/init_club_season_data.php';
 
 include __DIR__ . '/club_user_role_update.php';
 
+include __DIR__ . '/daily_club_reward_settle.php';
+

@@ -37,15 +37,15 @@ class RankBll
     }
 
     //获取俱乐部赛季时间
-    public function getClubType()
+    public function getClubType($seasonId = 0)
     {
-        $id = Bll::clubOption()->getSeasonId();
+        $id = $seasonId ?: Bll::clubOption()->getSeasonId();
         return 'ClubSeason:' . $id;
     }
 
     public function getClubChestType($clubId)
     {
-        $date = Bll::club()->getChestActDate();
+        $date = Bll::clubOption()->getChestActDate();
         return 'ClubChest:' . $clubId. ':' . $date;
     }
 

@@ -471,7 +471,7 @@ class ClubBll
 
     public function addChestPoints($clubId, $points)
     {
-        $key = Keys::clubboxPoints($clubId, $this->getChestActDate());
+        $key = Keys::clubboxPoints($clubId, Bll::clubOption()->getChestActDate());
         return Dao::redis()->incrBy($key, $points);
     }
 
@@ -501,13 +501,6 @@ class ClubBll
 
         return $pieceId;
     }
-
-    public function getChestActDate()
-    {
-        $time = $this->calcSeasonTime(1);
-        return date('Ymd', $time);
-    }
-
     public function getClubIdByUid($uid)
     {
         $info = Model::clubUsers()->getOneById($uid);
@@ -974,7 +967,7 @@ class ClubBll
 
     public function makeClubRewardSet($type)
     {
-        return $type . microtime(true) * 1000 . mt_rand(1000, 9999);
+        return $type . microtime(true) * 10000 . mt_rand(1000, 9999);
     }
 
     public function getDanSummaryData()
@@ -983,7 +976,7 @@ class ClubBll
         $data = Dao::redis()->hGetAll($key);
         $list = [];
         foreach ($data as $k => $v) {
-            $list[] = ['dan' => $k, 'count' => $v];
+            $list[] = ['dan' => (int)$k, 'count' => (int)$v];
         }
         if (!$list) {
             $list = Model::clubs()->fetchAll([], 'count(1) count,dan', [], 'dan');
@@ -1084,20 +1077,6 @@ class ClubBll
         $shortEndTime = $isOpen ? strtotime(date('Y-m-d 23:59:59')) : 0;
         return array_merge($gameCycle, ['isOpen' => $isOpen, 'shortEndTime' => $shortEndTime, 'machinePoints' => $list]);
     }
-    function calcSeasonTime($weekNum = 2)
-    {
-        $currentTime = time();
-        $weekDay = date('N', $currentTime);
-
-        $lastMonday = strtotime("last monday", $currentTime);
-        if ($weekDay == 1) {
-            $lastMonday = strtotime("today", $currentTime);
-        }
-
-        $days = $weekNum * 7;
-        return strtotime("+{$days} days", $lastMonday);
-    }
-
     protected function getUserRoles($uid, $clubInfo, $topPoint)
     {
         $roles = [];

@@ -27,12 +27,12 @@ abstract class DBCacheBll
     /**
      * @return MyModel
      */
-    abstract function model($uid);
+    abstract function model($uuid);
 
     /**
      * @return string
      */
-    abstract function getCacheKey($uid, $wheres);
+    abstract function getCacheKey($uuid, $wheres);
 
     /**
      * 获取redis实例
@@ -46,12 +46,12 @@ abstract class DBCacheBll
      * 构造用户匹配条件
      * 主键/唯一索引可能是uid和其他字段的联合键
      */
-    public function makeWheres($uid, $wheres)
+    public function makeWheres($uuid, $wheres)
     {
         if ($wheres) {
-            $wheres = array_merge(array($this->uniqueKey => $uid), $wheres);
+            $wheres = array_merge(array($this->uniqueKey => $uuid), $wheres);
         } else {
-            $wheres = array($this->uniqueKey => $uid);
+            $wheres = array($this->uniqueKey => $uuid);
         }
 
         return $wheres;
@@ -60,7 +60,7 @@ abstract class DBCacheBll
     /**
      * 获取缓存数据
      */
-    public function getCacheData($uid, $fields = null, $wheres = null)
+    public function getCacheData($uuid, $fields = null, $wheres = null)
     {
         if (is_string($fields)) {
             $fields = str_replace(' ', '', $fields);
@@ -73,7 +73,7 @@ abstract class DBCacheBll
         }
 
         $redis = $this->redis();
-        $cacheKey = $this->getCacheKey($uid, $wheres);
+        $cacheKey = $this->getCacheKey($uuid, $wheres);
 
         if (!$fields) {
             $result = $redis->hGetAll($cacheKey);
@@ -84,10 +84,10 @@ abstract class DBCacheBll
 
         //强制检查uid字段，防止意外情况下产生脏数据
         if (!$result || empty($result[$this->uniqueKey])) {
-            Log::info(['getCacheData', $uid, $cacheKey, $fields, $wheres, $result], 'redis-loss.log');
-            $result = $this->fetchDataFromDB($uid, '*', $wheres);
+            Log::info(['getCacheData', $uuid, $cacheKey, $fields, $wheres, $result], 'redis-loss.log');
+            $result = $this->fetchDataFromDB($uuid, '*', $wheres);
             if ($result || $this->cacheEmpty) {
-                $result[$this->uniqueKey] = $uid;
+                $result[$this->uniqueKey] = $uuid;
                 $redis->hMSet($cacheKey, $result);
                 $redis->expire($cacheKey, 12 * 3600);
             }
@@ -122,14 +122,14 @@ abstract class DBCacheBll
     /**
      * 从数据库获取源数据
      */
-    public function fetchDataFromDB($uid, $fields = '*', $wheres = null)
+    public function fetchDataFromDB($uuid, $fields = '*', $wheres = null)
     {
-        $wheres = $this->makeWheres($uid, $wheres);
-        $result = $this->model($uid)->fetchOne($wheres, $fields);
+        $wheres = $this->makeWheres($uuid, $wheres);
+        $result = $this->model($uuid)->fetchOne($wheres, $fields);
 
         if (!$result) {
-            $this->initDataInDB($uid, $wheres);
-            $result = $this->model($uid)->fetchOne($wheres, $fields);
+            $this->initDataInDB($uuid, $wheres);
+            $result = $this->model($uuid)->fetchOne($wheres, $fields);
         }
 
         return $result;
@@ -138,7 +138,7 @@ abstract class DBCacheBll
     /**
      * 用户数据初始化入库
      */
-    public function initDataInDB($uid, $data)
+    public function initDataInDB($uuid, $data)
     {
         //to override
     }
@@ -146,9 +146,9 @@ abstract class DBCacheBll
     /**
      * 获取用户某个字段值
      */
-    public function getField($uid, $field, $wheres = null)
+    public function getField($uuid, $field, $wheres = null)
     {
-        $result = $this->getCacheData($uid, $field, $wheres);
+        $result = $this->getCacheData($uuid, $field, $wheres);
 
         return $result && isset($result[$field]) ? $result[$field] : null;
     }
@@ -156,31 +156,31 @@ abstract class DBCacheBll
     /**
      * 更新缓存数据
      */
-    public function updateCacheData($uid, $data, $wheres = null, $sync = false)
+    public function updateCacheData($uuid, $data, $wheres = null, $sync = false)
     {
-        $key = $this->getCacheKey($uid, $wheres);
-        $wheres = $this->makeWheres($uid, $wheres);
+        $key = $this->getCacheKey($uuid, $wheres);
+        $wheres = $this->makeWheres($uuid, $wheres);
 
         if ($this->redis()->hGet($key, $this->uniqueKey)) {
             // if ($sync || ENV == Env::DEVELOPMENT) {
             if ($sync && $this->onlyDQL == false) {
-                $this->model($uid)->update($data, $wheres);
+                $this->model($uuid)->update($data, $wheres);
             }
             return $this->redis()->hMSet($key, $data);
         } elseif ($sync && $this->onlyDQL == false) {
-            return $this->model($uid)->update($data, $wheres);
+            return $this->model($uuid)->update($data, $wheres);
         }
     }
 
     /**
      * 增量更新用户某个字段值
      */
-    public function updateFieldByInc($uid, $field, $incValue, $reason = '', &$newValue = null, $wheres = null)
+    public function updateFieldByInc($uuid, $field, $incValue, $reason = '', &$newValue = null, $wheres = null)
     {
         if (!$incValue) return false;
 
         $wheres = $wheres ?: array();
-        $key = $this->getCacheKey($uid, $wheres);
+        $key = $this->getCacheKey($uuid, $wheres);
         $redis = $this->redis();
 
         if ($redis->hGet($key, $this->uniqueKey)) {
@@ -202,16 +202,16 @@ abstract class DBCacheBll
             //缓存中无数据，则更新数据库
             $updates = array($field => array('+=', $incValue));
             $where = $incValue < 0 ? array($field => array('>=', -$incValue)) : array();
-            $where = array_merge(array($this->uniqueKey => $uid), $wheres, $where);
-            $result = $this->model($uid)->update($updates, $where);
-            $newData = $this->fetchDataFromDB($uid, $field, $wheres);
+            $where = array_merge(array($this->uniqueKey => $uuid), $wheres, $where);
+            $result = $this->model($uuid)->update($updates, $where);
+            $newData = $this->fetchDataFromDB($uuid, $field, $wheres);
             if ($newData) {
                 $newValue = $newData[$field];
             }
         }
 
         if ($result) {
-            $this->addDataLog($uid, $field, $incValue, $newValue, $reason);
+            $this->addDataLog($uuid, $field, $incValue, $newValue, $reason);
         }
 
         return $result;
@@ -220,7 +220,7 @@ abstract class DBCacheBll
     /**
      * 添加数据日志
      */
-    public function addDataLog($uid, $field, $incValue, $newValue, $reason)
+    public function addDataLog($uuid, $field, $incValue, $newValue, $reason)
     {
         //to override
     }
@@ -228,7 +228,7 @@ abstract class DBCacheBll
     /**
      * 批量获取缓存数据
      */
-    public function getCacheList(array $uids, $fields = null, $wheres = null)
+    public function getCacheList(array $uuids, $fields = null, $wheres = null)
     {
         if (is_string($fields)) {
             $fields = str_replace(' ', '', $fields);
@@ -244,8 +244,8 @@ abstract class DBCacheBll
         $redis = $this->redis()->pipeline();
 
         // 组装带查询的KEY
-        foreach ($uids as $uid) {
-            $cacheKey = $this->getCacheKey($uid, $wheres);
+        foreach ($uuids as $uuid) {
+            $cacheKey = $this->getCacheKey($uuid, $wheres);
 
             // 请求字段是否存在
             if (!$fields) {
@@ -261,7 +261,7 @@ abstract class DBCacheBll
         $dirtyList = [];
         foreach ($resultList as $index => $result) {
             if (!$result || empty($result[$this->uniqueKey])) {
-                $dirtyList[$uids[$index]] = $index;
+                $dirtyList[$uuids[$index]] = $index;
             }
         }
 
@@ -323,4 +323,11 @@ abstract class DBCacheBll
 
         return $dataList;
     }
+
+    public function clean($uuid, $wheres = [])
+    {
+        $key = $this->getCacheKey($uuid, $wheres);
+        $this->redis()->del($key);
+    }
+
 }

@@ -166,6 +166,11 @@ class Keys
         return self::buildKey('ClubInfo', $clubId);
     }
 
+    public static function userRequestLastInfo($clubId)
+    {
+        return self::buildKey('UserRequestLastInfo', $clubId);
+    }
+
     public static function publishHelpTime($uid, $type)
     {
         return self::buildKey('PublishHelpTime', $uid, $type);

@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS `suggest_users` (
 CREATE TABLE IF NOT EXISTS `user_request_last` (
     `uid` int(11)  NOT NULL COMMENT '用户ID',
     `requestId` varchar(32)  NOT NULL COMMENT '请求ID',
+    `secretKey` varchar(32)  NOT NULL COMMENT '秘钥',
     `messageId` int(11)  NOT NULL COMMENT '消息ID',
     `request`   text  COMMENT '请求参数信息',
     `response` text  COMMENT '响应结构',
