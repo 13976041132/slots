@@ -11,3 +11,4 @@
 /vendor
 /Config/application.ini
 /Config/core.php
+/Config/club/*

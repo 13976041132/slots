@@ -71,7 +71,7 @@ class ClubBll
         $this->checkClubParams($params);
         $info = Model::clubUsers()->getOneById($uid);
         if ($info) {
-            FF::throwException(Exceptions::FAILED);
+            FF::throwException(Exceptions::RET_USER_ALREADY_IN_CLUB_ERROR);
         }
         Dao::db()->transaction();
         try {

@@ -90,7 +90,7 @@ class UserController extends BaseController
             [
                 'token' => $sessionId,
                 'lastRequestId' => Bll::userRequestLast()->getRequestId(),
-                'clubID' => Bll::club()->getClubIdByUid($uid),
+                'clubId' => Bll::club()->getClubIdByUid($uid),
                 'secretKey' => Bll::userRequestLast()->touchSecretKey($uid),
             ]
         );
