@@ -62,4 +62,23 @@ class ClubOptionBll extends Bll
         }
         return 0;
     }
+
+    public function checkLevelUp($donateTimes, &$level)
+    {
+        $tmpTimes = 0;
+        $isLevelUp = false;
+        $config = Config::get('club/level');
+        foreach ($config as $row) {
+            $tmpTimes += $row['donate'];
+            if ($row['clubLevel'] <= $level) {
+                continue;
+            }
+            if ($tmpTimes <= $donateTimes) {
+                $level = $row['clubLevel'];
+                $isLevelUp = true;
+            }
+        }
+
+        return $isLevelUp;
+    }
 }

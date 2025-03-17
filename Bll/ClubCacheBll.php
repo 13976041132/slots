@@ -21,9 +21,9 @@ class ClubCacheBll extends DBCacheBll
         'coins' => ['double', 0],
         'dan' => ['int', 0],
         'createTime' => ['string', ''],
-        'points' => ['int', 0],
         'vipLimit' => ['int', 0],
         'donateTimes' => ['int', 0],
+        'topDonor' => ['int', 0],
     );
 
     /**
@@ -57,7 +57,7 @@ class ClubCacheBll extends DBCacheBll
 
     public function updateData($clubId, $data)
     {
-        $this->updateCacheData($clubId, $data, null, true);
+        return $this->updateCacheData($clubId, $data, null, true);
     }
 
     public function updateClubByInc($clubId, $field, $value, $newValue = 0)
@@ -67,5 +67,10 @@ class ClubCacheBll extends DBCacheBll
             $this->updateCacheData($clubId, [$field => $newValue], null, true);
         }
         return $result;
+    }
+
+    public function clean($clubId)
+    {
+        return $this->redis()->del($this->getCacheKey($clubId, null));
     }
 }

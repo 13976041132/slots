@@ -276,7 +276,8 @@ class ClubBll
         if (!Model::clubUsers()->delete(['uid' => $tuid])) {
             FF::throwException(Exceptions::FAILED);
         }
-        Model::clubs()->update(['memberCnt' => ['-=', 1]], ['clubId' => $info['clubId']]);
+
+        Bll::clubCache()->updateClubByInc($info['clubId'],'memberCnt', -1);
 
         Bll::messageNotify()->kickOutClub($tuid, $uid);
     }
@@ -374,7 +375,7 @@ class ClubBll
             'vipLimit' => $params['vipLimit'],
         ];
 
-        if (!Model::clubs()->update($update, ['clubId' => $info['clubId']])) {
+        if (!Bll::clubCache()->updateData($info['clubId'], $update)) {
             FF::throwException(Exceptions::RET_CLUB_UPDATE_ERROR);
         }
 
@@ -416,16 +417,21 @@ class ClubBll
         if (!$clubInfo) {
             FF::throwException(Exceptions::RET_CLUB_NOT_EXISTS_ERROR);
         }
-        $result = Bll::clubCache()->updateClubByInc($info['clubId'], 'coins', $coins);
+
+        $result = Model::clubs()->update(['coins' => ['+=', $coins], 'donateTimes' => ['+=', 1]], ['clubId' => $info['clubId']]);
         if (!$result) {
-            FF::throwException(Exceptions::FAILED);
+            FF::throwException(Exceptions::RET_CLUB_DONATE_PROP_FAIL);
         }
-
+        Bll::clubCache()->clean($info['clubId']);
         Model::clubUsers()->update(['coins' => ['+=', $coins]], ['uid' => $uid]);
+        $clubInfo = $this->getInfo($info['clubId']);
 
-        return $this->getInfo($info['clubId']);
+        $isLevelUp = Bll::clubOption()->checkLevelUp($clubInfo['donateTimes'], $clubInfo['level']);
+        if ($isLevelUp) {
+            Bll::clubCache()->updateData($clubInfo['clubId'], ['level' => $clubInfo['level']]);
+        }
+        return $clubInfo;
     }
-
     public function pointsReport($uid, $points)
     {
         if ($points <= 0) {
