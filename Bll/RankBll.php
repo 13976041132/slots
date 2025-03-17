@@ -11,10 +11,15 @@ use FF\Factory\Keys;
 
 class RankBll
 {
-    public function setScore($uuid, $type, $score)
+    public function setScore($uuid, $type, $score, $isExpire = true)
     {
         $key = Keys::rank($type);
+        $exists = $isExpire ? Dao::redis()->exists($key) : true;
         Dao::redis()->zAdd($key, (float)$score, $uuid);
+
+        if (!$exists) {
+            Dao::redis()->expire($key, 86400 * 30);
+        }
     }
 
     public function getList($type, $start, $end)
@@ -53,5 +58,17 @@ class RankBll
     {
         $id = Bll::clubOption()->getSeasonId();
         return 'ClubSeason:' . $id . ':' . $clubId;
+    }
+
+    public function clearClubRankData($clubId)
+    {
+        $keys = [
+            Keys::rank($this->getClubSeasonUserPointType($clubId)),
+            Keys::rank($this->getClubEventType($clubId, 0)),
+            Keys::rank($this->getClubChestType($clubId)),
+        ];
+
+        Dao::redis()->del($keys);
+        Dao::redis()->zRem(Keys::rank($this->getClubType()), $clubId);
     }
 }

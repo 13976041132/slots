@@ -92,6 +92,8 @@ class ClubBll
                 FF::throwException(Exceptions::RET_CLUB_CREATE_ERROR);
             }
             Dao::db()->commit();
+            $this->onClubCreateSuccess($clubId);
+
             return $clubId;
         } catch (Exception $e) {
             Dao::db()->rollback();
@@ -289,9 +291,7 @@ class ClubBll
         Model::clubUsers()->delete(['clubId' => $info['clubId']], 0);
         Model::clubs()->delete(['clubId' => $info['clubId']]);
         //删除俱乐部
-        Dao::redis()->del(Keys::clubMember($info['clubId']));
-        //删除俱乐部排行榜
-
+        $this->clearClubCacheData($info['clubId']);
     }
 
     public function setMuteStatus($uid, $tuid)
@@ -431,7 +431,7 @@ class ClubBll
         if ($points <= 0) {
             FF::throwException(Exceptions::PARAM_INVALID_ERROR);
         }
-        if (!Bll::clubOption()->getSeasonDate()) {
+        if (!Bll::clubOption()->getSeasonId()) {
             FF::throwException(Exceptions::RET_CLUB_SEASON_NOT_OPEN_ERROR);
         }
         $info = Bll::clubUser()->getInfo($uid);
@@ -485,7 +485,7 @@ class ClubBll
             FF::throwException(Exceptions::RET_CLUB_NOT_EXISTS_ERROR);
         }
 
-        $key = Keys::puzzle($info['clubId'], Bll::clubOption()->getSeasonId());
+        $key = Keys::clubPuzzle($info['clubId'], Bll::clubOption()->getSeasonId());
         $pieceId = (int)Dao::redis()->lPop($key);
         if (!$pieceId) {
             FF::throwException(Exceptions::RET_CLUB_PUZZLE_FINISH_ERROR);
@@ -784,7 +784,7 @@ class ClubBll
         }
         switch ($rewardInfo['type']) {
             case self::CLUB_REWARD_TYPE_JACKPOT:
-                $userStatList = $this->getUserJackpotStat($rewardInfo['createTime']);
+                $userStatList = $this->getUserJackpotStat($clubId, $rewardInfo['createTime']);
                 break;
             case self::CLUB_REWARD_TYPE_PUBLISH_HELP_COINS:
             case self::CLUB_REWARD_TYPE_PUBLISH_HELP_STAMP:
@@ -810,18 +810,18 @@ class ClubBll
         return $userStatList;
     }
 
-    public function getUserJackpotStat($settleTime)
+    public function getUserJackpotStat($clubId, $settleTime)
     {
         $yesterday = strtotime('-1 day', strtotime($settleTime));
         $date = date('Y-m-d 00:00:00', $yesterday);
-        $key = Keys::clubUserJackpotStat($date);
+        $key = Keys::clubUserJackpotStat($clubId, $date);
         $list = Dao::redis()->get($key);
         if ($list) {
             return json_decode($list, true);
         }
 
         $endData = date('Y-m-d 23:59:59', $yesterday);
-        $where = ['hitTime' => ['between', [$date, $endData]]];
+        $where = ['hitTime' => ['between', [$date, $endData]], 'clubId' => $clubId];
         $logData = Model::clubJackpotLog()->fetchAll($where, 'uid,sum(rewardCoins) coins, count(1) times ', 'times desc', ['uid'], 50);
         $list = [];
         foreach ($logData as $row) {
@@ -1123,15 +1123,37 @@ class ClubBll
         return $roles ?: ['Member'];
     }
 
-    public function initPuzzle($clubId, $id)
+    public function initPuzzle($clubId, $seasonId)
     {
-        if ($id == 0) {
+        if ($seasonId == 0) {
             return;
         }
         $pieces = range(1, 50);
-        $key = Keys::puzzle($clubId, $id);
+        $key = Keys::clubPuzzle($clubId, $seasonId);
         Dao::redis()->del($key);
         array_shift($pieces);
         Dao::redis()->rPush($key, ...$pieces);
+    }
+
+    public function clearClubCacheData($clubId)
+    {
+        $keys = [
+            Keys::clubMember($clubId),
+            Keys::clubDanStat(),
+            Keys::clubUserJackpotStat($clubId, date('Ymd')),
+            Keys::clubMachinePointData($clubId),
+            Keys::clubInfo($clubId),
+            Keys::clubPuzzle($clubId, Bll::clubOption()->getSeasonId()),
+            Keys::clubboxPoints($clubId, 1),
+        ];
+
+        Dao::redis()->del(...$keys);
+        Bll::rank()->clearClubRankData($clubId);
+    }
+
+    public function onClubCreateSuccess($clubId)
+    {
+        Dao::redis()->del(Keys::clubDanStat());
+        $this->initPuzzle($clubId, Bll::clubOption()->getSeasonId());
     }
 }

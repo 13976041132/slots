@@ -156,13 +156,9 @@ class Keys
         return self::buildKey('ClubBoxPoints', $clubId, $date);
     }
 
-    public static function puzzle($clubId, $date)
+    public static function clubPuzzle($clubId, $seasonId)
     {
-        return self::buildKey('Puzzle', $clubId, $date);
-    }
-    public static function clubPuzzle($clubId, $date)
-    {
-        return self::buildKey('clubPuzzle', $clubId, $date);
+        return self::buildKey('ClubPuzzle', $clubId, $seasonId);
     }
 
     public static function clubInfo($clubId)
@@ -190,9 +186,9 @@ class Keys
         return self::buildKey('ClubAwardLock', $uid);
     }
 
-    public static function clubUserJackpotStat($date)
+    public static function clubUserJackpotStat($clubId, $date)
     {
-        return self::buildKey('ClubUserJackpotStat', $date);
+        return self::buildKey('ClubUserJackpotStat', $date, $clubId);
     }
     public static function clubDanStat()
     {
