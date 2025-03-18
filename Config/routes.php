@@ -6,7 +6,7 @@
 use FF\Constants\MessageIds;
 use FF\Framework\Utils\Router;
 
-Router::middleware(['checkSignature'])->group(
+Router::middleware(['CheckSignature'])->group(
     [
         MessageIds::CLUB_DROP_PUZZLE => array('/Club/dropPuzzle'),
         MessageIds::CLUB_MEMBER_POINTS_REPORT => array('/Club/pointsReport'),
