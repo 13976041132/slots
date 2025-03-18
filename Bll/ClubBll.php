@@ -173,7 +173,7 @@ class ClubBll
     public function getInfo($clubId)
     {
         $info = Bll::clubCache()->getCacheData($clubId);
-        if (!$info) {
+        if (!$info || $info['clubId'] != $clubId) {
             return [];
         }
 
