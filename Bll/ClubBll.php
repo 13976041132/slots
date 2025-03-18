@@ -178,7 +178,7 @@ class ClubBll
         }
 
         $info['rank'] = $this->getClubRank($clubId, $info['dan']);
-        $info['points'] = Bll::rank()->getRank($clubId, Bll::rank()->getClubType($info['dan'])) ?: 0;
+        $info['points'] = Bll::rank()->getScore($clubId, Bll::rank()->getClubType($info['dan'])) ?: 0;
         return $info;
     }
 

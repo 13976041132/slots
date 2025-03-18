@@ -15,7 +15,7 @@ class RankBll
     {
         $key = Keys::rank($type);
         $exists = $isExpire ? Dao::redis()->exists($key) : true;
-        Dao::redis()->zAdd($key, (float)$score, $uuid);
+        Dao::redis()->zIncrBy($key, (float)$score, $uuid);
 
         if (!$exists) {
             Dao::redis()->expire($key, 86400 * 30);
