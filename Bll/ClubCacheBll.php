@@ -68,9 +68,4 @@ class ClubCacheBll extends DBCacheBll
         }
         return $result;
     }
-
-    public function clean($clubId)
-    {
-        return $this->redis()->del($this->getCacheKey($clubId, null));
-    }
 }
