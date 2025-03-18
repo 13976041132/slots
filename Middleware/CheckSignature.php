@@ -16,8 +16,11 @@ class CheckSignature
 
     public function checkSignature()
     {
-        $secret = $_SERVER['HTTP_SECRET'] ?? '';
         $param = json_decode(Input::request('k'), true);
+        $sign = $param['sign'] ?? '';
+        if(isset($param['sign'])) {
+            unset($param['sign']);
+        }
         $param['uid'] = Bll::session()->get('uid');
         ksort($param);
         $param['secretKey'] = Bll::userRequestLast()->get('secretKey');
@@ -39,8 +42,8 @@ class CheckSignature
         $str = implode('&', $param);
         $strBak = implode('&', $paramBak);
         // ±È½ÏÇ©Ãû
-        if (md5($str) != $secret && md5($strBak) != $secret) {
-            Log::error("sign check fail, client_secret:{$secret}, str1:{$str}, str2:{$strBak}");
+        if (md5($str) != $sign && md5($strBak) != $sign) {
+            Log::error("sign check fail, client_secret:{$sign}, str1:{$str}, str2:{$strBak}");
             //FF::throwException(Exceptions::FAILED_SIGN);
         }
         Bll::userRequestLast()->setFreshSecretKey(true);
