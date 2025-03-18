@@ -2,16 +2,12 @@
 
 namespace FF\Bll;
 
-use FF\App\GameMain\Model\Main\UserRequestLastModel;
-use FF\Factory\Bll;
 use FF\Factory\Keys;
-use FF\Factory\Model;
 use FF\Framework\Utils\Input;
 
-class UserRequestLastBll extends DBCacheBll
+class UserRequestLastBll extends RedisCacheBll
 {
     protected $uniqueKey = 'uid';
-    public $onlyDQL = true;
     private $info = [];
     private $secretFresh = false;
 
@@ -21,15 +17,7 @@ class UserRequestLastBll extends DBCacheBll
         'secretKey' => ['string', ''],
     );
 
-    /**
-     * @return UserRequestLastModel
-     */
-    function model($uid)
-    {
-        return Model::userRequestLast();
-    }
-
-    function getCacheKey($uid, $wheres)
+    function getCacheKey($uid)
     {
         return Keys::userRequestLastInfo($uid);
     }
@@ -66,8 +54,7 @@ class UserRequestLastBll extends DBCacheBll
             'requestId' => (string)Input::request('q', $this->getRequestId()),
             'secretKey' => $this->touchSecretKey($this->secretFresh),
         ];
-        $uid = Bll::session()->get('uid');
-        $this->updateCacheData($uid, $upData);
+        $this->updateCacheData($this->get('uid'), $upData);
     }
 
     public function setFreshSecretKey($fresh)
