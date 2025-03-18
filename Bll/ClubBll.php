@@ -1113,7 +1113,7 @@ class ClubBll
         if ($seasonId == 0) {
             return;
         }
-        $pieces = range(1, 50);
+        $pieces = range(1, 42);
         $key = Keys::clubPuzzle($clubId, $seasonId);
         Dao::redis()->del($key);
         array_shift($pieces);
