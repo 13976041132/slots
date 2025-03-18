@@ -48,7 +48,7 @@ class ClubController extends BaseController
         $uid = $this->getUid();
         $clubId = $this->getParam('clubId');
         Bll::club()->joinClub($uid, $clubId);
-        return [];
+        return Bll::club()->getInfo($clubId);
     }
 
     //退出俱乐部
@@ -73,8 +73,7 @@ class ClubController extends BaseController
     {
         $uid = $this->getUid();
         $uuid = (string)$this->getParam('uuid');
-        Bll::club()->acceptInviteJoinClub($uid, $uuid);
-        return [];
+        return Bll::club()->acceptInviteJoinClub($uid, $uuid);
     }
 
     public function refuseInviteJoinClub()

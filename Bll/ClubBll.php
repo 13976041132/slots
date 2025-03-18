@@ -53,6 +53,9 @@ class ClubBll
         foreach ($list as &$info) {
             $info['points'] = Bll::rank()->getScore($info['clubId'], $rankType) ? : 0;;
         }
+
+        return $list;
+
     }
     //查询俱乐部
     public function searchClubList($keyword)
@@ -216,6 +219,7 @@ class ClubBll
         $this->joinClub($uid, $requestInfo['clubId'], $requestInfo['invitedBy']);
         Model::userClubRequestLog()->update(['status' => self::REQUEST_STATUS_ACCEPT], $where);
         Bll::messageNotify()->pushNotifyMsg($requestInfo['invitedBy'], $uid, MessageIds::CLUB_INVITE_JOIN_SUCCESS_NOTIFY);
+        return $this->getInfo($requestInfo['clubId']);
     }
 
     //获取俱乐部成员列表
