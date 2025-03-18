@@ -122,9 +122,9 @@ class Bll extends Factory
     /**
      * @return UserRequestLastBll
      */
-    public static function userRequestLast()
+    public static function userRequestLast($uid)
     {
-        return self::getInstance('FF\Bll\UserRequestLastBll');
+        return self::getInstance('FF\Bll\UserRequestLastBll', $uid);
     }
 
     /**

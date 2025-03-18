@@ -329,5 +329,4 @@ abstract class DBCacheBll
         $key = $this->getCacheKey($uuid, $wheres);
         $this->redis()->del($key);
     }
-
 }

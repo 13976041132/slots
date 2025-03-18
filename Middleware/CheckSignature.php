@@ -25,7 +25,7 @@ class CheckSignature
         }
         $param['uid'] = Bll::session()->get('uid');
         ksort($param);
-        $param['secretKey'] = Bll::userRequestLast()->get('secretKey');
+        $param['secretKey'] = Bll::userRequestLast($param['uid'])->get('secretKey');
         $paramBak = $param;
         // Éú³ÉÇ©Ãû×Ö·û´®
         array_walk($param, function (&$value, $key) {
@@ -48,7 +48,7 @@ class CheckSignature
             Log::error("sign check fail, client_secret:{$sign}, str1:{$str}, str2:{$strBak}");
             FF::throwException(Exceptions::FAILED_SIGN);
         }
-        Bll::userRequestLast()->setFreshSecretKey(true);
+        Bll::userRequestLast($param['uid'])->setFreshSecretKey(true);
         return true;
     }
 }

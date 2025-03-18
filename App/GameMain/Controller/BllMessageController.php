@@ -38,8 +38,8 @@ class BllMessageController extends BaseController
         return array_merge(
             $msgStatData,
             [
-                'lastRequestId' => Bll::userRequestLast()->getRequestId(),
-                'secretKey' => Bll::userRequestLast()->touchSecretKey(),
+                'lastRequestId' => Bll::userRequestLast($uid)->getRequestId(),
+                'secretKey' => Bll::userRequestLast($uid)->touchSecretKey(),
             ]
         );
     }

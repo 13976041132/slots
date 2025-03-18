@@ -106,7 +106,7 @@ class BaseController extends MyController
             return;
         }
 
-        if (empty(Input::request('q')) && !Bll::userRequestLast()->getSecretStatus()) {
+        if (empty(Input::request('q')) && !Bll::userRequestLast($uid)->getSecretStatus()) {
             return;
         }
         if (!FF::getRouter()->isValid()) {
@@ -122,7 +122,7 @@ class BaseController extends MyController
             $response = array('code' => $error->getCode(), 'message' => $error->getMessage(), 'data' => '');
         }
 
-        Bll::userRequestLast()->save();
-        $resData['secretKey'] = Bll::userRequestLast()->get('secretKey');
+        Bll::userRequestLast($uid)->save();
+        $resData['secretKey'] = Bll::userRequestLast($uid)->get('secretKey');
     }
 }

@@ -16,6 +16,7 @@ class UserRequestLastBll extends DBCacheBll
     private $secretFresh = false;
 
     protected $fields = array(
+        'uid' => ['int', 0],
         'requestId' => ['int', 0],
         'secretKey' => ['string', ''],
     );
@@ -33,9 +34,9 @@ class UserRequestLastBll extends DBCacheBll
         return Keys::userRequestLastInfo($uid);
     }
 
-    public function __construct()
+    public function __construct($uid)
     {
-        $this->info = $this->getCacheData(Bll::session()->get('uid'));
+        $this->info = $this->getCacheData($uid);
     }
 
     //info
@@ -77,5 +78,11 @@ class UserRequestLastBll extends DBCacheBll
     public function getSecretStatus()
     {
         return $this->secretFresh;
+    }
+    public function resetData()
+    {
+        $this->clean($this->info['uid']);
+        $this->info['secretKey'] = '';
+        $this->info['requestId'] = 0;
     }
 }
