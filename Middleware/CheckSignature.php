@@ -3,8 +3,10 @@
 namespace FF\Middleware;
 
 use FF\Factory\Bll;
+use FF\Framework\Core\FF;
 use FF\Framework\Utils\Input;
 use FF\Framework\Utils\Log;
+use FF\Constants\Exceptions;
 
 class CheckSignature
 {
@@ -44,7 +46,7 @@ class CheckSignature
         // ±È½ÏÇ©Ãû
         if (md5($str) != $sign && md5($strBak) != $sign) {
             Log::error("sign check fail, client_secret:{$sign}, str1:{$str}, str2:{$strBak}");
-            //FF::throwException(Exceptions::FAILED_SIGN);
+            FF::throwException(Exceptions::FAILED_SIGN);
         }
         Bll::userRequestLast()->setFreshSecretKey(true);
         return true;

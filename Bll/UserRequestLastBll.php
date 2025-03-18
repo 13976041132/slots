@@ -35,7 +35,7 @@ class UserRequestLastBll extends DBCacheBll
 
     public function __construct()
     {
-        $this->info = $this->getCacheData(Bll::session()->get('uid'));;
+        $this->info = $this->getCacheData(Bll::session()->get('uid'));
     }
 
     //info
