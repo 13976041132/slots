@@ -47,9 +47,13 @@ class ClubBll
     {
         $key = Keys::suggestClubSet();
         $clubIds = Dao::redis()->sRandMember($key, $count);
-        return Bll::clubCache()->getClubList($clubIds, 'type,vipLimit,clubName,level,headId,memberCnt,points,dan');
+        $list = Bll::clubCache()->getClubList($clubIds, 'clubId,type,vipLimit,clubName,level,headId,memberCnt,dan');
+        //获取批量分数
+        $rankType = Bll::rank()->getClubType(Bll::clubOption()->getSeasonId());
+        foreach ($list as &$info) {
+            $info['points'] = Bll::rank()->getScore($info['clubId'], $rankType) ? : 0;;
+        }
     }
-
     //查询俱乐部
     public function searchClubList($keyword)
     {
@@ -58,8 +62,10 @@ class ClubBll
         if (!$clubList) {
             return [];
         }
+        $rankType = Bll::rank()->getClubType(Bll::clubOption()->getSeasonId());
         foreach ($clubList as &$clubInfo) {
             unset($clubInfo['coins'], $clubInfo['creator']);
+            $clubInfo['points'] = Bll::rank()->getScore($clubInfo['clubId'], $rankType) ? : 0;
         }
 
         return $clubList;
@@ -161,6 +167,7 @@ class ClubBll
     {
         $info = Bll::clubCache()->getCacheData($clubId);
         $info['rank'] = $this->getClubRank($clubId);
+        $info['points'] = Bll::rank()->getRank($clubId, Bll::rank()->getClubType()) ?: 0;
         return $info;
     }
 
@@ -616,23 +623,23 @@ class ClubBll
     public function machinePointsCollect($uid, $machineId, $points)
     {
         if (!Bll::clubOption()->getGameDate()) {
-            return [];
+            return;
         }
         $info = Model::clubUsers()->getOneById($uid);
         if (!$info) {
-            return [];
+            return;
         }
         $clubInfo = $this->getInfo($info['clubId']);
         if (!$clubInfo) {
-            return [];
+            return;
         }
         $rankType = Bll::rank()->getClubEventType($info['clubId'], $machineId);
 
         Bll::rank()->setScore($uid, $rankType, $points);
         $key = Keys::clubMachinePointData($info['clubId']);
         Dao::redis()->hIncrBy($key, $machineId, $points);
-    }
 
+    }
     public function fetchMachinePointsRankList($uid, $machineId)
     {
         $info = Model::clubUsers()->getOneById($uid);

@@ -36,6 +36,12 @@ class RankBll
         return $rank === false ? 0 : ($rank + 1);
     }
 
+    public function getScore($uuid, $type)
+    {
+        $key = Keys::rank($type);
+        return Dao::redis()->zScore($key, $uuid);
+    }
+
     //获取俱乐部赛季时间
     public function getClubType($seasonId = 0)
     {
