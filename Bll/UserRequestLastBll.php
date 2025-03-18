@@ -56,7 +56,7 @@ class UserRequestLastBll extends DBCacheBll
 
     public function getRequestId()
     {
-        return $this->info['requestId'] ?? 0;
+        return $this->info['requestId'] ?? '';
     }
 
     public function save()
