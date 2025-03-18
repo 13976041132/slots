@@ -16,7 +16,7 @@ class UserRequestLastBll extends DBCacheBll
     private $secretFresh = false;
 
     protected $fields = array(
-        'requestId' => ['string', ''],
+        'requestId' => ['int', 0],
         'secretKey' => ['string', ''],
     );
 
@@ -56,7 +56,7 @@ class UserRequestLastBll extends DBCacheBll
 
     public function getRequestId()
     {
-        return $this->info['requestId'] ?? '';
+        return $this->info['requestId'] ?? 0;
     }
 
     public function save()
