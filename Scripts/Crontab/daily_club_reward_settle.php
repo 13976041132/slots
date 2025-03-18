@@ -10,7 +10,6 @@ if (date('H') != '00') {
     return;
 }
 
-
 settleSeasonRank();
 settleJackpot();
 settleBoxAct();
@@ -18,6 +17,7 @@ settleBoxAct();
 //½áËãÈü¼¾ÅÅÃû
 function settleSeasonRank()
 {
+    //todo
     if (!Bll::clubOption()->isSeasonSettle($seasonId)) {
         return;
     }

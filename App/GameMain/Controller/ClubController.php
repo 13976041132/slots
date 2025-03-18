@@ -35,11 +35,14 @@ class ClubController extends BaseController
     public function fetchClubInfo()
     {
         $uid = $this->getUid();
-        $userClubInfo = Model::clubUsers()->getOneById($uid);
-        if (!$userClubInfo) {
+        $clubId = $this->getParam('clubId', false, 0);
+        if (!$clubId) {
+            $clubId = Bll::club()->getClubIdByUid($uid);
+        }
+        if (!$clubId) {
             FF::throwException(Exceptions::RET_CLUB_NOT_JOIN_ERROR);
         }
-        return Bll::club()->getInfo($userClubInfo['clubId']);
+        return Bll::club()->getInfo($clubId);
     }
 
     //加入俱乐部
@@ -160,7 +163,8 @@ class ClubController extends BaseController
     public function fetchClubRankList()
     {
         $uid = $this->getUid();
-        $rankList = Bll::rank()->getList(Bll::rank()->getClubType(), 0, 20);
+        $dan = (int)$this->getParam('dan', false,  0);
+        $rankList = Bll::rank()->getList(Bll::rank()->getClubType($dan), 0, 20);
         $clubIds = array_keys($rankList);
         if (empty($clubIds)) {
             return [];

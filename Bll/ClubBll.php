@@ -49,14 +49,16 @@ class ClubBll
         $clubIds = Dao::redis()->sRandMember($key, $count);
         $list = Bll::clubCache()->getClubList($clubIds, 'clubId,type,vipLimit,clubName,level,headId,memberCnt,dan');
         //获取批量分数
-        $rankType = Bll::rank()->getClubType(Bll::clubOption()->getSeasonId());
+        $seasonId = Bll::clubOption()->getSeasonId();
         foreach ($list as &$info) {
-            $info['points'] = Bll::rank()->getScore($info['clubId'], $rankType) ? : 0;;
+            $rankType = Bll::rank()->getClubType($info['dan'], $seasonId);
+            $info['points'] = Bll::rank()->getScore($info['clubId'], $rankType) ?: 0;;
         }
 
         return $list;
 
     }
+
     //查询俱乐部
     public function searchClubList($keyword)
     {
@@ -65,10 +67,12 @@ class ClubBll
         if (!$clubList) {
             return [];
         }
-        $rankType = Bll::rank()->getClubType(Bll::clubOption()->getSeasonId());
+
+        $seasonId = Bll::clubOption()->getSeasonId();
         foreach ($clubList as &$clubInfo) {
             unset($clubInfo['coins'], $clubInfo['creator']);
-            $clubInfo['points'] = Bll::rank()->getScore($clubInfo['clubId'], $rankType) ? : 0;
+            $rankType = Bll::rank()->getClubType($clubInfo['dan'], $seasonId);
+            $clubInfo['points'] = Bll::rank()->getScore($clubInfo['clubId'], $rankType) ?: 0;
         }
 
         return $clubList;
@@ -169,8 +173,12 @@ class ClubBll
     public function getInfo($clubId)
     {
         $info = Bll::clubCache()->getCacheData($clubId);
-        $info['rank'] = $this->getClubRank($clubId);
-        $info['points'] = Bll::rank()->getRank($clubId, Bll::rank()->getClubType()) ?: 0;
+        if (!$info) {
+            return [];
+        }
+
+        $info['rank'] = $this->getClubRank($clubId, $info['dan']);
+        $info['points'] = Bll::rank()->getRank($clubId, Bll::rank()->getClubType($info['dan'])) ?: 0;
         return $info;
     }
 
@@ -288,7 +296,7 @@ class ClubBll
             FF::throwException(Exceptions::FAILED);
         }
 
-        Bll::clubCache()->updateClubByInc($info['clubId'],'memberCnt', -1);
+        Bll::clubCache()->updateClubByInc($info['clubId'], 'memberCnt', -1);
 
         Bll::messageNotify()->kickOutClub($tuid, $uid);
     }
@@ -300,10 +308,13 @@ class ClubBll
         if (!$info || $info['role'] != self::ROLE_LEADER) {
             FF::throwException(Exceptions::RET_CLUB_OPT_NO_PERMISSION_ERROR);
         }
+
+        $clubInfo = $this->getInfo($info['clubId']);
+
         Model::clubUsers()->delete(['clubId' => $info['clubId']], 0);
         Model::clubs()->delete(['clubId' => $info['clubId']]);
         //删除俱乐部
-        $this->clearClubCacheData($info['clubId']);
+        $this->clearClubCacheData($clubInfo);
     }
 
     public function setMuteStatus($uid, $tuid)
@@ -443,6 +454,7 @@ class ClubBll
         }
         return $clubInfo;
     }
+
     public function pointsReport($uid, $points)
     {
         if ($points <= 0) {
@@ -463,16 +475,16 @@ class ClubBll
 
         $this->addUserChestPoints($info['clubId'], $uid, $points);
         $this->addUserSeasonPoints($info['clubId'], $uid, $points);
-        $this->addSeasonPoints($info['clubId'], $points);
+        $this->addSeasonPoints($clubInfo, $points);
         $seasonPoints = $this->addChestPoints($info['clubId'], $points);
         return [
             'seasonPoints' => (int)$seasonPoints
         ];
     }
 
-    public function addSeasonPoints($clubId, $points)
+    public function addSeasonPoints($clubInfo, $points)
     {
-        Bll::rank()->setScore($clubId, Bll::rank()->getClubType(), $points);
+        Bll::rank()->setScore($clubInfo['clubId'], Bll::rank()->getClubType($clubInfo['dan']), $points);
     }
 
     public function addUserSeasonPoints($clubId, $uid, $points)
@@ -512,6 +524,7 @@ class ClubBll
 
         return $pieceId;
     }
+
     public function getClubIdByUid($uid)
     {
         $info = Model::clubUsers()->getOneById($uid);
@@ -522,6 +535,17 @@ class ClubBll
         $clubInfo = $this->getInfo($info['clubId']);
 
         return $clubInfo ? $clubInfo['clubId'] : 0;
+    }
+
+    public function getClubByUid($uid)
+    {
+        $info = Model::clubUsers()->getOneById($uid);
+        if (!$info) {
+            return [];
+        }
+
+        $clubInfo = $this->getInfo($info['clubId']);
+        return $clubInfo ?: [];
     }
 
     public function publishHelp($uid, $type)
@@ -644,6 +668,7 @@ class ClubBll
         Dao::redis()->hIncrBy($key, $machineId, $points);
 
     }
+
     public function fetchMachinePointsRankList($uid, $machineId)
     {
         $info = Model::clubUsers()->getOneById($uid);
@@ -678,8 +703,9 @@ class ClubBll
 
     public function getMyClubRank($uid)
     {
-        $myClubId = Bll::club()->getClubIdByUid($uid);
-        return $myClubId ? Bll::rank()->getRank($myClubId, Bll::rank()->getClubType()) : 0;
+        $clubInfo = Bll::club()->getClubByUid($uid);
+
+        return $clubInfo ? Bll::rank()->getRank($clubInfo['clubId'], Bll::rank()->getClubType($clubInfo['dan'])) : 0;
     }
 
     public function getMyPointRank($uid, $clubId, $machineId)
@@ -688,9 +714,9 @@ class ClubBll
         return Bll::rank()->getRank($uid, $rankType);
     }
 
-    public function getClubRank($clubId)
+    public function getClubRank($clubId, $dan)
     {
-        return Bll::rank()->getRank($clubId, Bll::rank()->getClubType());
+        return Bll::rank()->getRank($clubId, Bll::rank()->getClubType($dan));
     }
 
     public function getClubMembers($clubId)
@@ -1088,6 +1114,7 @@ class ClubBll
         $shortEndTime = $isOpen ? strtotime(date('Y-m-d 23:59:59')) : 0;
         return array_merge($gameCycle, ['isOpen' => $isOpen, 'shortEndTime' => $shortEndTime, 'machinePoints' => $list]);
     }
+
     protected function getUserRoles($uid, $clubInfo, $topPoint)
     {
         $roles = [];
@@ -1131,8 +1158,12 @@ class ClubBll
         Dao::redis()->rPush($key, ...$pieces);
     }
 
-    public function clearClubCacheData($clubId)
+    public function clearClubCacheData($clubInfo)
     {
+        if (!$clubInfo) {
+            return;
+        }
+        $clubId = $clubInfo['clubId'];
         $keys = [
             Keys::clubMember($clubId),
             Keys::clubDanStat(),
@@ -1141,11 +1172,11 @@ class ClubBll
             Keys::clubInfo($clubId),
             Keys::clubPuzzle($clubId, Bll::clubOption()->getSeasonId()),
             Keys::clubUserPuzzle($clubId, Bll::clubOption()->getSeasonId()),
-            Keys::clubboxPoints($clubId, 1),
+            Keys::clubboxPoints($clubId, Bll::clubOption()->getChestActDate()),
         ];
 
         Dao::redis()->del(...$keys);
-        Bll::rank()->clearClubRankData($clubId);
+        Bll::rank()->clearClubRankData($clubId, $clubInfo['dan']);
     }
 
     public function onClubCreateSuccess($clubId)

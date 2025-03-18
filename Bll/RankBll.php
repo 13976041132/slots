@@ -43,10 +43,10 @@ class RankBll
     }
 
     //获取俱乐部赛季时间
-    public function getClubType($seasonId = 0)
+    public function getClubType($dan, $seasonId = 0)
     {
         $id = $seasonId ?: Bll::clubOption()->getSeasonId();
-        return 'ClubSeason:' . $id;
+        return 'ClubSeason:' . $id . ':' . $dan;
     }
 
     public function getClubChestType($clubId)
@@ -66,15 +66,14 @@ class RankBll
         return 'ClubSeason:' . $id . ':' . $clubId;
     }
 
-    public function clearClubRankData($clubId)
+    public function clearClubRankData($clubId, $dan)
     {
         $keys = [
             Keys::rank($this->getClubSeasonUserPointType($clubId)),
             Keys::rank($this->getClubEventType($clubId, 0)),
             Keys::rank($this->getClubChestType($clubId)),
         ];
-
         Dao::redis()->del($keys);
-        Dao::redis()->zRem(Keys::rank($this->getClubType()), $clubId);
+        Dao::redis()->zRem(Keys::rank($this->getClubType($dan)), $clubId);
     }
 }
