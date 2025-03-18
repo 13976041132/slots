@@ -39,7 +39,7 @@ class BllMessageController extends BaseController
             $msgStatData,
             [
                 'lastRequestId' => Bll::userRequestLast($uid)->getRequestId(),
-                'secretKey' => Bll::userRequestLast($uid)->touchSecretKey(),
+                'secretKey' => Bll::userRequestLast($uid)->touchSecretKey(false, true),
             ]
         );
     }
