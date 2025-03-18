@@ -54,10 +54,7 @@ class ClubOptionBll extends Bll
         $seasonConfig = Config::get('club/season');
         $date = date('Y-m-d');
         foreach ($seasonConfig as $row) {
-            if (count($row) != 2) {
-                continue;
-            }
-            if (($date >= $row[0] && $date <= $row[1])) {
+            if (($date >= $row['seasonStart'] && $date <= $row['seasonEnd'])) {
                 return $row['id'];
             }
         }
@@ -88,10 +85,7 @@ class ClubOptionBll extends Bll
         $seasonConfig = Config::get('club/season');
         $yesterday = yesterday();
         foreach ($seasonConfig as $row) {
-            if (count($row) != 2) {
-                continue;
-            }
-            if ($yesterday == $row[1]) {
+            if ($yesterday == $row['seasonEnd']) {
                 $seasonId = $row['id'];
                 return true;
             }
