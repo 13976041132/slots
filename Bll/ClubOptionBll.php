@@ -52,7 +52,7 @@ class ClubOptionBll extends Bll
     public function getSeasonId()
     {
         $seasonConfig = Config::get('club/season');
-        $date = date('Ymd');
+        $date = date('Y-m-d');
         foreach ($seasonConfig as $row) {
             if (count($row) != 2) {
                 continue;
