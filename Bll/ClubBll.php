@@ -496,7 +496,7 @@ class ClubBll
         if (!$pieceId) {
             FF::throwException(Exceptions::RET_CLUB_PUZZLE_FINISH_ERROR);
         }
-        $key = Keys::clubPuzzle($info['clubId'], Bll::clubOption()->getSeasonId());
+        $key = Keys::clubUserPuzzle($info['clubId'], Bll::clubOption()->getSeasonId());
         Dao::redis()->hSet($key, $pieceId, $uid);
 
         return $pieceId;
@@ -1012,7 +1012,7 @@ class ClubBll
         if (!$clubId) {
             FF::throwException(Exceptions::RET_CLUB_NOT_JOIN_ERROR);
         }
-        $key = Keys::clubPuzzle($clubId, Bll::clubOption()->getSeasonId());
+        $key = Keys::clubUserPuzzle($clubId, Bll::clubOption()->getSeasonId());
         $data = Dao::redis()->hGetAll($key);
         $pieces = array_keys($data);
         $myPieces = [];
@@ -1129,6 +1129,7 @@ class ClubBll
             Keys::clubMachinePointData($clubId),
             Keys::clubInfo($clubId),
             Keys::clubPuzzle($clubId, Bll::clubOption()->getSeasonId()),
+            Keys::clubUserPuzzle($clubId, Bll::clubOption()->getSeasonId()),
             Keys::clubboxPoints($clubId, 1),
         ];
 

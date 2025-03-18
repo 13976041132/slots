@@ -161,6 +161,11 @@ class Keys
         return self::buildKey('ClubPuzzle', $clubId, $seasonId);
     }
 
+    public static function clubUserPuzzle($clubId, $seasonId)
+    {
+        return self::buildKey('ClubUserPuzzle', $clubId, $seasonId);
+    }
+
     public static function clubInfo($clubId)
     {
         return self::buildKey('ClubInfo', $clubId);
