@@ -176,9 +176,9 @@ class ClubBll
         if (!$info || $info['clubId'] != $clubId) {
             return [];
         }
-
         $info['rank'] = $this->getClubRank($clubId, $info['dan']);
         $info['points'] = Bll::rank()->getScore($clubId, Bll::rank()->getClubType($info['dan'])) ?: 0;
+        $info['LevelDonateTimes'] = Bll::clubOption()->getClubLevelDonateTimes($info['level'], $info['donateTimes']);
         return $info;
     }
 

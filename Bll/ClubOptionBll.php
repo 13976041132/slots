@@ -67,7 +67,7 @@ class ClubOptionBll extends Bll
         $isLevelUp = false;
         $config = Config::get('club/level');
         foreach ($config as $row) {
-            $tmpTimes += $row['donate'];
+            $tmpTimes += $row['donate'] ?: 1;
             if ($row['clubLevel'] <= $level) {
                 continue;
             }
@@ -119,6 +119,7 @@ class ClubOptionBll extends Bll
         }
         return 0;
     }
+
     public function getClubRewardTime($type, $clubLevel)
     {
         $rewardTime = Config::get('club/wall', "{$type}/rewardTime", false);
@@ -133,5 +134,17 @@ class ClubOptionBll extends Bll
         $weekDay = date('N');
         $time = strtotime("+" . (7 - $weekDay) . " days");
         return date('Ymd', $time);
+    }
+
+    public function getClubLevelDonateTimes($level, $donateTimes)
+    {
+        $times = 0;
+        $config = Config::get('club/level');
+        foreach ($config as $row) {
+            if ($row['clubLevel'] <= $level) {
+                $times += $row['donate'] ?: 1;
+            }
+        }
+        return max(0, $donateTimes - $times);
     }
 }
