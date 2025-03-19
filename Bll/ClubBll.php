@@ -549,7 +549,7 @@ class ClubBll
 
     public function publishHelp($uid, $type)
     {
-        if (!isset(self::$publishHelpType[$type])) {
+        if (!in_array($type,self::$publishHelpType)) {
             FF::throwException(Exceptions::RET_CLUB_PUBLISH_HELP_TYPE_ERROR);
         }
 
@@ -574,7 +574,7 @@ class ClubBll
             'uid' => $uid,
             'type' => $type,
             'helpLimit' => $helpLimit,
-            'itemList' => Bll::clubOption()->getRequestItem($uid),
+            'itemList' => json_encode(Bll::clubOption()->getRequestItems($uid)),
             'expireTime' => $duration + time(),
         ];
 
@@ -790,7 +790,7 @@ class ClubBll
         $rewardList = Model::clubRewards()->fetchAll($where, 'itemList');
         $itemMap = [];
         foreach ($rewardList as $row) {
-            $_itemList = json_decode($row['itemList'], true);
+            $_itemList = $row['itemList'] ? json_decode($row['itemList'], true) : [];
             foreach ($_itemList as $_item) {
                 $itemMap[$_item['id']] += $_item['num'];
             }
@@ -903,7 +903,6 @@ class ClubBll
     public function helpMember($uid, $publishId)
     {
         $publishInfo = Model::clubPublishHelpData()->getOneById($publishId);
-        $helpers = [];
         $status = ClubPublishHelpDataModel::PUBLISH_HELP_STATUS_ING;
         do {
             if (!$publishInfo) {

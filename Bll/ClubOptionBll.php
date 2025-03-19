@@ -7,20 +7,30 @@ use FF\Framework\Utils\Config;
 
 class ClubOptionBll extends Bll
 {
-    public function getRequestItem($uid)
+    public function getRequestItems($uid)
     {
         $info = Bll::user()->getUserInfo($uid, 'level');
         $config = Config::get('club/request');
         $size = count($config);
+        $item = [];
         foreach ($config as $idx => $row) {
             if ($info['level'] <= $row['userLevel']) {
-                return $row['requestCoin'];
+                $item = $row['requestCoin'];
+                break;
             }
             if ($idx == $size - 1) {
-                return $row['requestCoin'];
+                $item = $row['requestCoin'];
             }
         }
-        return [];
+
+        if (!$item) {
+            return [];
+        }
+
+        return [[
+            'id' => $item['itemId'],
+            'num' => $item['count'],
+        ]];
     }
 
     public function getGameDate()
