@@ -352,9 +352,9 @@ class ClubBll
             'clubId' => $info['clubId'],
             'content' => $content,
             'sender' => $uid,
-            'headId' => $userInfo[$uid]['headId'] ?? 0,
-            'headFrameId' => $userInfo[$uid]['headFrameId'] ?? 0,
-            'name' => $userInfo[$uid]['name'] ?? 0,
+            'headId' => $userInfo['headId'] ?? 0,
+            'headFrameId' => $userInfo['headFrameId'] ?? 0,
+            'name' => $userInfo['name'] ?? '',
             'chatTime' => time(),
             'microtime' => floor(_microtime()),
         ];
