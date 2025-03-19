@@ -118,6 +118,7 @@ class UserController extends BaseController
             'facebookId' => $userInfo['facebookId'] ?? 0,
             'friendFlag' => Bll::friends()->isMyFriend($uid, $tuid),
             'achieveInfo' => Model::userAchievements()->touchData($userInfo['uid']),
+            'medalInfo' => Model::userMedal()->touchData($userInfo['uid']),
             'clubInfo' => [],
         );
 

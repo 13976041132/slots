@@ -4,18 +4,18 @@ namespace FF\App\GameMain\Model\Main;
 
 use FF\Extend\MyModel;
 
-class UserAchievementsModel extends MyModel
+class UserMedalModel extends MyModel
 {
     public function __construct()
     {
-        parent::__construct(DB_MAIN, 'user_achievements', 'uid');
+        parent::__construct(DB_MAIN, 'user_medal', 'uid');
     }
 
     public function touchData($uid)
     {
         $defData = [
-            'spinTimes' => 0, 'bigWinTimes' => 0,
-            'megaWinTimes' => 0, 'jackpotTimes' => 0
+            'medal_num1' => 0, 'medal_num2' => 0,
+            'medal_num3' => 0, 'slot_num' => 0
         ];
 
         $info = $this->getOneById($uid);

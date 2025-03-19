@@ -23,6 +23,7 @@ use FF\App\GameMain\Model\Main\ClubRewardsModel;
 use FF\App\GameMain\Model\Main\ClubJackpotLogModel;
 use FF\App\GameMain\Model\Main\ClubPublishHelpDataModel;
 use FF\App\GameMain\Model\Main\UserAchievementsModel;
+use FF\App\GameMain\Model\Main\UserMedalModel;
 use FF\Framework\Mode\Factory;
 
 class Model extends Factory
@@ -167,4 +168,13 @@ class Model extends Factory
     {
         return self::getInstance('FF\App\GameMain\Model\Main\UserAchievementsModel');
     }
+
+    /**
+     * @return UserMedalModel
+     */
+    public static function userMedal()
+    {
+        return self::getInstance('FF\App\GameMain\Model\Main\UserMedalModel');
+    }
+
 }
