@@ -269,7 +269,7 @@ class ClubBll
             if (empty($userList[$member['uid']])) {
                 continue;
             }
-            $roles = $this->getUserRoles($member['uid'], $clubInfo['level'], $pointTop1, $clubInfo['topDonor'], $clubInfo['creator']);
+            $roles = $this->getUserRoles($member['uid'], $clubInfo, $pointTop1);
             $member['roleName'] = implode(',', $roles);
             $member = array_merge($member, $userList[$member['uid']]);
             $member['isOnline'] = Bll::user()->isOnlineByLoginTime($userList[$member['uid']]['lastOnlineTime']);
@@ -1115,10 +1115,10 @@ class ClubBll
         return array_merge($gameCycle, ['isOpen' => $isOpen, 'shortEndTime' => $shortEndTime, 'machinePoints' => $list]);
     }
 
-    protected function getUserRoles($uid, $clubInfo, $topPoint)
+    protected function getUserRoles($uid, $clubInfo, $pointTop)
     {
         $roles = [];
-        $clubRoles = Config::get('club/levels', $clubInfo['level'] . '/title', false);
+        $clubRoles = Config::get('club/level', $clubInfo['level'] . '/title', false);
         if (!$clubRoles) {
             return [];
         }
@@ -1130,7 +1130,7 @@ class ClubBll
                     }
                     break;
                 case 'points mvp':
-                    if ($topPoint == $uid) {
+                    if ($pointTop == $uid) {
                         $roles[] = $clubRole;
                     }
                     break;
