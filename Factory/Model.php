@@ -22,6 +22,7 @@ use FF\App\GameMain\Model\Main\ClubRankLogModel;
 use FF\App\GameMain\Model\Main\ClubRewardsModel;
 use FF\App\GameMain\Model\Main\ClubJackpotLogModel;
 use FF\App\GameMain\Model\Main\ClubPublishHelpDataModel;
+use FF\App\GameMain\Model\Main\UserAchievementsModel;
 use FF\Framework\Mode\Factory;
 
 class Model extends Factory
@@ -157,5 +158,13 @@ class Model extends Factory
     public static function clubPublishHelpData()
     {
         return self::getInstance('FF\App\GameMain\Model\Main\ClubPublishHelpDataModel');
+    }
+
+    /**
+     * @return UserAchievementsModel
+     */
+    public static function userAchievements()
+    {
+        return self::getInstance('FF\App\GameMain\Model\Main\UserAchievementsModel');
     }
 }

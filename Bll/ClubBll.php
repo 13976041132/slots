@@ -35,12 +35,11 @@ class ClubBll
     ];
     const CLUB_REWARD_TYPE_JACKPOT = 1; //jackpot
     const CLUB_REWARD_TYPE_BOX_RANK = 2; //ClubChest
-    const CLUB_REWARD_TYPE_PIECE_NODE = 3; //俱乐部活动奖励
-    const CLUB_REWARD_TYPE_RANK = 4; //Club League
-    const CLUB_REWARD_TYPE_PUBLISH_HELP_COINS = 5; //发布帮助金币奖励
-    const CLUB_REWARD_TYPE_PUBLISH_HELP_STAMP = 6;//发布帮助邮票奖励
+    const CLUB_REWARD_TYPE_RANK = 3; //Club League
+    const CLUB_REWARD_TYPE_PIECE_NODE = 4; //俱乐部活动奖励
+    const CLUB_REWARD_TYPE_GAME_POINT_RANK = 5; //游戏积分排名
+    const CLUB_REWARD_TYPE_PUBLISH_HELP_COINS = 6; //发布帮助金币奖励
 
-    const CLUB_REWARD_TYPE_GAME_POINT_RANK = 7; //游戏积分排名
 
     //获取俱乐部列表
     public function getSuggestList($count)
@@ -261,8 +260,8 @@ class ClubBll
             return [];
         }
 
-        $topInfo = Bll::rank()->getList(Bll::rank()->getClubSeasonUserPointType($clubId), 0, 0);
-        $pointTop1 = $topInfo ? array_keys($topInfo)[0] : 0;
+        $pointTop1 = Bll::rank()->getClubSeasonUserTop($clubId);
+
         $uids = array_column($memberList, 'uid');
         $userList = Bll::user()->getUserInfoList($uids, ['name', 'level', 'headId', 'headFrameId', 'lastOnlineTime']);
         foreach ($memberList as &$member) {
@@ -823,7 +822,6 @@ class ClubBll
                 $userStatList = $this->getUserJackpotStat($clubId, $rewardInfo['createTime']);
                 break;
             case self::CLUB_REWARD_TYPE_PUBLISH_HELP_COINS:
-            case self::CLUB_REWARD_TYPE_PUBLISH_HELP_STAMP:
                 $userStatList = $this->getHelperList($rewardInfo);
                 break;
             default:
@@ -1115,7 +1113,7 @@ class ClubBll
         return array_merge($gameCycle, ['isOpen' => $isOpen, 'shortEndTime' => $shortEndTime, 'machinePoints' => $list]);
     }
 
-    protected function getUserRoles($uid, $clubInfo, $pointTop)
+    public function getUserRoles($uid, $clubInfo, $pointTop)
     {
         $roles = [];
         $clubRoles = Config::get('club/level', $clubInfo['level'] . '/title', false);
@@ -1157,7 +1155,6 @@ class ClubBll
         array_shift($pieces);
         Dao::redis()->rPush($key, ...$pieces);
     }
-
     public function clearClubCacheData($clubInfo)
     {
         if (!$clubInfo) {

@@ -76,4 +76,9 @@ class RankBll
         Dao::redis()->del($keys);
         Dao::redis()->zRem(Keys::rank($this->getClubType($dan)), $clubId);
     }
+
+    public function getClubSeasonUserTop($clubId){
+        $topInfo = Bll::rank()->getList(Bll::rank()->getClubSeasonUserPointType($clubId), 0, 0);
+        return $topInfo ? array_keys($topInfo)[0] : 0;
+    }
 }

@@ -22,6 +22,7 @@ class UserController extends BaseController
 
         return [];
     }
+
     public function fetchRequestInfo()
     {
         $uid = $this->getUid();
@@ -95,6 +96,7 @@ class UserController extends BaseController
             ]
         );
     }
+
     //查询玩家的数据
     public function fetchUserInfo()
     {
@@ -115,24 +117,29 @@ class UserController extends BaseController
             'region' => $userInfo['region'] ?? 0,
             'facebookId' => $userInfo['facebookId'] ?? 0,
             'friendFlag' => Bll::friends()->isMyFriend($uid, $tuid),
-            'achieveInfo' => $userInfo['achieve'] ?? [],
+            'achieveInfo' => Model::userAchievements()->touchData($userInfo['uid']),
             'clubInfo' => [],
         );
 
         $userClubInfo = Bll::clubUser()->getInfo($tuid);
         $clubInfo = [];
         if (!empty($userClubInfo['clubId'])) {
-            $clubInfo = Bll::clubCache()->getInfo($userClubInfo['clubId'], 'headId,clubName,clubId,dan');
+            $clubInfo = Bll::club()->getInfo($userClubInfo['clubId']);
         }
-        if(!$clubInfo) {
+        if (!$clubInfo) {
             return $info;
         }
-        //todo
-        $roleNames = [];
-        $clubInfo['roleName'] = implode(',', $roleNames);
-        $clubInfo['muteStatus'] = $userClubInfo['muteStatus'] ?? 0;
-        $clubInfo['points'] = $userClubInfo['points'] ?? 0;
-        $info['clubInfo'] = $clubInfo;
+        $pointTop = Bll::rank()->getClubSeasonUserTop($clubInfo['clubId']);
+        $roles = Bll::club()->getUserRoles($userInfo['uid'], $clubInfo, $pointTop);
+        $info['clubInfo'] = [
+            'roleName' => implode(',', $roles),
+            'muteStatus' => $userClubInfo['muteStatus'] ?? 0,
+            'points' => $userClubInfo['points'] ?? 0,
+            'headId' => $clubInfo['headId'],
+            'clubName' => $clubInfo['clubName'],
+            'clubId' => $clubInfo['clubId'],
+            'dan' => $clubInfo['dan'],
+        ];
         return $info;
     }
 }
