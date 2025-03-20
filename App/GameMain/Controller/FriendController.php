@@ -373,7 +373,7 @@ class FriendController extends BaseController
         if (!$clubId) {
             FF::throwException(Exceptions::RET_CLUB_NOT_EXISTS_ERROR);
         }
-        $memberUids = Bll::club()->getClubMembers($uid);
+        $memberUids = Bll::club()->getClubMembers($clubId);
         // 遍历推荐好友列表
         foreach ($memberUids as $memberUid) {
 
