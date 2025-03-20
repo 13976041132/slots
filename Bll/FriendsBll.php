@@ -115,7 +115,7 @@ class FriendsBll
     {
         $result = Bll::friendCache()->delFriend($uid, $fUid);
 
-        if ($result) {
+        if (!$result) {
             return $result;
         }
 
