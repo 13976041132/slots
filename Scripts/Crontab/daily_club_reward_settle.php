@@ -96,9 +96,8 @@ function settleSeasonRank()
 }
 function settleJackpot()
 {
-    $start = date('Y-m-d 00:00:00');
-    $end = date('Y-m-d 23:59:59');
-
+    $start = yesterday();
+    $end = date('Y-m-d 23:59:59', strtotime($start));
     $coinItem = ITEM_COIN;
     $set = Bll::club()->makeClubRewardSet(ClubBll::CLUB_REWARD_TYPE_JACKPOT);
 
