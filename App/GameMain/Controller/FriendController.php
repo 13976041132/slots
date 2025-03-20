@@ -184,6 +184,9 @@ class FriendController extends BaseController
         $friends = Bll::friends()->getFriends($uid);
         // 遍历推荐好友列表
         foreach ($suggestUids as $suggestUid) {
+            if ($suggestUid == $uid) {
+                continue;
+            }
             // 检查用户角色是否存在
             $searchRole = Bll::user()->getUserInfo($suggestUid, 'uid');
             if (empty($searchRole['uid'])) {
@@ -304,7 +307,7 @@ class FriendController extends BaseController
     {
         $uid = $this->getUid();
         $inviteCode = $this->getParam('inviteCode', false, '');
-        $inviter = $this->getParam('inviter',false, '');
+        $inviter = $this->getParam('inviter', false, '');
         if (!$inviteCode && !$inviter) {
             FF::throwException(Exceptions::PARAM_MISS_ERROR, 'params miss');
         }
@@ -312,6 +315,7 @@ class FriendController extends BaseController
         Bll::friends()->bindInviter($uid, $inviter, $inviteCode);
         return [];
     }
+
     /**
      * 赠送好友免费金币
      */
@@ -357,7 +361,7 @@ class FriendController extends BaseController
             Bll::messageNotify()->receiveFriendCoins($fUid, $uid);
             $successUids[] = $fUid;
         }
-        return ['fUids' =>$successUids];
+        return ['fUids' => $successUids];
     }
 
     //一键添加俱乐部为好友
@@ -372,6 +376,10 @@ class FriendController extends BaseController
         $memberUids = Bll::club()->getClubMembers($uid);
         // 遍历推荐好友列表
         foreach ($memberUids as $memberUid) {
+
+            if ($memberUid == $uid) {
+                continue;
+            }
             // 获取用户好友列表，检查当前用户好友是否满100
             if (count($friends) >= 100) {
                 break;

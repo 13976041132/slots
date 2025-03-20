@@ -33,6 +33,9 @@ class FriendsRequestsModel extends MyModel
      */
     public function addFriendRequest($uuid, $uid, $fUid)
     {
+        if ($uid == $fUid) {
+            return false;
+        }
         $time = now();
         $update = "`requestTime` = '{$time}', uid = {$uid}, fuid = {$fUid}, `status` = 0";
         $sql = "INSERT INTO {$this->table()} VALUES ({$uuid}, {$uid}, '{$fUid}', 0, '{$time}', '{$time}') ON DUPLICATE KEY UPDATE {$update}";
