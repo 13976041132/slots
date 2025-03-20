@@ -344,7 +344,7 @@ class ClubBll
         }
 
         if ($info['muteStatus'] == self::MUTE_STATUS_ACTIVE) {
-            FF::throwException(Exceptions::RET_CHAT_FORBIDDEN_ERROR);
+            FF::throwException(Exceptions::RET_CHAT_FORBIDDEN_ERROR, 'You have been banned by the administrator!');
         }
         $userInfo = Bll::user()->getUserInfo($uid, ['name', 'headId', 'headFrameId']);
         $insert = [
