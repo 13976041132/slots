@@ -19,6 +19,6 @@ class UserMedalModel extends MyModel
         ];
 
         $info = $this->getOneById($uid);
-        return array_merge($info, $defData);
+        return array_merge($defData, $info);
     }
 }
