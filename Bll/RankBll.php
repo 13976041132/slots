@@ -60,9 +60,9 @@ class RankBll
         return 'ClubEvent:' . $clubId . ':' . $machineId . date('Ymd');
     }
 
-    public function getClubSeasonUserPointType($clubId)
+    public function getClubSeasonUserPointType($clubId, $seasonId = 0)
     {
-        $id = Bll::clubOption()->getSeasonId();
+        $id = $seasonId ? : Bll::clubOption()->getSeasonId();
         return 'ClubSeason:' . $id . ':' . $clubId;
     }
 

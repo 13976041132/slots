@@ -191,7 +191,7 @@ class ConfigBll
         $records = Utils::loadCsv($sourceFile);
         $config = array();
         foreach ($records as $record) {
-            $row['id'] = (int)$record['ID'];
+            $row['id'] = (int)$record['ID'] - 1;
             $row['gradeId'] = (int)$record['Grade_Id'];
             $row['grade'] = $record['Grade'];
 

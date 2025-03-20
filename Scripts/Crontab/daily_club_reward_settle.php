@@ -5,6 +5,9 @@ namespace FF\Scripts\Crontab;
 use FF\Bll\ClubBll;
 use FF\Factory\Bll;
 use FF\Factory\Dao;
+use FF\Factory\Model;
+use FF\Framework\Utils\Config;
+use FF\Framework\Utils\Log;
 
 if (date('H') != '00') {
     return;
@@ -17,39 +20,78 @@ settleBoxAct();
 //½áËãÈü¼¾ÅÅÃû
 function settleSeasonRank()
 {
-    //todo
     if (!Bll::clubOption()->isSeasonSettle($seasonId)) {
         return;
     }
-    $type = Bll::rank()->getClubType($seasonId);
-    $ranks = Bll::rank()->getList($type, 0,50);
-
-    $clubIds = array_keys($ranks);
-    $clubList = Bll::clubCache()->getClubList($clubIds, 'dan');
-    $rank = 0;
-    foreach ($ranks as $clubId => $score) {
-        ++$rank;
-        if (!isset($clubList[$clubId])) {
+    $grades = Config::get('club/grade');
+    foreach ($grades as $gradeId => $grade) {
+        $type = Bll::rank()->getClubType($gradeId, $seasonId);
+        $ranks = Bll::rank()->getList($type, 0, 25);
+        if (!$ranks) {
+            Log::error('club reward settle error, ranks is empty, gradeId: ' . $gradeId, 'reward.log');
             continue;
         }
-        $leagueInfo = Bll::clubOption()->getLeagueInfo($clubList[$clubId]['dan'], $rank);
+        $clubIds = array_keys($ranks);
+        $clubList = Model::clubs()->fetchAll(['clubId' => ['in', $clubIds], 'dan' => $gradeId], 'clubId,level');
+        $clubList = array_column($clubList, null, 'clubId');
+        $rank = 0;
+        foreach ($ranks as $clubId => $score) {
+            if (!isset($clubList[$clubId])) {
+                continue;
+            }
+            ++$rank;
+            $leagueInfo = Bll::clubOption()->getLeagueInfo($gradeId, $rank);
 
-        if (!$leagueInfo) {
-            continue;
-        }
-        $danId = Bll::clubOption()->getDanIdByDanName($leagueInfo['rewardGrade']);
-        if ($danId && $danId != $clubList[$clubId]['dan']) {
-            Bll::clubCache()->updateData($clubId, ['dan' => $danId]);
-        }
-        $type = ClubBll::CLUB_REWARD_TYPE_RANK;
-        $set = Bll::club()->makeClubRewardSet($type);
-        $rewardTime = Bll::clubOption()->getClubRewardTime($type, $clubList[$clubId]['level']);
-        $expireTime = strtotime(date('Y-m-d')) + $rewardTime * 3600;
+            if (!$leagueInfo) {
+                continue;
+            }
+            $danId = Bll::clubOption()->getDanIdByDanName($leagueInfo['rewardGrade']);
+            if ($danId && $danId != $gradeId) {
+                Bll::clubCache()->updateData($clubId, ['dan' => $danId]);
+            }
+            $type = ClubBll::CLUB_REWARD_TYPE_RANK;
+            $set = Bll::club()->makeClubRewardSet($type);
+            $rewardTime = Bll::clubOption()->getClubRewardTime($type, $clubList[$clubId]['level']);
+            $expireTime = strtotime(date('Y-m-d')) + $rewardTime * 3600;
+            $rankType = Bll::rank()->getClubSeasonUserPointType($clubId, $seasonId);
+            $userRanks = Bll::rank()->getList($rankType, 0, -1);
+            if(!$userRanks) {
+                Log::error('club reward settle error, userRanks is empty, clubId: ' . $clubId, 'reward.log');
+                continue;
+            }
 
-        $itemList = json_encode([['id' => $leagueInfo['itemId'], 'num' => $leagueInfo['count']]]);
-        $sql = "SELECT '{$set}' as `set`, clubId, uid,{$type} as type ,{$leagueInfo['count']} as totalCoin, {$itemList} as itemList,{$expireTime} as expireTime FROM club_users";
-        $insertSql = "INSERT INTO club_rewards (`set`, clubId, uid,`type`, totalCoin, itemList, expireTime) {$sql}";
-        Dao::db()->execute($insertSql);
+            $totalScore = array_sum(array_values($userRanks));
+            if ($totalScore == 0) {
+                Log::error('club reward settle error, totalScore is 0, clubId: ' . $clubId, 'reward.log');
+                continue;
+            }
+            $clubUsersList = Model::clubUsers()->fetchAll(['uid' => ['in', array_keys($userRanks)], 'clubId' => $clubId], 'uid');
+            if (!$clubUsersList) {
+                Log::error('club reward settle error, clubUsersList is empty, clubId: ' . $clubId, 'reward.log');
+                continue;
+            }
+            $uids = array_column($clubUsersList, 'uid');
+            $seasonRewardData = [];
+            foreach ($userRanks as $ruid => $userScore) {
+                if (!in_array($ruid, $uids)) {
+                    Log::error('club reward settle error, uid not in clubUsersList, clubId: ' . $clubId . ', uid: ' . $ruid, 'reward.log');
+                    continue;
+                }
+                $coins = max(ceil($leagueInfo['count'] * $userScore / $totalScore),10000);
+                $seasonRewardData[] = [
+                    'set' => $set,
+                    'clubId' => $clubId,
+                    'uid' => $ruid,
+                    'totalpoints'=> $totalScore,
+                    'points'=> $userScore,
+                    'type' => ClubBll::CLUB_REWARD_TYPE_RANK,
+                    'totalCoin' => $leagueInfo['count'],
+                    'itemList' => json_encode([['id' => $leagueInfo['itemId'], 'num' => $coins]]),
+                    'expireTime' => $expireTime,
+                ];
+            }
+            Model::clubRewards()->fetchAll($seasonRewardData);
+        }
     }
 }
 function settleJackpot()

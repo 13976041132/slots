@@ -549,7 +549,7 @@ class ClubBll
 
     public function publishHelp($uid, $type)
     {
-        if (!in_array($type,self::$publishHelpType)) {
+        if (!in_array($type, self::$publishHelpType)) {
             FF::throwException(Exceptions::RET_CLUB_PUBLISH_HELP_TYPE_ERROR);
         }
 
@@ -604,13 +604,18 @@ class ClubBll
             return $data;
         }
         $list = Model::clubPublishHelpData()->fetchAll($where, null, ['id' => 'desc'], [], $pageSize, $offset);
-        $helpers = [];
+        $uids = [];
         foreach ($list as $row) {
-            $helpers = array_merge($helpers, explode(',', $row['helpers']));
+            $uids = array_merge($uids, explode(',', $row['helpers']));
+            $uids[] = $row['uid'];
         }
-        $helpers = array_flip(array_filter($helpers));
-        $userList = Bll::user()->getUserInfoList(array_keys($helpers), 'name,headId,headFrameId');
-        foreach ($list as &$row) {
+        $uids = array_flip(array_filter($uids));
+        $userList = Bll::user()->getUserInfoList(array_keys($uids), 'name,headId,headFrameId');
+        foreach ($list as $key => &$row) {
+            if (!isset($userList[$row['uid']])) {
+                unset($list[$key]);
+                continue;
+            }
             $row['publishId'] = $row['id'];
             unset($row['id']);
             $row['itemList'] = json_decode($row['itemList'], true) ?: [];
@@ -624,6 +629,7 @@ class ClubBll
                 $helperList[] = $userList[$helperId];
             }
             $row['helpers'] = $helperList;
+            $row = array_merge($row, $userList[$row['uid']]);
         }
         $data['list'] = $list;
 
@@ -1154,6 +1160,7 @@ class ClubBll
         array_shift($pieces);
         Dao::redis()->rPush($key, ...$pieces);
     }
+
     public function clearClubCacheData($clubInfo)
     {
         if (!$clubInfo) {

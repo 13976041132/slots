@@ -106,6 +106,12 @@ class UserController extends BaseController
         if (!$userInfo) {
             FF::throwException(Exceptions::RET_ACCOUNT_NOT_EXIST);
         }
+        $medalInfo = Model::userMedal()->touchData($userInfo['uid']);
+        $achieveInfo = Model::userAchievements()->touchData($userInfo['uid']);
+        if (isset($achieveInfo['uid'])) {
+            unset($achieveInfo['uid']);
+        }
+
         $info = array(
             'uid' => $userInfo['uid'],
             'coin' => $userInfo['coin'] ?? 0,
@@ -117,8 +123,7 @@ class UserController extends BaseController
             'region' => $userInfo['region'] ?? 0,
             'facebookId' => $userInfo['facebookId'] ?? 0,
             'friendFlag' => Bll::friends()->isMyFriend($uid, $tuid),
-            'achieveInfo' => Model::userAchievements()->touchData($userInfo['uid']),
-            'medalInfo' => Model::userMedal()->touchData($userInfo['uid']),
+            'achieveInfo' => array_merge($medalInfo, $achieveInfo),
             'clubInfo' => [],
         );
 
