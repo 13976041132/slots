@@ -104,7 +104,7 @@ class ClubBll
                 FF::throwException(Exceptions::RET_CLUB_CREATE_ERROR);
             }
             Dao::db()->commit();
-            $this->onClubCreateSuccess($clubId);
+            $this->onClubCreateSuccess($clubId, $uid);
 
             return $clubId;
         } catch (Exception $e) {
@@ -296,7 +296,7 @@ class ClubBll
         }
 
         Bll::clubCache()->updateClubByInc($info['clubId'], 'memberCnt', -1);
-
+        Dao::redis()->sRem(Keys::clubMember($info['clubId']), $tuid);
         Bll::messageNotify()->kickOutClub($tuid, $uid);
     }
 
@@ -1182,9 +1182,10 @@ class ClubBll
         Bll::rank()->clearClubRankData($clubId, $clubInfo['dan']);
     }
 
-    public function onClubCreateSuccess($clubId)
+    public function onClubCreateSuccess($clubId, $uid)
     {
         Dao::redis()->del(Keys::clubDanStat());
         $this->initPuzzle($clubId, Bll::clubOption()->getSeasonId());
+        Dao::redis()->sAdd(Keys::clubMember($clubId), $uid);
     }
 }
