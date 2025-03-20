@@ -33,6 +33,8 @@ class UserBll extends DBCacheBll
         'name' => ['string', ''],
         'level' => ['int', ''],
         'headId' => ['int', 0],
+        'vipLevel' => ['int', 0],
+        'headFrameId' => ['int', 0],
         'facebookId' => ['string', ''],
         'lastOnlineTime' => ['int', 0],
     );
