@@ -862,13 +862,13 @@ class ClubBll
 
         $endData = date('Y-m-d 23:59:59', $yesterday);
         $where = ['hitTime' => ['between', [$date, $endData]], 'clubId' => $clubId];
-        $logData = Model::clubJackpotLog()->fetchAll($where, 'uid,sum(rewardCoins) coins, count(1) times ', 'hitTime desc', 'uid', 50);
+        $logData = Model::clubJackpotLog()->fetchAll($where, 'uid,sum(rewardCoins) coins, count(1) times', '', 'uid', 50);
         $list = [];
         foreach ($logData as $row) {
             $list[] = [
-                'uid' => $row['uid'],
-                'progress' => $row['times'],
-                'itemList' => [['id' => 'coins', 'num' => $row['coins']]],
+                'uid' => (int)$row['uid'],
+                'progress' => (int)$row['times'],
+                'itemList' => [['id' => ITEM_COIN, 'num' => (int)$row['coins']]],
             ];
         }
         Dao::redis()->set($key, json_encode($list), 86400);
