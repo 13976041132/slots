@@ -862,7 +862,7 @@ class ClubBll
 
         $endData = date('Y-m-d 23:59:59', $yesterday);
         $where = ['hitTime' => ['between', [$date, $endData]], 'clubId' => $clubId];
-        $logData = Model::clubJackpotLog()->fetchAll($where, 'uid,sum(rewardCoins) coins, count(1) times ', 'times desc', ['uid'], 50);
+        $logData = Model::clubJackpotLog()->fetchAll($where, 'uid,sum(rewardCoins) coins, count(1) times ', 'hitTime desc', ['uid'], 50);
         $list = [];
         foreach ($logData as $row) {
             $list[] = [

@@ -49,9 +49,9 @@ class RankBll
         return 'ClubSeason:' . $id . ':' . $dan;
     }
 
-    public function getClubChestType($clubId)
+    public function getClubChestType($clubId, $date = 0)
     {
-        $date = Bll::clubOption()->getChestActDate();
+        $date = $date ?: Bll::clubOption()->getChestActDate();
         return 'ClubChest:' . $clubId. ':' . $date;
     }
 

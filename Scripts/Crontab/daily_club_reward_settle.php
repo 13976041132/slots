@@ -90,7 +90,7 @@ function settleSeasonRank()
                     'expireTime' => $expireTime,
                 ];
             }
-            Model::clubRewards()->fetchAll($seasonRewardData);
+            Model::clubRewards()->insert($seasonRewardData);
         }
     }
 }
@@ -105,7 +105,7 @@ function settleJackpot()
     $rewardTime = Bll::clubOption()->getClubRewardTime($type, 0);
     $expireTime = strtotime(date('Y-m-d')) + $rewardTime * 3600;
     $sql = "SELECT '{$set}' as `set`, t1.clubId, t1.uid,{$type} as type ,totalCoin, itemList, extData,{$expireTime} as expireTime FROM club_users t1 JOIN 
-(select sum(totalCoin) totalCoin ,JSON_OBJECT('id', {$coinItem}, 'num', sum(totalReward)) as itemList, JSON_ARRAYAGG(JSON_OBJECT('uid', uid, 'coins', totalCoin)) as extData, clubId  from (
+(select sum(totalCoin) totalCoin, count(1) as times ,JSON_OBJECT('id', {$coinItem}, 'num', sum(totalReward)) as itemList, JSON_ARRAYAGG(JSON_OBJECT('uid', uid, 'times', totalCoin)) as extData, clubId  from (
 SELECT sum(coins) totalCoin,sum(rewardCoins) as totalReward, uid,clubId  FROM  club_jackpot_log where hitTime between '{$start}' and '{$end}' group by clubId, uid) as t
 GROUP BY clubId) t2
 on t1.clubId = t2.clubId";
@@ -120,6 +120,15 @@ function settleBoxAct()
         return;
     }
     $ymd = yesterday();
+    $ymd = str_replace('-', '', $ymd);
+    $clubList = Model::clubs()->fetchAll([],'clubId');
+    foreach ($clubList as $club) {
+        $rankType = Bll::rank()->getClubChestType($club['clubId'], $ymd);
+        $ranks = Bll::rank()->getList($rankType, 0, -1);
+        if (!$ranks) {
+            continue;
+        }
+    }
 }
 
 

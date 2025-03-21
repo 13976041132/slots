@@ -103,16 +103,16 @@ class ConfigBll
         $records = Utils::loadCsv($sourceFile);
         $config = array();
         foreach ($records as $record) {
-            $row['id'] = $record['ID'];
-            $row['chestLevel'] = $record['ChestLevel'];
-            $row['pointProgress'] = $record['PointProgress'];
+            $row['id'] = (int)$record['ID'];
+            $row['chestLevel'] = (int)$record['ChestLevel'];
+            $row['pointProgress'] = (int)$record['PointProgress'];
 
             $row['chestCoin'] = (int)str_replace(',', '', $record['ChestCoin']);
             // 解析道具奖励
             $row['chestProps'] = array_map(function ($prop) {
                 $parts = explode(',', $prop);
                 return [
-                    'itemId' => $parts[0], // 道具 ID
+                    'itemId' => (int)$parts[0], // 道具 ID
                     'count' => (int)$parts[1], // 道具数量
                 ];
             }, explode('|', $record['ChestProps']));
