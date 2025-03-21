@@ -893,10 +893,10 @@ class ClubBll
     public function getUserScoreList($set)
     {
         $key = Keys::userTopRank($set);
-        $list = Dao::redis()->get($key);
+/*        $list = Dao::redis()->get($key);
         if ($list) {
-            return $list;
-        }
+            return json_decode($list, true);
+        }*/
         $list = Model::clubRewards()->fetchAll(['set' => $set], 'uid,points as progress,itemList', 'points desc', [], 50);
         foreach ($list as &$row) {
             $row['itemList'] = $row['itemList'] ? json_decode($row['itemList'], true) : [];
