@@ -1111,7 +1111,7 @@ class ClubBll
         $list = [];
         $machineList = Config::get('club/common', 'machineList');
         foreach ($machineList as $machineId) {
-            $list[] = ['machineId' => $machineId, 'points' => $data[$machineId] ?? 0];
+            $list[] = ['machineId' => $machineId, 'points' => (int)$data[$machineId] ?? 0];
         }
         $isOpen = Bll::clubOption()->isGameOpen();
         $shortEndTime = $isOpen ? strtotime(date('Y-m-d 23:59:59')) : 0;
