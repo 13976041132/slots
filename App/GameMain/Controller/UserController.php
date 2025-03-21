@@ -68,7 +68,7 @@ class UserController extends BaseController
         $uid = $this->getParam('uid');
         $userInfo = Bll::user()->getUserInfo($uid);
         if (!$userInfo['uid'] || $userInfo['deviceId'] != $deviceId) {
-            Log::error($uid, 'user.log');
+            Log::error("uid: {$uid}, deviceId: {$deviceId}, sdeviceId: ". $userInfo['deviceId'], 'user.log');
             FF::throwException(Exceptions::RET_ACCOUNT_NOT_EXIST);
         }
         $sessionData = array('uid' => $uid, 'deviceId' => $deviceId);
