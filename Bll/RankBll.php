@@ -81,4 +81,13 @@ class RankBll
         $topInfo = Bll::rank()->getList(Bll::rank()->getClubSeasonUserPointType($clubId), 0, 0);
         return $topInfo ? array_keys($topInfo)[0] : 0;
     }
+
+    public function getTotalScore($type)
+    {
+        $ranks = $this->getList($type, 0, -1);
+        if (!$ranks) {
+            return 0;
+        }
+        return (int)array_sum(array_values($ranks));
+    }
 }

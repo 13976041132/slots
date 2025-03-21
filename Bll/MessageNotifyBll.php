@@ -125,8 +125,12 @@ class MessageNotifyBll
         $data = $this->makeData($optUId, $messageId, $content);
         $this->recordNotifyMsg($uid, $data);
     }
+
     public function batchRecordNotifyMsg($uid, $groupData)
     {
+        if (!$groupData) {
+            return;
+        }
         $key = Keys::bllMessageQueue($uid);
         Dao::redis()->rPush($key, ...$groupData);
 

@@ -251,10 +251,7 @@ class ClubBll
         $pageSize = max(min($pageSize, 200), 10);
         $offset = ($page > 0 ? ($page - 1) : 0) * $pageSize;
 
-        $fields = 'uid,role,points';
-        if ($clubId == $info['clubId']) {
-            $fields = 'uid,role,points,coins';
-        }
+        $fields = ['uid','role','points','coins'];
         $memberList = Model::clubUsers()->fetchAll(['clubId' => $clubId], $fields, ['joinTime' => 'ASC'], '', $pageSize, $offset);
         if (!$memberList) {
             return [];

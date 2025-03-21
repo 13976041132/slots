@@ -35,21 +35,24 @@ class ClubController extends BaseController
     public function fetchClubInfo()
     {
         $uid = $this->getUid();
-        $clubId = $this->getParam('clubId', false, 0);
+        $clubId = (int)$this->getParam('clubId', false, 0);
         if (!$clubId) {
             $clubId = Bll::club()->getClubIdByUid($uid);
         }
         if (!$clubId) {
             FF::throwException(Exceptions::RET_CLUB_NOT_JOIN_ERROR);
         }
-        return Bll::club()->getInfo($clubId);
+        $info = Bll::club()->getInfo($clubId);
+        $rankType = Bll::rank()->getClubChestType($clubId);
+        $info['chestPoints'] = Bll::rank()->getTotalScore($rankType);
+        return $info;
     }
 
     //加入俱乐部
     public function joinClub()
     {
         $uid = $this->getUid();
-        $clubId = $this->getParam('clubId');
+        $clubId = (int)$this->getParam('clubId');
         Bll::club()->joinClub($uid, $clubId);
         return Bll::club()->getInfo($clubId);
     }
@@ -109,7 +112,7 @@ class ClubController extends BaseController
     public function chat()
     {
         $uid = $this->getUid();
-        $content = $this->getParam('content');
+        $content = (string)$this->getParam('content');
         Bll::club()->chat($uid, $content);
         $list =  Bll::club()->getChatList($uid);
 
@@ -129,7 +132,7 @@ class ClubController extends BaseController
     public function setMuteStatus()
     {
         $uid = $this->getUid();
-        $tuid = $this->getParam('tuid');
+        $tuid = (int)$this->getParam('tuid');
         Bll::club()->setMuteStatus($uid, $tuid);
         return [];
     }
@@ -138,7 +141,7 @@ class ClubController extends BaseController
     public function kickOutClubMember()
     {
         $uid = $this->getUid();
-        $tuid = $this->getParam('tuid');
+        $tuid = (int)$this->getParam('tuid');
         Bll::club()->kickOutClubMember($uid, $tuid);
         return [];
     }
@@ -208,7 +211,7 @@ class ClubController extends BaseController
     public function jackpotReport()
     {
         $uid = $this->getUid();
-        $coins = $this->getParam('coins');
+        $coins = (int)$this->getParam('coins');
         Bll::club()->jackpotReport($uid, $coins);
         return [];
     }
@@ -263,7 +266,7 @@ class ClubController extends BaseController
     public function helpMember()
     {
         $uid = $this->getUid();
-        $publishId = $this->getParam('publishId');
+        $publishId = (int)$this->getParam('publishId');
         return Bll::club()->helpMember($uid, $publishId);
     }
 
