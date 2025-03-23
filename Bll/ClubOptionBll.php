@@ -42,7 +42,7 @@ class ClubOptionBll extends Bll
                 continue;
             }
             if (($date >= $row[0] && $date <= $row[1]) || $date < $row[0]) {
-                return ['startDate' => $row[0], 'endDate' => $row[1]];
+                return ['startTime' => strtotime($row[0]), 'endTime' => strtotime('+1days '.$row[1]) - 1];
             }
         }
         return [];
@@ -55,8 +55,7 @@ class ClubOptionBll extends Bll
         if (!$gameCycle) {
             return false;
         }
-        $date = date('Ymd');
-        return $date >= $gameCycle['startDate'];
+        return time() >= $gameCycle['startTime'];
     }
 
     public function getSeasonId()

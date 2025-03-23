@@ -251,7 +251,7 @@ class ClubBll
         $pageSize = max(min($pageSize, 200), 10);
         $offset = ($page > 0 ? ($page - 1) : 0) * $pageSize;
 
-        $fields = ['uid','role','points','coins'];
+        $fields = ['uid', 'role', 'points', 'coins'];
         $memberList = Model::clubUsers()->fetchAll(['clubId' => $clubId], $fields, ['joinTime' => 'ASC'], '', $pageSize, $offset);
         if (!$memberList) {
             return [];
@@ -337,7 +337,7 @@ class ClubBll
         Bll::chatLog()->checkChatContent($content);
         $info = Model::clubUsers()->getOneById($uid);
         if (!$info) {
-            FF::throwException(Exceptions::RET_CLUB_OPT_NO_PERMISSION_ERROR);
+            FF::throwException(Exceptions::RET_CLUB_OPT_NO_PERMISSION_ERROR, 'You have been banned by the administrator!');
         }
 
         if ($info['muteStatus'] == self::MUTE_STATUS_ACTIVE) {
@@ -359,19 +359,7 @@ class ClubBll
             FF::throwException(Exceptions::FAILED);
         }
 
-        $this->cacheChat(array_merge($insert, ['chatId' => $chatId]));
-    }
-
-    public function cacheChat($chatData)
-    {
-        $key = Keys::clubChatInfo($chatData['clubId']);
-        Dao::redis()->hMSet($key, ['chatTime' => time(), 'sender' => $chatData['sender']]);
-        Dao::redis()->expire($key, 120);
-        $chatKey = Keys::clubChatList($chatData['clubId']);
-        Dao::redis()->lPush($chatKey, json_encode($chatData));
-        if (Dao::redis()->lLen($chatKey) > 200) {
-            Dao::redis()->lTrim($chatKey, 0, 200);
-        }
+        Bll::messageNotify()->clubBroadcast($info['clubId'], $uid, MessageIds::CLUB_CHAT_NOTIFY, ['chatId' => $chatId]);
     }
 
     public function updateClubInfo($uid, $params)
@@ -616,7 +604,10 @@ class ClubBll
             $row['publishId'] = $row['id'];
             unset($row['id']);
             $row['itemList'] = json_decode($row['itemList'], true) ?: [];
-            if (!$row['helpers']) continue;
+            if (!$row['helpers']) {
+                $row['helpers'] = [];
+                continue;
+            }
             $helperIds = explode(',', $row['helpers']);
             $helperList = [];
             foreach ($helperIds as $helperId) {
@@ -890,15 +881,18 @@ class ClubBll
     public function getUserScoreList($set)
     {
         $key = Keys::userTopRank($set);
-/*        $list = Dao::redis()->get($key);
+        $list = Dao::redis()->get($key);
         if ($list) {
             return json_decode($list, true);
-        }*/
+        }
         $list = Model::clubRewards()->fetchAll(['set' => $set], 'uid,points as progress,itemList', 'points desc', [], 50);
         foreach ($list as &$row) {
             $row['itemList'] = $row['itemList'] ? json_decode($row['itemList'], true) : [];
         }
-        Dao::redis()->set($key, json_encode($list), 86400);
+        if (!$list) {
+            return [];
+        }
+        Dao::redis()->set($key, json_encode($list), 1800);
 
         return $list;
     }
@@ -1019,6 +1013,7 @@ class ClubBll
             $list = Model::clubs()->fetchAll([], 'count(1) count,dan', [], 'dan');
             $data = array_column($list, 'count', 'dan');
             Dao::redis()->hMSet($key, $data);
+            Dao::redis()->expire($key, 86400);
         }
         return $list;
     }

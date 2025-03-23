@@ -3,6 +3,7 @@
 namespace FF\Bll;
 
 use FF\Constants\MessageIds;
+use FF\Factory\Bll;
 use FF\Factory\Dao;
 use FF\Factory\Keys;
 use FF\Factory\Model;
@@ -147,5 +148,37 @@ class MessageNotifyBll
             'time' => time(),
             'content' => $content
         );
+    }
+
+    public function clubBroadcast($clubId, $optUid, $messageId, $content = [])
+    {
+        $members = Bll::club()->getClubMembers($clubId);
+        if (!$members || count($members) == 1) {
+            return;
+        }
+        //获取俱乐部玩家信息
+        $pipe = Dao::redis()->pipeline();
+        foreach ($members as $member) {
+            if($member == $optUid) {
+                continue;
+            }
+            $key = Bll::user()->getCacheKey($member, []);
+            $pipe->exists($key);
+        }
+        $exists = $pipe->exec();
+        $pipe1 = Dao::redis()->pipeline();
+        $data = $this->makeData($optUid, $messageId, $content);
+        foreach ($members as $inx => $_member) {
+            if($_member == $optUid) {
+                continue;
+            }
+            if (empty($exists[$inx])) {
+                continue;
+            }
+            $key = Keys::bllMessageQueue($_member);
+            $pipe1->rPush($key, json_encode($data, JSON_UNESCAPED_UNICODE));
+            $pipe1->expire($key, 3600 * 12);
+        }
+        $pipe1->exec();
     }
 }
