@@ -290,7 +290,7 @@ class ClubController extends BaseController
         return Bll::club()->getPublishHelpList($clubId, $page, $pageSize);
     }
 
-    public function danSummary()
+    public function fetchDanSummary()
     {
         $list = Bll::club()->getDanSummaryData();
         return ['list' => $list];
