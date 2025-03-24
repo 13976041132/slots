@@ -633,6 +633,7 @@ class ClubBll
             }
             $row['publishId'] = $row['id'];
             unset($row['id']);
+            $row = array_merge($row, $userList[$row['uid']]);
             $row['itemList'] = json_decode($row['itemList'], true) ?: [];
             if (!$row['helpers']) {
                 $row['helpers'] = [];
@@ -647,7 +648,6 @@ class ClubBll
                 $helperList[] = $userList[$helperId];
             }
             $row['helpers'] = $helperList;
-            $row = array_merge($row, $userList[$row['uid']]);
         }
         $data['list'] = $list;
 
