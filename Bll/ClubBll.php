@@ -579,7 +579,7 @@ class ClubBll
 
         $key = Keys::publishHelpTime($uid, $type);
         $coolTime = Config::get('club-option', 'publishHelp/coolTime');
-        if (!Dao::redis()->set($key, time(), ['nx', 'ex' => $coolTime])) {
+        if (!Dao::redis()->set($key, time() + $coolTime, ['nx', 'ex' => $coolTime])) {
             FF::throwException(Exceptions::RET_CLUB_PUBLISH_HELP_COOL_DOWN);
         }
         $duration = Config::get('club-option', 'publishHelp/duration');
