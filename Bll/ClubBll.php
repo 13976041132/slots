@@ -517,7 +517,7 @@ class ClubBll
         $remainNum = Dao::redis()->lLen($key);
         $isFinish = Bll::clubOption()->isFinishPuzzleNode($node, 42 - $remainNum);
         $lockKey = Keys::clubPuzzleLock($info['clubId'], $seasonId);
-        $this->resetPuzzleExpireTime([$nodeKey,$userPuzzleKey, $key]);
+        $this->resetCacheExpireTime([$nodeKey,$userPuzzleKey, $key], 20 * 86400);
         if ($isFinish && Dao::redis()->set($lockKey, 0, ['nx', 'ex' => 1])) {
             Dao::redis()->hSet($userPuzzleKey, 0, $node + 1);
             //发放奖励
@@ -533,12 +533,14 @@ class ClubBll
         }
         return $pieceId;
     }
-    public function resetPuzzleExpireTime($keys)
+
+    public function resetCacheExpireTime($keys, $ttl)
     {
         foreach ($keys as $key) {
-            Dao::redis()->expire($key, 20* 86400);
+            Dao::redis()->expire($key, $ttl);
         }
     }
+
     public function getClubIdByUid($uid)
     {
         $info = Model::clubUsers()->getOneById($uid);
@@ -671,7 +673,7 @@ class ClubBll
         Model::clubJackpotLog()->insert($data);
     }
 
-    public function machinePointsCollect($uid, $machineId, $points)
+    public function machinePointsReport($uid, $machineId, $points)
     {
         if (!Bll::clubOption()->getGameDate()) {
             return;
@@ -685,11 +687,24 @@ class ClubBll
             return;
         }
         $rankType = Bll::rank()->getClubEventType($info['clubId'], $machineId);
-
         Bll::rank()->setScore($uid, $rankType, $points);
         $key = Keys::clubMachinePointData($info['clubId']);
-        Dao::redis()->hIncrBy($key, $machineId, $points);
-
+        $totalPoints = Dao::redis()->hIncrBy($key, $machineId, $points);
+        $pointsKey = Keys::clubUserMachinePoint($info['clubId']);
+        Dao::redis()->hIncrBy($pointsKey, $uid, $points);
+        $this->resetCacheExpireTime([$key,$pointsKey], 30 * 3600);
+        if (Bll::clubOption()->isFinishEventNode($totalPoints - $points, $totalPoints, $node)) {
+            //发放奖励
+            $compKey = Keys::clubNodeCompList();
+            $userPoints = Dao::redis()->hGetAll($pointsKey);
+            $compInfo = [
+                'node' => $node, 'clubId' => $info['clubId'],
+                'collectInfo' => $userPoints,
+                'type' => self::CLUB_REWARD_TYPE_GAME_POINT_RANK
+            ];
+            Dao::redis()->rPush($compKey, json_encode($compInfo));
+            Dao::redis()->del($pointsKey);
+        }
         $this->updateSeasonPoints($uid, $clubInfo, $points);
     }
 

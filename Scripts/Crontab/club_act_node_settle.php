@@ -20,7 +20,9 @@ while ($row = Dao::redis()->lPop($key)) {
         case ClubBll::CLUB_REWARD_TYPE_PIECE_NODE:
             pieceNodeSettle($row);
             break;
-        case ClubBll::CLUB_REWARD_TYPE_BOX_RANK:
+        case ClubBll::CLUB_REWARD_TYPE_GAME_POINT_RANK:
+            machineNodeSettle($row);
+            break;
     }
 }
 function pieceNodeSettle($row)
@@ -34,7 +36,7 @@ function pieceNodeSettle($row)
     if (!isset($row['seasonId']) || !isset($row['collectInfo'])) {
         return;
     }
-    if(!is_array($row['collectInfo'])) {
+    if (!is_array($row['collectInfo'])) {
         return;
     }
 
@@ -72,9 +74,9 @@ function pieceNodeSettle($row)
         $itemList = [];
         $coins = 0;
         foreach ($nodeConfig['nodeRewards'] as $reward) {
-            $count = ceil($reward['count'] * $userScore / $totalScore);
+            $count = ceil($reward['count'] * min($userScore / $totalScore,1));
             $itemList[] = ['id' => $reward['itemId'], 'num' => $count];
-            if($reward['itemId'] == ITEM_COIN) {
+            if ($reward['itemId'] == ITEM_COIN) {
                 $coins += $reward['count'];
             }
         }
@@ -82,9 +84,77 @@ function pieceNodeSettle($row)
             'set' => $set,
             'clubId' => $clubId,
             'uid' => $ruid,
-            'totalpoints'=> $totalScore,
-            'points'=> $userScore,
+            'totalpoints' => $totalScore,
+            'points' => $userScore,
             'type' => ClubBll::CLUB_REWARD_TYPE_PIECE_NODE,
+            'totalCoin' => $coins,
+            'itemList' => json_encode($itemList),
+            'expireTime' => $expireTime,
+            'progress' => (int)$row['node']
+        ];
+    }
+
+    Model::clubRewards()->insertMulti($seasonRewardData);
+}
+
+function machineNodeSettle($row)
+{
+    $clubInfo = Model::clubs()->fetchOne($row['clubId']);
+    if (!$clubInfo) {
+        Log::error('machineNodeSettle: club not exist' . var_export($row, true), 'act_node_settle.log');
+        return;
+    }
+
+    if (empty($row['collectInfo']) || !is_array($row['collectInfo'])) {
+        return;
+    }
+
+    $nodeConfig = Bll::clubOption()->getEventNode($row['node']);
+    if (!$nodeConfig) {
+        return;
+    }
+
+    $userRanks = $row['collectInfo'];
+    $clubId = $row['clubId'];
+    $type = ClubBll::CLUB_REWARD_TYPE_GAME_POINT_RANK;
+    $set = Bll::club()->makeClubRewardSet($type);
+    $rewardTime = Bll::clubOption()->getClubRewardTime($type, $clubInfo['level']);
+    $expireTime = strtotime(date('Y-m-d')) + $rewardTime * 3600;
+    $totalScore = array_sum($userRanks);
+    if ($totalScore == 0) {
+        Log::error('club reward settle error, totalScore is 0, clubId: ' . $clubId, 'act_node_settle.log');
+        return;
+    }
+    $clubUsersList = Model::clubUsers()->fetchAll(['uid' => ['in', array_keys($userRanks)], 'clubId' => $clubId], 'uid');
+
+    if (!$clubUsersList) {
+        Log::error('club reward settle error, clubUsersList is empty, clubId: ' . $clubId, 'act_node_settle.log');
+        return;
+    }
+    $uids = array_column($clubUsersList, 'uid');
+    $seasonRewardData = [];
+    foreach ($userRanks as $ruid => $userScore) {
+        if (!in_array($ruid, $uids)) {
+            Log::error('club reward settle error, uid not in clubUsersList, clubId: ' . $clubId . ', uid: ' . $ruid, 'act_node_settle.log');
+            continue;
+        }
+
+        $itemList = [];
+        $coins = 0;
+        foreach ($nodeConfig['nodeReward'] as $reward) {
+            $count = ceil($reward['count'] * min($userScore / $totalScore, 1));
+            $itemList[] = ['id' => $reward['itemId'], 'num' => $count];
+            if ($reward['itemId'] == ITEM_COIN) {
+                $coins += $reward['count'];
+            }
+        }
+        $seasonRewardData[] = [
+            'set' => $set,
+            'clubId' => $clubId,
+            'uid' => $ruid,
+            'totalpoints' => $totalScore,
+            'points' => $userScore,
+            'type' => ClubBll::CLUB_REWARD_TYPE_GAME_POINT_RANK,
             'totalCoin' => $coins,
             'itemList' => json_encode($itemList),
             'expireTime' => $expireTime,

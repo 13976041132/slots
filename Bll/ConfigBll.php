@@ -179,13 +179,11 @@ class ConfigBll
             }, explode('|', $record['NodeReward']));
 
             // 解析节点道具奖励（int[]）
-            $row['nodeProps'] = array_map(function ($prop) {
-                $parts = explode('|', $prop);
-                return [
-                    'itemId' => (int)$parts[0], // 道具 ID
-                    'count' => (int)$parts[1], // 道具数量
-                ];
-            }, [$record['NodeProps']]);
+            $nodeProps = explode('|',$record['NodeProps']);
+            $row['nodeProps'] = [
+                'itemId' => (int)$nodeProps[0] ?? 0, // 道具 ID
+                'count' => (int)$nodeProps[1] ?? 0, // 道具数量
+            ];
 
             $config[$row['id']] = $row;
         }

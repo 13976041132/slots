@@ -222,7 +222,7 @@ class ClubController extends BaseController
         $uid = $this->getUid();
         $points = (int)$this->getParam('points');
         $machineId = (int)$this->getParam('machineId');
-        Bll::club()->machinePointsCollect($uid, $machineId, $points);
+        Bll::club()->machinePointsReport($uid, $machineId, $points);
         return [];
     }
 

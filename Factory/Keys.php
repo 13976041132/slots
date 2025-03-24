@@ -221,4 +221,9 @@ class Keys
     {
         return self::buildKey('ClubNodeCompList');
     }
+
+    public static function clubUserMachinePoint($clubId)
+    {
+        return self::buildKey('ClubUserMachinePoint',$clubId, date('Ymd'));
+    }
 }

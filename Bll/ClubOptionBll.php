@@ -42,7 +42,7 @@ class ClubOptionBll extends Bll
                 continue;
             }
             if (($date >= $row[0] && $date <= $row[1]) || $date < $row[0]) {
-                return ['startTime' => strtotime($row[0]), 'endTime' => strtotime('+1days '.$row[1]) - 1];
+                return ['startTime' => strtotime($row[0]), 'endTime' => strtotime('+1days ' . $row[1]) - 1];
             }
         }
         return [];
@@ -168,5 +168,24 @@ class ClubOptionBll extends Bll
     public function getPuzzleNode($node)
     {
         return Config::get('club/activity', $node, false);
+    }
+
+    public function getEventNode($node)
+    {
+        return Config::get('club/events', $node, false);
+    }
+
+    public function isFinishEventNode($currPoints, $newPoints, &$node)
+    {
+        $config = Config::get('club/events');
+        if (!$config) return false;
+
+        foreach ($config as $row) {
+            if ($row['pointProgress'] > $currPoints && $row['pointProgress'] <= $newPoints) {
+                $node = $row['id'];
+                return true;
+            }
+        }
+        return false;
     }
 }
