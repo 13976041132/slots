@@ -360,9 +360,18 @@ class ClubBll
             FF::throwException(Exceptions::FAILED);
         }
 
+        $this->cacheChat(array_merge($insert, ['chatId' => $chatId]));
         Bll::messageNotify()->clubBroadcast($info['clubId'], $uid, MessageIds::CLUB_CHAT_NOTIFY, ['chatId' => $chatId]);
     }
 
+    public function cacheChat($chatData)
+    {
+        $chatKey = Keys::clubChatList($chatData['clubId']);
+        Dao::redis()->lPush($chatKey, json_encode($chatData));
+        if (Dao::redis()->lLen($chatKey) > 200) {
+            Dao::redis()->lTrim($chatKey, 0, 200);
+        }
+    }
     public function updateClubInfo($uid, $params)
     {
         $this->checkClubParams($params);
