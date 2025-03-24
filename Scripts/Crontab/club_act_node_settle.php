@@ -10,7 +10,7 @@ use FF\Factory\Model;
 use FF\Framework\Utils\Log;
 
 $key = Keys::clubNodeCompList();
-while (!$row = Dao::redis()->lPop($key)) {
+while ($row = Dao::redis()->lPop($key)) {
     $row = json_decode($row, true);
     if (!$row || !isset($row['clubId']) || !isset($row['type'])) {
         continue;
