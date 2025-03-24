@@ -16,7 +16,6 @@ class MessageIds
     const JOIN_CLUB_SUCCESS_NOTIFY = 1010; //加入俱乐部成功
     const REFUSE_JOIN_CLUB_NOTIFY = 1011; //拒绝加入俱乐部
     const CLUB_MUTE_NOTIFY = 1012; //俱乐部禁言通知
-    const CLUB_MUTE_CANCEL_NOTIFY = 1012; //俱乐部取消禁言通知
     const CLUB_KICK_OUT_NOTIFY = 1013; //俱乐部踢出通知
     const CLUB_INVITE_JOIN_NOTIFY = 1014; //俱乐部邀请加入通知
     const CLUB_INVITE_JOIN_SUCCESS_NOTIFY = 1015; //俱乐部邀请加入成功通知
@@ -25,7 +24,9 @@ class MessageIds
     const CLUB_MEMBER_HELP_NOTIFY = 1017; //帮助通知
     const CLUB_PUBLISH_HELP_FINISH_NOTIFY = 1018; //发布求助完成通知
     const CLUB_CHAT_NOTIFY = 1019; //俱乐部发言通知
-    const CLUB_LEVEL_UP_NOTIFY = 1020; //俱乐部升级通知
+
+    const CLUB_MUTE_CANCEL_NOTIFY = 1020; //俱乐部取消禁言通知
+    const CLUB_LEVEL_UP_NOTIFY = 1021; //俱乐部升级通知
 
     const FETCH_FRIENDS = 100001; //获取好友列表
     const ADD_FRIEND = 100002; //发送添加好友请求

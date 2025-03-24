@@ -81,17 +81,23 @@ class ConfigBll
         $records = Utils::loadCsv($sourceFile);
         $config = array();
         foreach ($records as $record) {
-            $row['id'] = $record['ID'];
-            $row['node'] = $record['Node'];
-            $row['collect'] = $record['Collect'];
+            $row['node'] = (int)$record['Node'];
+            $row['collect'] = (int)$record['Collect'];
 
             // 解析 NodeReward
             $row['nodeRewards'] = array_map(function ($reward) {
-                return explode(',', $reward);
+                $parts = explode(',', $reward);
+                return [
+                    'itemId' => (int)$parts[0], // 道具 ID
+                    'count' => (int)$parts[1], // 道具数量
+                ];
             }, explode('|', $record['NodeReward']));
 
-            // 解析 NodeProps
-            $row['nodeProps'] = explode('|', $record['NodeProps']);
+            $nodeProps = explode('|',$record['NodeProps']);
+            $row['nodeProps'] = [
+                'itemId' => (int)$nodeProps[0] ?? 0, // 道具 ID
+                'count' => (int)$nodeProps[1] ?? 0, // 道具数量
+            ];
 
             $config[$row['node']] = $row;
         }

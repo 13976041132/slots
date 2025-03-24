@@ -90,7 +90,7 @@ function settleSeasonRank()
                     'expireTime' => $expireTime,
                 ];
             }
-            Model::clubRewards()->insert($seasonRewardData);
+            Model::clubRewards()->insertMulti($seasonRewardData);
         }
     }
 }

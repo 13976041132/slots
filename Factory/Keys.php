@@ -160,10 +160,17 @@ class Keys
     {
         return self::buildKey('ClubPuzzle', $clubId, $seasonId);
     }
-
-    public static function clubUserPuzzle($clubId, $seasonId)
+    public static function clubUserPuzzle($clubId, $seasonId, $node = null)
     {
-        return self::buildKey('ClubUserPuzzle', $clubId, $seasonId);
+        if (is_null($node)) {
+            return self::buildKey('ClubUserPuzzle', $clubId, $seasonId);
+        }
+        return self::buildKey('ClubUserPuzzle', $clubId, $seasonId, $node);
+    }
+
+    public static function clubPuzzleLock($clubId, $seasonId)
+    {
+        return self::buildKey('ClubPuzzleLock', $clubId, $seasonId);
     }
 
     public static function clubInfo($clubId)
@@ -208,5 +215,10 @@ class Keys
     public static function clubMachinePointData($clubId)
     {
         return self::buildKey('ClubMachinePointData',$clubId, date('Ymd'));
+    }
+
+    public static function clubNodeCompList()
+    {
+        return self::buildKey('ClubNodeCompList');
     }
 }

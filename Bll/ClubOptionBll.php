@@ -156,4 +156,17 @@ class ClubOptionBll extends Bll
         }
         return max(0, $donateTimes - $times);
     }
+
+    public function isFinishPuzzleNode($node, $pieceNum)
+    {
+        $config = Config::get('club/activity', $node + 1, false);
+        if (!$config) return false;
+
+        return $config['collect'] <= $pieceNum;
+    }
+
+    public function getPuzzleNode($node)
+    {
+        return Config::get('club/activity', $node, false);
+    }
 }
