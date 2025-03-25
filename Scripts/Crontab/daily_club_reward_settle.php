@@ -105,8 +105,8 @@ function settleJackpot()
     $rewardTime = Bll::clubOption()->getClubRewardTime($type, 0);
     $expireTime = strtotime(date('Y-m-d')) + $rewardTime * 3600;
     $sql = "SELECT '{$set}' as `set`, t1.clubId, t1.uid,{$type} as type ,times, totalCoin, itemList, extData,{$expireTime} as expireTime FROM club_users t1 JOIN 
-(select sum(totalCoin) totalCoin, count(1) as times, sum(totalReward) totalReward,JSON_ARRAYAGG(JSON_OBJECT('id', {$coinItem}, 'num', totalReward)) as itemList, JSON_ARRAYAGG(JSON_OBJECT('uid', uid, 'times', times)) as extData, clubId  from (
-SELECT sum(coins) totalCoin,sum(rewardCoins) as totalReward, uid,clubId  FROM  club_jackpot_log where hitTime between '{$start}' and '{$end}' group by clubId, uid) as t
+(select sum(totalJackpotReward) totalCoin, count(1) as times, sum(totalJackpotReward) totalReward,JSON_ARRAYAGG(JSON_OBJECT('id', {$coinItem}, 'num', totalJackpotReward)) as itemList, JSON_ARRAYAGG(JSON_OBJECT('uid', uid, 'times', jacckTimes)) as extData, clubId  from (
+SELECT sum(coins) totalJackpotCoin,sum(rewardCoins) as totalJackpotReward,count(1) as jacckTimes, uid,clubId  FROM  club_jackpot_log where hitTime between '{$start}' and '{$end}' group by clubId, uid) as t
 GROUP BY clubId) t2
 on t1.clubId = t2.clubId";
 
