@@ -627,7 +627,7 @@ class ClubBll
             $uids[] = $row['uid'];
         }
         $uids = array_flip(array_filter($uids));
-        $userList = Bll::user()->getUserInfoList(array_keys($uids), 'name,headId,headFrameId');
+        $userList = Bll::user()->getUserInfoList(array_keys($uids), 'uid,name,headId,headFrameId');
         foreach ($list as $key => &$row) {
             if (!isset($userList[$row['uid']])) {
                 unset($list[$key]);
