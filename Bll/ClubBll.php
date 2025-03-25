@@ -599,7 +599,7 @@ class ClubBll
             FF::throwException(Exceptions::RET_PUBLISH_HELP_FAIL_ERROR);
         }
 
-        return $this->getPublishHelpList($info['clubId'], 1, 10, $uid);
+        return $this->getPublishHelpList($info['clubId'], 1, 1, $uid);
     }
 
     public function getPublishHelpList($clubId, $page, $pageSize, $uid = 0)
@@ -620,7 +620,7 @@ class ClubBll
         if (!$info['count']) {
             return $data;
         }
-        $list = Model::clubPublishHelpData()->fetchAll($where, null, ['id' => 'desc'], [], $pageSize, $offset);
+        $list = Model::clubPublishHelpData()->fetchAll($where, null, ['id' => 'asc'], [], $pageSize, $offset);
         $uids = [];
         foreach ($list as $row) {
             $uids = array_merge($uids, explode(',', $row['helpers']));
