@@ -887,7 +887,7 @@ class ClubBll
     public function getUserJackpotStat($clubId, $settleTime)
     {
         $yesterday = strtotime('-1 day', strtotime($settleTime));
-        $date = date('Y-m-d 00:00:00', $yesterday);
+        $date = date('Y-m-d', $yesterday);
         $key = Keys::clubUserJackpotStat($clubId, $date);
         $list = Dao::redis()->get($key);
         if ($list) {
