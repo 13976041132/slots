@@ -620,7 +620,7 @@ class ClubBll
         if (!$info['count']) {
             return $data;
         }
-        $list = Model::clubPublishHelpData()->fetchAll($where, null, ['id' => 'asc'], [], $pageSize, $offset);
+        $list = Model::clubPublishHelpData()->fetchAll($where, null, ['id' => $uid ? 'desc' : 'asc'], [], $pageSize, $offset);
         $uids = [];
         foreach ($list as $row) {
             $uids = array_merge($uids, explode(',', $row['helpers']));
