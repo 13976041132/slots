@@ -613,7 +613,7 @@ class ClubBll
         $info = Model::clubPublishHelpData()->fetchOne($where, 'count(1) as count');
         $data = [
             'list' => [],
-            'total' => $info['count'],
+            'total' => $pageSize ? ceil($info['count'] / $pageSize) : 0,
             'page' => $page,
             'pageSize' => $pageSize,
         ];
