@@ -163,4 +163,9 @@ class UserBll extends DBCacheBll
             'requestFriendCnt' => count(Bll::friends()->getRequestFriends($uid)), //好友申请数量
         ];
     }
+
+    public function cleanCache($uid)
+    {
+        Dao::redis()->del($this->getCacheKey($uid, null));
+    }
 }

@@ -66,6 +66,7 @@ class UserController extends BaseController
     {
         $deviceId = $this->getParam('deviceId');
         $uid = $this->getParam('uid');
+        Bll::user()->cleanCache($uid);
         $userInfo = Bll::user()->getUserInfo($uid);
         if (!$userInfo['uid'] || $userInfo['deviceId'] != $deviceId) {
             Log::error("uid: {$uid}, deviceId: {$deviceId}, sdeviceId: ". $userInfo['deviceId'], 'user.log');
