@@ -15,11 +15,12 @@ class RankBll
     {
         $key = Keys::rank($type);
         $exists = $isExpire ? Dao::redis()->exists($key) : true;
-        Dao::redis()->zIncrBy($key, (float)$score, $uuid);
+        $points = Dao::redis()->zIncrBy($key, (float)$score, $uuid);
 
         if (!$exists) {
             Dao::redis()->expire($key, 86400 * 30);
         }
+        return $points;
     }
 
     public function getList($type, $start, $end)
@@ -52,7 +53,7 @@ class RankBll
     public function getClubChestType($clubId, $date = 0)
     {
         $date = $date ?: Bll::clubOption()->getChestActDate();
-        return 'ClubChest:' . $clubId. ':' . $date;
+        return 'ClubChest:' . $clubId . ':' . $date;
     }
 
     public function getClubEventType($clubId, $machineId)
@@ -62,7 +63,7 @@ class RankBll
 
     public function getClubSeasonUserPointType($clubId, $seasonId = 0)
     {
-        $id = $seasonId ? : Bll::clubOption()->getSeasonId();
+        $id = $seasonId ?: Bll::clubOption()->getSeasonId();
         return 'ClubSeason:' . $id . ':' . $clubId;
     }
 
@@ -77,7 +78,8 @@ class RankBll
         Dao::redis()->zRem(Keys::rank($this->getClubType($dan)), $clubId);
     }
 
-    public function getClubSeasonUserTop($clubId){
+    public function getClubSeasonUserTop($clubId)
+    {
         $topInfo = Bll::rank()->getList(Bll::rank()->getClubSeasonUserPointType($clubId), 0, 0);
         return $topInfo ? array_keys($topInfo)[0] : 0;
     }

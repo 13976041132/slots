@@ -7,7 +7,7 @@ use FF\Factory\Model;
 use FF\Framework\Utils\Config;
 
 //获取参数
-$init = $argv[0] ?? false;
+$init = $argv[1] ?? false;
 
 if (date('H') != '00' && !$init) {
     return;
@@ -19,7 +19,7 @@ if (!$id) {
     return;
 }
 
-$seasonInfo = Config::get('club/seasons', $id, false);
+$seasonInfo = Config::get('club/season', $id, false);
 
 if (!$init && (!$seasonInfo || $seasonInfo['seasonStart'] != date('Y-m-d'))) {
     return;

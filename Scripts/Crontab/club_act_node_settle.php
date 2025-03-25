@@ -22,6 +22,8 @@ while ($row = Dao::redis()->lPop($key)) {
             break;
         case ClubBll::CLUB_REWARD_TYPE_GAME_POINT_RANK:
             machineNodeSettle($row);
+        case ClubBll::CLUB_REWARD_TYPE_CHEST_RANK:
+            chestNodeSettle($row);
             break;
     }
 }
@@ -33,13 +35,9 @@ function pieceNodeSettle($row)
         return;
     }
 
-    if (!isset($row['seasonId']) || !isset($row['collectInfo'])) {
+    if (!isset($row['collectInfo']) || !is_array($row['collectInfo'])) {
         return;
     }
-    if (!is_array($row['collectInfo'])) {
-        return;
-    }
-
     $collectInfo = $row['collectInfo'];
     $nodeConfig = Bll::clubOption()->getPuzzleNode($row['node']);
     if (!$nodeConfig) {
@@ -64,6 +62,7 @@ function pieceNodeSettle($row)
         return;
     }
     $uids = array_column($clubUsersList, 'uid');
+    $rate = 1 + Bll::clubOption()->getGradeAdditionValByKey($clubId,'activityAddition');
     $seasonRewardData = [];
     foreach ($userRanks as $ruid => $userScore) {
         if (!in_array($ruid, $uids)) {
@@ -74,7 +73,7 @@ function pieceNodeSettle($row)
         $itemList = [];
         $coins = 0;
         foreach ($nodeConfig['nodeRewards'] as $reward) {
-            $count = ceil($reward['count'] * min($userScore / $totalScore,1));
+            $count = ceil($reward['count'] * min($userScore / $totalScore,1) * $rate);
             $itemList[] = ['id' => $reward['itemId'], 'num' => $count];
             if ($reward['itemId'] == ITEM_COIN) {
                 $coins += $reward['count'];
@@ -132,6 +131,7 @@ function machineNodeSettle($row)
         return;
     }
     $uids = array_column($clubUsersList, 'uid');
+    $rate = 1 + Bll::clubOption()->getGradeAdditionValByKey($clubId,'activityAddition');
     $seasonRewardData = [];
     foreach ($userRanks as $ruid => $userScore) {
         if (!in_array($ruid, $uids)) {
@@ -142,7 +142,7 @@ function machineNodeSettle($row)
         $itemList = [];
         $coins = 0;
         foreach ($nodeConfig['nodeReward'] as $reward) {
-            $count = ceil($reward['count'] * min($userScore / $totalScore, 1));
+            $count = ceil($reward['count'] * min($userScore / $totalScore, 1) * $rate);
             $itemList[] = ['id' => $reward['itemId'], 'num' => $count];
             if ($reward['itemId'] == ITEM_COIN) {
                 $coins += $reward['count'];
@@ -155,6 +155,75 @@ function machineNodeSettle($row)
             'totalpoints' => $totalScore,
             'points' => $userScore,
             'type' => ClubBll::CLUB_REWARD_TYPE_GAME_POINT_RANK,
+            'totalCoin' => $coins,
+            'itemList' => json_encode($itemList),
+            'expireTime' => $expireTime,
+            'progress' => (int)$row['node']
+        ];
+    }
+
+    Model::clubRewards()->insertMulti($seasonRewardData);
+}
+
+function chestNodeSettle($row)
+{
+    $clubInfo = Model::clubs()->fetchOne($row['clubId']);
+    if (!$clubInfo) {
+        Log::error('machineNodeSettle: club not exist' . var_export($row, true), 'act_node_settle.log');
+        return;
+    }
+
+    if (empty($row['collectInfo']) || !is_array($row['collectInfo'])) {
+        return;
+    }
+
+    $nodeConfig = Bll::clubOption()->getChestNode($row['node']);
+    if (!$nodeConfig) {
+        return;
+    }
+
+    $userRanks = $row['collectInfo'];
+    $clubId = $row['clubId'];
+    $type = ClubBll::CLUB_REWARD_TYPE_CHEST_RANK;
+    $set = Bll::club()->makeClubRewardSet($type);
+    $rewardTime = Bll::clubOption()->getClubRewardTime($type, $clubInfo['level']);
+    $expireTime = strtotime(date('Y-m-d')) + $rewardTime * 3600;
+    $totalScore = array_sum($userRanks);
+    if ($totalScore == 0) {
+        Log::error('club reward settle error, totalScore is 0, clubId: ' . $clubId, 'act_node_settle.log');
+        return;
+    }
+    $clubUsersList = Model::clubUsers()->fetchAll(['uid' => ['in', array_keys($userRanks)], 'clubId' => $clubId], 'uid');
+
+    if (!$clubUsersList) {
+        Log::error('club reward settle error, clubUsersList is empty, clubId: ' . $clubId, 'act_node_settle.log');
+        return;
+    }
+    $uids = array_column($clubUsersList, 'uid');
+    $seasonRewardData = [];
+    $rate = 1 + Bll::clubOption()->getGradeAdditionValByKey($clubId,'chestAddition');
+    foreach ($userRanks as $ruid => $userScore) {
+        if (!in_array($ruid, $uids)) {
+            Log::error('club reward settle error, uid not in clubUsersList, clubId: ' . $clubId . ', uid: ' . $ruid, 'act_node_settle.log');
+            continue;
+        }
+
+        $coins = ceil($nodeConfig['chestCoin'] * min($userScore / $totalScore, 1) * $rate);
+        $itemList[] = ['id' => ITEM_COIN, 'num' => $coins];
+        foreach ($nodeConfig['chestProps'] as $reward) {
+            $count = ceil($reward['count'] * $rate);
+            $itemList[] = ['id' => $reward['itemId'], 'num' => $count];
+            if ($reward['itemId'] == ITEM_COIN) {
+                $coins += $reward['count'];
+            }
+        }
+        $seasonRewardData[] = [
+            'set' => $set,
+            'clubId' => $clubId,
+            'uid' => $ruid,
+            'totalpoints' => $totalScore,
+            'points' => $userScore,
+            'type' => ClubBll::CLUB_REWARD_TYPE_CHEST_RANK,
             'totalCoin' => $coins,
             'itemList' => json_encode($itemList),
             'expireTime' => $expireTime,

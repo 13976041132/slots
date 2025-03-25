@@ -34,7 +34,7 @@ class ClubBll
         self::PUBLISH_HELP_TYPE_COIN => self::CLUB_REWARD_TYPE_PUBLISH_HELP_COINS
     ];
     const CLUB_REWARD_TYPE_JACKPOT = 1; //jackpot
-    const CLUB_REWARD_TYPE_BOX_RANK = 2; //ClubChest
+    const CLUB_REWARD_TYPE_CHEST_RANK = 2; //ClubChest
     const CLUB_REWARD_TYPE_RANK = 3; //Club League
     const CLUB_REWARD_TYPE_PIECE_NODE = 4; //俱乐部活动奖励
     const CLUB_REWARD_TYPE_GAME_POINT_RANK = 5; //游戏积分排名
@@ -465,7 +465,7 @@ class ClubBll
         if (!$clubInfo) {
             FF::throwException(Exceptions::RET_CLUB_NOT_EXISTS_ERROR);
         }
-        $seasonPoints = $this->updateSeasonPoints($uid,$clubInfo, $points);
+        $seasonPoints = $this->updateSeasonPoints($uid, $clubInfo, $points);
         return [
             'seasonPoints' => (int)$seasonPoints
         ];
@@ -473,20 +473,29 @@ class ClubBll
 
     public function addSeasonPoints($clubInfo, $points)
     {
-        Bll::rank()->setScore($clubInfo['clubId'], Bll::rank()->getClubType($clubInfo['dan']), $points);
+        return Bll::rank()->setScore($clubInfo['clubId'], Bll::rank()->getClubType($clubInfo['dan']), $points);
     }
 
     public function addUserSeasonPoints($clubId, $uid, $points)
     {
-        Bll::rank()->setScore($uid, Bll::rank()->getClubSeasonUserPointType($clubId), $points);
+        return Bll::rank()->setScore($uid, Bll::rank()->getClubSeasonUserPointType($clubId), $points);
     }
 
-    public function addChestPoints($clubId, $points)
+    public function addChestPoints($clubId, $uid, $points)
     {
-        $key = Keys::clubboxPoints($clubId, Bll::clubOption()->getChestActDate());
-        return Dao::redis()->incrBy($key, $points);
+        $startDate = Bll::clubOption()->getChestActDate();
+        $key = Keys::clubboxPoints($clubId, $startDate);
+        $totalPoints =  Dao::redis()->incrBy($key, $points);
+        $pointsKey = Keys::clubBoxUserPoints($clubId, $startDate);
+        Dao::redis()->hIncrBy($pointsKey, $uid, $points);
+        $this->resetCacheExpireTime([$key, $pointsKey], 10 * 86400);
+        //判断当前是否完成了
+        if (Bll::clubOption()->isFinishChestNode($totalPoints - $points, $totalPoints, $node)) {
+            $userPoints = Dao::redis()->hGetAll($pointsKey);
+            $this->nodeCompRecord($clubId, self::CLUB_REWARD_TYPE_CHEST_RANK, $node, $userPoints);
+            Dao::redis()->del($pointsKey);
+        }
     }
-
     public function addUserChestPoints($clubId, $uid, $points)
     {
         Bll::rank()->setScore($uid, Bll::rank()->getClubChestType($clubId), $points);
@@ -521,17 +530,23 @@ class ClubBll
         if ($isFinish && Dao::redis()->set($lockKey, 0, ['nx', 'ex' => 1])) {
             Dao::redis()->hSet($userPuzzleKey, 0, $node + 1);
             //发放奖励
-            $compKey = Keys::clubNodeCompList();
             $pieceUsers = Dao::redis()->hGetAll($nodeKey);
-            $compInfo = [
-                'node' => $node + 1, 'clubId' => $info['clubId'],
-                'seasonId' => $seasonId, 'collectInfo' => $pieceUsers,
-                'type' => self::CLUB_REWARD_TYPE_PIECE_NODE
-            ];
-            Dao::redis()->rPush($compKey, json_encode($compInfo));
+            $this->nodeCompRecord($info['clubId'], self::CLUB_REWARD_TYPE_PIECE_NODE, $node + 1, $pieceUsers);
             Dao::redis()->del($nodeKey);
         }
         return $pieceId;
+    }
+
+    public function nodeCompRecord($clubId, $type, $node, $collectInfo)
+    {
+        $compKey = Keys::clubNodeCompList();
+
+        $compInfo = [
+            'node' => $node, 'clubId' => $clubId,
+            'collectInfo' => $collectInfo,
+            'type' => $type
+        ];
+        Dao::redis()->rPush($compKey, json_encode($compInfo));
     }
 
     public function resetCacheExpireTime($keys, $ttl)
@@ -693,19 +708,14 @@ class ClubBll
         $pointsKey = Keys::clubUserMachinePoint($info['clubId']);
         Dao::redis()->hIncrBy($pointsKey, $uid, $points);
         $this->resetCacheExpireTime([$key,$pointsKey], 30 * 3600);
-        if (Bll::clubOption()->isFinishEventNode($totalPoints - $points, $totalPoints, $node)) {
-            //发放奖励
-            $compKey = Keys::clubNodeCompList();
-            $userPoints = Dao::redis()->hGetAll($pointsKey);
-            $compInfo = [
-                'node' => $node, 'clubId' => $info['clubId'],
-                'collectInfo' => $userPoints,
-                'type' => self::CLUB_REWARD_TYPE_GAME_POINT_RANK
-            ];
-            Dao::redis()->rPush($compKey, json_encode($compInfo));
-            Dao::redis()->del($pointsKey);
-        }
         $this->updateSeasonPoints($uid, $clubInfo, $points);
+        if (!Bll::clubOption()->isFinishEventNode($totalPoints - $points, $totalPoints, $node)) {
+            return;
+        }
+        //发放奖励
+        $userPoints = Dao::redis()->hGetAll($pointsKey);
+        $this->nodeCompRecord($info['clubId'], self::CLUB_REWARD_TYPE_GAME_POINT_RANK, $node, $userPoints);
+        Dao::redis()->del($pointsKey);
     }
 
     public function fetchMachinePointsRankList($uid, $machineId)
@@ -1237,8 +1247,8 @@ class ClubBll
         }
         Model::clubUsers()->update(['points' => ['+=', $points]], ['uid' => $uid]);
         $this->addUserChestPoints($clubInfo['clubId'], $uid, $points);
+        $this->addChestPoints($clubInfo['clubId'], $uid, $points);
         $this->addUserSeasonPoints($clubInfo['clubId'], $uid, $points);
-        $this->addSeasonPoints($clubInfo, $points);
-        return $this->addChestPoints($clubInfo['clubId'], $points);
+        return $this->addSeasonPoints($clubInfo, $points);
     }
 }

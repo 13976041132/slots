@@ -102,9 +102,10 @@ class ClubOptionBll extends Bll
         return false;
     }
 
-    public function getLeagueInfo($dan, $rank)
+    public function getLeagueInfo($danId, $rank)
     {
-        $config = Config::get('club/league', $dan, false);
+        $grade = $this->getGradeNoById($danId);
+        $config = Config::get('club/league', $grade, false);
         if (!$config) {
             return [];
         }
@@ -118,15 +119,25 @@ class ClubOptionBll extends Bll
         }
     }
 
+    public function getGradeNoById($danId)
+    {
+        return Config::get('club/grade', "{$danId}/gradeId", false);
+    }
+
     public function getDanIdByDanName($danName)
     {
         $config = Config::get('club/grade');
         foreach ($config as $row) {
             if ($row['grade'] == $danName) {
-                return $row['gradeId'];
+                return $row['id'];
             }
         }
         return 0;
+    }
+
+    public function getGradeAdditionValByKey($danId, $key)
+    {
+        return Config::get('club/grade', "{$danId}/{$key}", false);
     }
 
     public function getClubRewardTime($type, $clubLevel)
@@ -187,5 +198,24 @@ class ClubOptionBll extends Bll
             }
         }
         return false;
+    }
+
+    public function isFinishChestNode($currPoints, $newPoints, &$node)
+    {
+        $config = Config::get('club/chest');
+        if (!$config) return false;
+
+        foreach ($config as $row) {
+            if ($row['pointProgress'] > $currPoints && $row['pointProgress'] <= $newPoints) {
+                $node = $row['chestLevel'];
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function getChestNode($node)
+    {
+        return Config::get('club/chest', $node, false);
     }
 }
