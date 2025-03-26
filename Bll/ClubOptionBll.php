@@ -36,16 +36,11 @@ class ClubOptionBll extends Bll
     public function getGameDate()
     {
         $gameCycle = Config::get('club/common', 'gameCycle');
-        $date = date('Ymd');
-        foreach ($gameCycle as $row) {
-            if (count($row) != 2) {
-                continue;
-            }
-            if (($date >= $row[0] && $date <= $row[1]) || $date < $row[0]) {
-                return ['startTime' => strtotime($row[0]), 'endTime' => strtotime('+1days ' . $row[1]) - 1];
-            }
+        $date = date('Y-m-d');
+        if($date < $gameCycle) {
+            return [];
         }
-        return [];
+        return ['startTime' => strtotime($date), 'endTime' => strtotime('+1days ' . $date) - 1];
     }
 
     public function isGameOpen()

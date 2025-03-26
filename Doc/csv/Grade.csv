@@ -1,7 +1,7 @@
 ID,段位ID,段位,宝箱奖励加成,俱乐部活动奖励加成,周边系统权益,膨胀系数,AI俱乐部匹配比例
 ID,Grade_Id,Grade,ChestAddition,ActivityAddition,SystemAddition,Expansion,Ai_Proportion
-int,int,string,float,float,int[],int,int[]
-1,101,BRONZE,,,,,0|1|1
+int,int,string,float,float,float,int,int[]
+1,101,BRONZE,,,,1,0|1|1
 2,201,SILVER I,0.05,0.05,,3,1|2|2
 3,202,SILVER II,0.075,0.075,,9,1|2|1
 4,203,SILVER III,0.1,0.1,,18,1|2|1

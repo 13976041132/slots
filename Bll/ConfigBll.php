@@ -10,6 +10,7 @@ use FF\Framework\Utils\Config;
 use FF\Library\Utils\CsvReader;
 use FF\Library\Utils\Importer;
 use FF\Library\Utils\Utils;
+use function GuzzleHttp\Psr7\str;
 
 class ConfigBll
 {
@@ -137,9 +138,7 @@ class ConfigBll
             $config['createCoin'] = (int)$record['CreateCoin'];
 
             // 解析多人活动开放周期（int[][]）
-            $config['gameCycle'] = array_map(function ($cycle) {
-                return array_map('intval', explode(',', $cycle));
-            }, explode('|', $record['GameCycle']));
+            $config['gameCycle'] = str_replace('|', '-', $record['EventsStartTime']);
 
             $config['coefficient'] = (float)$record['Coefficient'];
             $config['probability'] = (float)$record['Probability'];

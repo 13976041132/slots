@@ -227,7 +227,7 @@ function chestNodeSettle($row)
             Log::error('club reward settle error, uid not in clubUsersList, clubId: ' . $clubId . ', uid: ' . $ruid, 'act_node_settle.log');
             continue;
         }
-
+        $itemList = [];
         $coins = ceil($nodeConfig['chestCoin'] * min($userScore / $totalScore, 1) * $rate);
         $itemList[] = ['id' => ITEM_COIN, 'num' => $coins];
         foreach ($nodeConfig['chestProps'] as $reward) {
