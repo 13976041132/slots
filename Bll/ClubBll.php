@@ -701,6 +701,11 @@ class ClubBll
         if (!$clubInfo) {
             return;
         }
+        $this->updateSeasonPoints($uid, $clubInfo, $points);
+        $machineIds = Bll::clubOption()->getTodayActMachines();
+        if (!in_array($machineId, $machineIds)) {
+            return;
+        }
         $rankType = Bll::rank()->getClubEventType($info['clubId'], $machineId);
         Bll::rank()->setScore($uid, $rankType, $points);
         $key = Keys::clubMachinePointData($info['clubId']);
@@ -708,7 +713,6 @@ class ClubBll
         $pointsKey = Keys::clubUserMachinePoint($info['clubId']);
         Dao::redis()->hIncrBy($pointsKey, $uid, $points);
         $this->resetCacheExpireTime([$key,$pointsKey], 30 * 3600);
-        $this->updateSeasonPoints($uid, $clubInfo, $points);
         if (!Bll::clubOption()->isFinishEventNode($totalPoints - $points, $totalPoints, $node)) {
             return;
         }
