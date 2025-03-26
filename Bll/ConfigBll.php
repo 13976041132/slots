@@ -138,9 +138,8 @@ class ConfigBll
             $config['createCoin'] = (int)$record['CreateCoin'];
 
             // 解析多人活动开放周期（int[][]）
-            $config['gameCycle'] = str_replace('|', '-', $record['EventsStartTime']);
-
-            $config['coefficient'] = (float)$record['Coefficient'];
+            $config['gameCycle'] = date('Y-m-d', strtotime(str_replace('|', '-', $record['EventsStartTime'])));
+            $config['coefficient'] = round($record['Coefficient'], 3);
             $config['probability'] = (float)$record['Probability'];
             $config['betLimit'] = (int)$record['BetLimit'];
             $config['collectLimit'] = (int)$record['CollectLimit'];
