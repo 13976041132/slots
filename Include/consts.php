@@ -11,3 +11,4 @@ const DB_LOG = 'log';
 const DB_TEST = 'test';
 
 const ITEM_COIN = 60010101;
+const ITEM_POINTS = 60014601;

@@ -64,6 +64,8 @@ function pieceNodeSettle($row)
     $uids = array_column($clubUsersList, 'uid');
     $rate = 1 + Bll::clubOption()->getGradeAdditionValByKey($clubId,'activityAddition');
     $seasonRewardData = [];
+    $pointRewards = [];
+    $nodeRewards = array_merge($nodeConfig['nodeRewards'], [$nodeConfig['nodeProps']]);
     foreach ($userRanks as $ruid => $userScore) {
         if (!in_array($ruid, $uids)) {
             Log::error('club reward settle error, uid not in clubUsersList, clubId: ' . $clubId . ', uid: ' . $ruid, 'act_node_settle.log');
@@ -72,8 +74,12 @@ function pieceNodeSettle($row)
 
         $itemList = [];
         $coins = 0;
-        foreach ($nodeConfig['nodeRewards'] as $reward) {
+        foreach ($nodeRewards as $reward) {
             $count = ceil($reward['count'] * min($userScore / $totalScore,1) * $rate);
+            if ($reward['itemId'] == ITEM_POINTS) {
+                $pointRewards[$ruid] = $reward['count'];
+                continue;
+            }
             $itemList[] = ['id' => $reward['itemId'], 'num' => $count];
             if ($reward['itemId'] == ITEM_COIN) {
                 $coins += $reward['count'];
@@ -94,6 +100,10 @@ function pieceNodeSettle($row)
     }
 
     Model::clubRewards()->insertMulti($seasonRewardData);
+
+    foreach($pointRewards as $_uid => $_points) {
+        Bll::club()->updateSeasonPoints($_uid, $clubInfo, $_points);
+    }
 }
 
 function machineNodeSettle($row)
@@ -133,6 +143,8 @@ function machineNodeSettle($row)
     $uids = array_column($clubUsersList, 'uid');
     $rate = 1 + Bll::clubOption()->getGradeAdditionValByKey($clubId,'activityAddition');
     $seasonRewardData = [];
+    $pointRewards = [];
+    $nodeRewards = array_merge($nodeConfig['nodeReward'], [$nodeConfig['nodeProps']]);
     foreach ($userRanks as $ruid => $userScore) {
         if (!in_array($ruid, $uids)) {
             Log::error('club reward settle error, uid not in clubUsersList, clubId: ' . $clubId . ', uid: ' . $ruid, 'act_node_settle.log');
@@ -141,8 +153,12 @@ function machineNodeSettle($row)
 
         $itemList = [];
         $coins = 0;
-        foreach ($nodeConfig['nodeReward'] as $reward) {
+        foreach ($nodeRewards as $reward) {
             $count = ceil($reward['count'] * min($userScore / $totalScore, 1) * $rate);
+            if ($reward['itemId'] == ITEM_POINTS) {
+                $pointRewards[$ruid] = $reward['count'];
+                continue;
+            }
             $itemList[] = ['id' => $reward['itemId'], 'num' => $count];
             if ($reward['itemId'] == ITEM_COIN) {
                 $coins += $reward['count'];
@@ -163,6 +179,10 @@ function machineNodeSettle($row)
     }
 
     Model::clubRewards()->insertMulti($seasonRewardData);
+
+    foreach($pointRewards as $_uid => $_points) {
+        Bll::club()->updateSeasonPoints($_uid, $clubInfo, $_points);
+    }
 }
 
 function chestNodeSettle($row)
