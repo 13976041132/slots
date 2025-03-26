@@ -1160,7 +1160,7 @@ class ClubBll
         $key = Keys::clubMachinePointData($clubId);
         $data = Dao::redis()->hGetAll($key);
         $list = [];
-        $machineList = Config::get('club/common', 'machineList');
+        $machineList = Bll::clubOption()->getTodayActMachines();
         foreach ($machineList as $machineId) {
             $list[] = ['machineId' => $machineId, 'points' => (int)$data[$machineId] ?? 0];
         }

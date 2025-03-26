@@ -218,4 +218,21 @@ class ClubOptionBll extends Bll
     {
         return Config::get('club/chest', $node, false);
     }
+
+    public function getTodayActMachines()
+    {
+        $machineList = Config::get('club/common', 'machineList', false);
+        if (!$machineList || !is_array($machineList)) {
+            return [];
+        }
+        if (count($machineList) <= 2) {
+            return $machineList;
+        }
+        $dayNo = (int)date('j');
+        $pairCnt = ceil(count($machineList) / 2);
+        $sub = $dayNo % $pairCnt;
+        $first = $sub * 2;
+        $second = $first + 1;
+        return [$machineList[$first], $machineList[$second] ?? $machineList[0]];
+    }
 }
