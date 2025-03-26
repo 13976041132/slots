@@ -15,7 +15,6 @@ if (date('H') != '00') {
 
 settleSeasonRank();
 settleJackpot();
-settleBoxAct();
 
 //½áËãÈü¼¾ÅÅÃû
 function settleSeasonRank()
@@ -72,12 +71,13 @@ function settleSeasonRank()
             }
             $uids = array_column($clubUsersList, 'uid');
             $seasonRewardData = [];
+            $rewards = $leagueInfo['rewardProps'];
             foreach ($userRanks as $ruid => $userScore) {
                 if (!in_array($ruid, $uids)) {
                     Log::error('club reward settle error, uid not in clubUsersList, clubId: ' . $clubId . ', uid: ' . $ruid, 'reward.log');
                     continue;
                 }
-                $coins = max(ceil($leagueInfo['count'] * $userScore / $totalScore),10000);
+                $coins = max(ceil($rewards['count'] * $userScore / $totalScore),10000);
                 $seasonRewardData[] = [
                     'set' => $set,
                     'clubId' => $clubId,
@@ -85,8 +85,8 @@ function settleSeasonRank()
                     'totalpoints'=> $totalScore,
                     'points'=> $userScore,
                     'type' => ClubBll::CLUB_REWARD_TYPE_RANK,
-                    'totalCoin' => $leagueInfo['count'],
-                    'itemList' => json_encode([['id' => $leagueInfo['itemId'], 'num' => $coins]]),
+                    'totalCoin' => $rewards['count'],
+                    'itemList' => json_encode([['id' => $rewards['itemId'], 'num' => $coins]]),
                     'expireTime' => $expireTime,
                 ];
             }
@@ -112,23 +112,6 @@ on t1.clubId = t2.clubId";
 
     $insertSql = "INSERT INTO club_rewards (`set`, clubId, uid,`type`, progress, totalCoin, itemList, extData, expireTime) {$sql}";
     Dao::db()->execute($insertSql);
-}
-
-function settleBoxAct()
-{
-    if (date('N') != 1) {
-        return;
-    }
-    $ymd = yesterday();
-    $ymd = str_replace('-', '', $ymd);
-    $clubList = Model::clubs()->fetchAll([],'clubId');
-    foreach ($clubList as $club) {
-        $rankType = Bll::rank()->getClubChestType($club['clubId'], $ymd);
-        $ranks = Bll::rank()->getList($rankType, 0, -1);
-        if (!$ranks) {
-            continue;
-        }
-    }
 }
 
 
