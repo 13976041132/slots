@@ -619,7 +619,7 @@ class ClubBll
 
     public function getPublishHelpList($clubId, $page, $pageSize, $uid = 0)
     {
-        $pageSize = max(min($pageSize, 50), 20);
+        $pageSize = min($pageSize, 50);
         $offset = ($page > 0 ? ($page - 1) : 0) * $pageSize;
         $where = ['clubId' => $clubId, 'expireTime' => ['>', time()]];
         if ($uid) {
