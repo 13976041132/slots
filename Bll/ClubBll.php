@@ -1049,8 +1049,8 @@ class ClubBll
             'type' => $type,
             'progress' => 0,
             'expireTime' => 0,
-            'itemList' => $publishInfo['itemList'],
-            'extData' => $extData,
+            'itemList' => json_encode($publishInfo['itemList']),
+            'extData' => json_encode($extData),
         ];
 
         Model::clubRewards()->insert($data);
