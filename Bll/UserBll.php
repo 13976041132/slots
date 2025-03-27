@@ -175,6 +175,8 @@ class UserBll extends DBCacheBll
             'receiveFriendCoinMsgCnt' => $coinTimes, //收到赠送金币消息数量
             'receiveFriendStampMsgCnt' => $stampTimes,//收到赠送邮票消息数量
             'requestFriendCnt' => count(Bll::friends()->getRequestFriends($uid)), //好友申请数量
+            'lastClubChatId' => Bll::club()->getLastChatId($uid), //最后一条俱乐部聊天消息ID
+            'lastClubPublishId' => Bll::club()->getLastPublishId($uid), //最后一条俱乐部发布帮助ID
         ];
     }
 }

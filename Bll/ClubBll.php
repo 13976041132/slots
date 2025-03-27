@@ -1255,4 +1255,21 @@ class ClubBll
         $this->addUserSeasonPoints($clubInfo['clubId'], $uid, $points);
         return $this->addSeasonPoints($clubInfo, $points);
     }
+    public function getLastChatId($clubId)
+    {
+        $key = Keys::clubChatList($clubId);
+        $list = Dao::redis()->lRange($key, 0, 0);
+        if (!isset($list[0])) {
+            return 0;
+        }
+
+        $chatInfo = json_decode($list[0], true);
+        return $chatInfo['chatId'] ?? 0;
+    }
+
+    public function getLastPublishId($clubId)
+    {
+        $clubPublishHelpInfo = Model::clubPublishHelpData()->fetchOne(['clubId' => $clubId], 'max(id) lastId');
+        return $clubPublishHelpInfo['lastId'] ?? 0;
+    }
 }
