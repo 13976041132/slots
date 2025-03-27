@@ -372,6 +372,7 @@ class ClubBll
             Dao::redis()->lTrim($chatKey, 0, 200);
         }
     }
+
     public function updateClubInfo($uid, $params)
     {
         $this->checkClubParams($params);
@@ -485,7 +486,7 @@ class ClubBll
     {
         $startDate = Bll::clubOption()->getChestActDate();
         $key = Keys::clubboxPoints($clubId, $startDate);
-        $totalPoints =  Dao::redis()->incrBy($key, $points);
+        $totalPoints = Dao::redis()->incrBy($key, $points);
         $pointsKey = Keys::clubBoxUserPoints($clubId, $startDate);
         Dao::redis()->hIncrBy($pointsKey, $uid, $points);
         $this->resetCacheExpireTime([$key, $pointsKey], 10 * 86400);
@@ -496,6 +497,7 @@ class ClubBll
             Dao::redis()->del($pointsKey);
         }
     }
+
     public function addUserChestPoints($clubId, $uid, $points)
     {
         Bll::rank()->setScore($uid, Bll::rank()->getClubChestType($clubId), $points);
@@ -526,7 +528,7 @@ class ClubBll
         $remainNum = Dao::redis()->lLen($key);
         $isFinish = Bll::clubOption()->isFinishPuzzleNode($node, 42 - $remainNum);
         $lockKey = Keys::clubPuzzleLock($info['clubId'], $seasonId);
-        $this->resetCacheExpireTime([$nodeKey,$userPuzzleKey, $key], 20 * 86400);
+        $this->resetCacheExpireTime([$nodeKey, $userPuzzleKey, $key], 20 * 86400);
         if ($isFinish && Dao::redis()->set($lockKey, 0, ['nx', 'ex' => 1])) {
             Dao::redis()->hSet($userPuzzleKey, 0, $node + 1);
             //发放奖励
@@ -635,11 +637,10 @@ class ClubBll
         if (!$info['count']) {
             return $data;
         }
-        $list = Model::clubPublishHelpData()->fetchAll($where, null, ['id' => $uid ? 'desc' : 'asc'], [], $pageSize, $offset);
+        $list = Model::clubPublishHelpData()->fetchAll($where, null, ['publishId' => $uid ? 'desc' : 'asc'], [], $pageSize, $offset);
         $uids = [];
         foreach ($list as $row) {
-            $uids = array_merge($uids, explode(',', $row['helpers']));
-            $uids[] = $row['uid'];
+            $uids = array_merge($uids, explode(',', $row['helpers']), [$row['uid']]);
         }
         $uids = array_flip(array_filter($uids));
         $userList = Bll::user()->getUserInfoList(array_keys($uids), 'uid,name,headId,headFrameId');
@@ -648,9 +649,10 @@ class ClubBll
                 unset($list[$key]);
                 continue;
             }
-            $row['publishId'] = $row['id'];
-            unset($row['id']);
             $row = array_merge($row, $userList[$row['uid']]);
+            if ($row['status'] == ClubPublishHelpDataModel::PUBLISH_HELP_STATUS_ING && $row['expireTime'] <= time()) {
+                $row['status'] = ClubPublishHelpDataModel::PUBLISH_HELP_STATUS_FAIL;
+            }
             $row['itemList'] = json_decode($row['itemList'], true) ?: [];
             if (!$row['helpers']) {
                 $row['helpers'] = [];
@@ -684,6 +686,7 @@ class ClubBll
             'uid' => $uid,
             'coins' => $coins,
             'rewardCoins' => max(1, floor($coins * $bonusRate)),
+            'hitTime' => date('Y-m-d H:i:s')
         ];
         Model::clubJackpotLog()->insert($data);
     }
@@ -712,7 +715,7 @@ class ClubBll
         $totalPoints = Dao::redis()->hIncrBy($key, $machineId, $points);
         $pointsKey = Keys::clubUserMachinePoint($info['clubId']);
         Dao::redis()->hIncrBy($pointsKey, $uid, $points);
-        $this->resetCacheExpireTime([$key,$pointsKey], 30 * 3600);
+        $this->resetCacheExpireTime([$key, $pointsKey], 30 * 3600);
         if (!Bll::clubOption()->isFinishEventNode($totalPoints - $points, $totalPoints, $node)) {
             return;
         }
@@ -982,17 +985,19 @@ class ClubBll
                 break;
             }
             $helpers[] = $uid;
-            $where = ['id' => $publishId, 'updateTime' => $publishInfo['updateTime']];
-            $result = Model::clubPublishHelpData()->update(['helpers' => implode(',', $helpers)], $where);
-
-            if (!$result) {
+            $where = ['publishId' => $publishId, 'updateTime' => $publishInfo['updateTime']];
+            $upData = ['helpers' => implode(',', $helpers)];
+            if (count($helpers) >= $publishInfo['helpLimit']) {
+                $upData['status'] = ClubPublishHelpDataModel::PUBLISH_HELP_STATUS_FINISH;
+            }
+            if (!Model::clubPublishHelpData()->update($upData, $where)) {
                 break;
             }
             if (count($helpers) < $publishInfo['helpLimit']) {
                 Bll::messageNotify()->pushNotifyMsg($publishInfo['uid'], $uid, MessageIds::CLUB_MEMBER_HELP_NOTIFY, [$publishId]);
             } else {
-                Bll::messageNotify()->pushNotifyMsg($publishInfo['uid'], $publishInfo, MessageIds::CLUB_PUBLISH_HELP_FINISH_NOTIFY);
                 $this->recordHelpReward($publishInfo);
+                Bll::messageNotify()->pushNotifyMsg($publishInfo['uid'], $publishInfo, MessageIds::CLUB_PUBLISH_HELP_FINISH_NOTIFY);
             }
         } while (0);
 
@@ -1051,6 +1056,7 @@ class ClubBll
             'expireTime' => 0,
             'itemList' => json_encode($publishInfo['itemList']),
             'extData' => json_encode($extData),
+            'createTime' => date('Y-m-d H:i:s')
         ];
 
         Model::clubRewards()->insert($data);
@@ -1255,6 +1261,7 @@ class ClubBll
         $this->addUserSeasonPoints($clubInfo['clubId'], $uid, $points);
         return $this->addSeasonPoints($clubInfo, $points);
     }
+
     public function getLastChatId($clubId)
     {
         $key = Keys::clubChatList($clubId);
@@ -1269,7 +1276,7 @@ class ClubBll
 
     public function getLastPublishId($clubId)
     {
-        $clubPublishHelpInfo = Model::clubPublishHelpData()->fetchOne(['clubId' => $clubId], 'max(id) lastId');
+        $clubPublishHelpInfo = Model::clubPublishHelpData()->fetchOne(['clubId' => $clubId], 'max(publishId) lastId');
         return $clubPublishHelpInfo['lastId'] ?? 0;
     }
 }

@@ -5,7 +5,9 @@
 
 include __DIR__ . '/../common.php';
 
-include __DIR__ . '/sync_suggest_friend.php';
+include __DIR__ . '/del_club_expire_data.php';
+
+//include __DIR__ . '/sync_suggest_friend.php';
 
 include __DIR__ . '/init_club_season_data.php';
 

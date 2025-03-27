@@ -95,7 +95,8 @@ function pieceNodeSettle($row)
             'totalCoin' => $coins,
             'itemList' => json_encode($itemList),
             'expireTime' => $expireTime,
-            'progress' => (int)$row['node']
+            'progress' => (int)$row['node'],
+            'createTime' => date('Y-m-d H:i:s'),
         ];
     }
 
@@ -174,7 +175,8 @@ function machineNodeSettle($row)
             'totalCoin' => $coins,
             'itemList' => json_encode($itemList),
             'expireTime' => $expireTime,
-            'progress' => (int)$row['node']
+            'progress' => (int)$row['node'],
+            'createTime' => date('Y-m-d H:i:s'),
         ];
     }
 
@@ -247,7 +249,8 @@ function chestNodeSettle($row)
             'totalCoin' => $coins,
             'itemList' => json_encode($itemList),
             'expireTime' => $expireTime,
-            'progress' => (int)$row['node']
+            'progress' => (int)$row['node'],
+            'createTime' => date('Y-m-d H:i:s'),
         ];
     }
 

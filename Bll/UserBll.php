@@ -170,13 +170,14 @@ class UserBll extends DBCacheBll
         $unreadCnt = Bll::friends()->getUnreadCount($uid);
         $coinTimes = Bll::friends()->getReceiveFriendGiftCount($uid, MessageIds::RECEIVE_FRIEND_COINS_NOTIFY);
         $stampTimes = Bll::friends()->getReceiveFriendGiftCount($uid, MessageIds::RECEIVE_FRIEND_STAMP_NOTIFY);
+        $clubId = Bll::club()->getClubIdByUid($uid);
         return [
             'unreadMsgCnt' => $unreadCnt, //未读的消息数量
             'receiveFriendCoinMsgCnt' => $coinTimes, //收到赠送金币消息数量
             'receiveFriendStampMsgCnt' => $stampTimes,//收到赠送邮票消息数量
             'requestFriendCnt' => count(Bll::friends()->getRequestFriends($uid)), //好友申请数量
-            'lastClubChatId' => Bll::club()->getLastChatId($uid), //最后一条俱乐部聊天消息ID
-            'lastClubPublishId' => Bll::club()->getLastPublishId($uid), //最后一条俱乐部发布帮助ID
+            'lastClubChatId' => $clubId ? Bll::club()->getLastChatId($clubId) : 0, //最后一条俱乐部聊天消息ID
+            'lastClubPublishId' => $clubId ? Bll::club()->getLastPublishId($clubId) : 0, //最后一条俱乐部发布帮助ID
         ];
     }
 }
