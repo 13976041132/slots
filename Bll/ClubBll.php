@@ -1051,7 +1051,7 @@ class ClubBll
         $helpers = $publishInfo['helpers'] ? explode(',', $publishInfo['helpers']) : [];
         $extData = [];
         foreach ($helpers as $helper) {
-            $extData[] = ['uid' => $helper];
+            $extData[] = ['uid' => (int)$helper];
         }
         $type = self::$clubHelpRewardTypeMap[$publishInfo['type']];
         $data = [
