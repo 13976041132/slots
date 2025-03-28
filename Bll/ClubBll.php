@@ -12,6 +12,7 @@ use FF\Factory\Keys;
 use FF\Factory\Model;
 use FF\Framework\Core\FF;
 use FF\Framework\Utils\Config;
+use FF\Framework\Utils\Log;
 
 class ClubBll
 {
@@ -996,6 +997,7 @@ class ClubBll
             if (count($helpers) < $publishInfo['helpLimit']) {
                 Bll::messageNotify()->pushNotifyMsg($publishInfo['uid'], $uid, MessageIds::CLUB_MEMBER_HELP_NOTIFY, [$publishId]);
             } else {
+                $status = ClubPublishHelpDataModel::PUBLISH_HELP_STATUS_FINISH;
                 $this->recordHelpReward($publishInfo);
                 Bll::messageNotify()->pushNotifyMsg($publishInfo['uid'], $publishInfo, MessageIds::CLUB_PUBLISH_HELP_FINISH_NOTIFY);
             }
@@ -1060,6 +1062,8 @@ class ClubBll
         ];
 
         Model::clubRewards()->insert($data);
+        //完成发布任务
+        Log::info('club publish help finish'. var_export($publishInfo, true));
     }
 
     public function makeClubRewardSet($type)
