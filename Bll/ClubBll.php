@@ -884,9 +884,6 @@ class ClubBll
             case self::CLUB_REWARD_TYPE_JACKPOT:
                 $userStatList = $this->getUserJackpotStat($clubId, $rewardInfo['createTime']);
                 break;
-            case self::CLUB_REWARD_TYPE_PUBLISH_HELP_COINS:
-                $userStatList = $this->getHelperList($rewardInfo);
-                break;
             default:
                 $userStatList = $this->getUserScoreList($set);
                 break;
@@ -930,20 +927,6 @@ class ClubBll
         }
         Dao::redis()->set($key, json_encode($list), 86400);
 
-        return $list;
-    }
-
-    public function getHelperList($rewardInfo)
-    {
-        $helpers = explode(',', $rewardInfo['helpers']);
-        $list = [];
-        foreach ($helpers as $helper) {
-            $list[] = [
-                'uid' => $helper,
-                'progress' => 1,
-                'itemList' => [],
-            ];
-        }
         return $list;
     }
 
