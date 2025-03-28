@@ -181,7 +181,7 @@ function machineNodeSettle($row)
             'expireTime' => $expireTime,
             'progress' => (int)$row['node'],
             'createTime' => date('Y-m-d H:i:s'),
-            'extData' => json_encode($row['extData'])
+            'extData' => json_encode([$row['extData']])
         ];
     }
 
