@@ -710,10 +710,15 @@ class ClubBll
         if (!in_array($machineId, $machineIds)) {
             return;
         }
+        $key = Keys::clubMachinePointData($info['clubId']);
+        $currPoints = Dao::redis()->hGet($key, $machineId);
+        if (Bll::clubOption()->isFinishMachineEvent($currPoints)) {
+            return;
+        }
+
+        $totalPoints = Dao::redis()->hIncrBy($key, $machineId, $points);
         $rankType = Bll::rank()->getClubEventType($info['clubId'], $machineId);
         Bll::rank()->setScore($uid, $rankType, $points);
-        $key = Keys::clubMachinePointData($info['clubId']);
-        $totalPoints = Dao::redis()->hIncrBy($key, $machineId, $points);
         $pointsKey = Keys::clubUserMachinePoint($info['clubId']);
         Dao::redis()->hIncrBy($pointsKey, $uid, $points);
         $this->resetCacheExpireTime([$key, $pointsKey], 30 * 3600);
@@ -1054,8 +1059,8 @@ class ClubBll
             'uid' => $publishInfo['uid'],
             'set' => $this->makeClubRewardSet($type),
             'type' => $type,
-            'progress' => 0,
-            'expireTime' => 0,
+            'progress' => count($helpers),
+            'expireTime' => $this->getClubRewardExpireTime($publishInfo['clubId'], $type),
             'itemList' => json_encode($publishInfo['itemList']),
             'extData' => json_encode($extData),
             'createTime' => date('Y-m-d H:i:s')
@@ -1282,5 +1287,11 @@ class ClubBll
     {
         $clubPublishHelpInfo = Model::clubPublishHelpData()->fetchOne(['clubId' => $clubId], 'max(publishId) lastId');
         return $clubPublishHelpInfo['lastId'] ?? 0;
+    }
+
+    public function getClubRewardExpireTime($clubId, $type){
+        $clubInfo = $this->getInfo($clubId);
+        $rewardTime = Bll::clubOption()->getClubRewardTime($type, $clubInfo['level']);
+        return strtotime(date('Y-m-d')) + $rewardTime * 3600;
     }
 }

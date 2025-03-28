@@ -195,6 +195,16 @@ class ClubOptionBll extends Bll
         return false;
     }
 
+    public function isFinishMachineEvent($points)
+    {
+        $config = Config::get('club/events');
+        if (!$config || !is_array($config)) return true;
+        $pointList = array_column($config, 'pointProgress');
+        if (empty($pointList)) return true;
+
+        return array_pop($pointList) <= $points;
+    }
+
     public function isFinishChestNode($currPoints, $newPoints, &$node)
     {
         $config = Config::get('club/chest');
