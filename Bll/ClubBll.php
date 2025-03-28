@@ -540,13 +540,14 @@ class ClubBll
         return $pieceId;
     }
 
-    public function nodeCompRecord($clubId, $type, $node, $collectInfo)
+    public function nodeCompRecord($clubId, $type, $node, $collectInfo, $extData = [])
     {
         $compKey = Keys::clubNodeCompList();
 
         $compInfo = [
             'node' => $node, 'clubId' => $clubId,
             'collectInfo' => $collectInfo,
+            'extData' => $extData,
             'type' => $type
         ];
         Dao::redis()->rPush($compKey, json_encode($compInfo));
@@ -727,7 +728,7 @@ class ClubBll
         }
         //发放奖励
         $userPoints = Dao::redis()->hGetAll($pointsKey);
-        $this->nodeCompRecord($info['clubId'], self::CLUB_REWARD_TYPE_GAME_POINT_RANK, $node, $userPoints);
+        $this->nodeCompRecord($info['clubId'], self::CLUB_REWARD_TYPE_GAME_POINT_RANK, $node, $userPoints,['machineId' => $machineId]);
         Dao::redis()->del($pointsKey);
     }
 

@@ -119,6 +119,10 @@ function machineNodeSettle($row)
         return;
     }
 
+    if (empty($row['extData']) || !is_array($row['extData'])) {
+        return;
+    }
+
     $nodeConfig = Bll::clubOption()->getEventNode($row['node']);
     if (!$nodeConfig) {
         return;
@@ -177,6 +181,7 @@ function machineNodeSettle($row)
             'expireTime' => $expireTime,
             'progress' => (int)$row['node'],
             'createTime' => date('Y-m-d H:i:s'),
+            'extData' => json_encode($row['extData'])
         ];
     }
 
