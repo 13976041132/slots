@@ -105,7 +105,7 @@ function settleJackpot()
     $type = ClubBll::CLUB_REWARD_TYPE_JACKPOT;
     $rewardTime = Bll::clubOption()->getClubRewardTime($type, 0);
     $expireTime = strtotime(date('Y-m-d')) + $rewardTime * 3600;
-    $sql = "SELECT '{$set}' as `set`, t1.clubId, t1.uid,{$type} as type ,times, totalCoin, concat('[',itemList,']') as itemList, extData,{$expireTime} as expireTime, {$createTime}, createTime FROM club_users t1 JOIN 
+    $sql = "SELECT '{$set}' as `set`, t1.clubId, t1.uid,{$type} as type ,times, totalCoin, concat('[',itemList,']') as itemList, extData,{$expireTime} as expireTime, '{$createTime}' as createTime FROM club_users t1 JOIN 
 (select sum(totalJackpotReward) totalCoin, count(1) as times, sum(totalJackpotReward) totalReward,JSON_OBJECT('id', {$coinItem}, 'num', sum(totalJackpotReward)) as itemList, JSON_ARRAYAGG(JSON_OBJECT('uid', uid, 'times', jacckTimes)) as extData, clubId  from (
 SELECT sum(coins) totalJackpotCoin,sum(rewardCoins) as totalJackpotReward,count(1) as jacckTimes, uid,clubId  FROM  club_jackpot_log where hitTime between '{$start}' and '{$end}' group by clubId, uid) as t
 GROUP BY clubId) t2
