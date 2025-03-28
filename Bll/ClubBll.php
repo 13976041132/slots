@@ -1061,7 +1061,7 @@ class ClubBll
             'type' => $type,
             'progress' => count($helpers),
             'expireTime' => $this->getClubRewardExpireTime($publishInfo['clubId'], $type),
-            'itemList' => json_encode($publishInfo['itemList']),
+            'itemList' => $publishInfo['itemList'],
             'extData' => json_encode($extData),
             'createTime' => date('Y-m-d H:i:s')
         ];
