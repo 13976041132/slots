@@ -151,9 +151,7 @@ class ConfigBll
             $config['aiClub'] = (int)$record['AiClub'];
 
             // 解析各段位匹配比例（int[][]）
-            $config['scale'] = array_map(function ($ratio) {
-                return array_map('intval', explode(',', $ratio));
-            }, explode('|', $record['Scale']));
+            $config['scale'] = array_map('intval',explode('|', $record['Scale']));
         }
         $this->createConfigFile('club/common', $config);
     }

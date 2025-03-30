@@ -11,10 +11,10 @@ use FF\Factory\Keys;
 
 class RankBll
 {
-    public function setScore($uuid, $type, $score, $isExpire = true)
+    public function setScore($uuid, $type, $score, $isSetExpire = true)
     {
         $key = Keys::rank($type);
-        $exists = $isExpire ? Dao::redis()->exists($key) : true;
+        $exists = $isSetExpire ? Dao::redis()->exists($key) : true;
         $points = Dao::redis()->zIncrBy($key, (float)$score, $uuid);
 
         if (!$exists) {

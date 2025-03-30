@@ -94,6 +94,8 @@ CREATE TABLE IF NOT EXISTS `clubs` (
     `coins`     BIGINT  NOT NULL default 0 COMMENT '金币',
     `dan`       tinyint(2)  NOT NULL default 0 COMMENT '段位',
     `topDonor` int(11) DEFAULT NULL default 0 COMMENT '捐赠最多的玩家ID',
+    `ai`        tinyint(2)  NOT NULL default 0 COMMENT '是否是AI俱乐部',
+    `aiActLevel` tinyint(2)  NOT NULL default 0 COMMENT 'AI活跃等级 1:高 2:中 3:低',
     `donateTimes` int(11)  NOT NULL default 0 COMMENT '捐赠次数',
     `createTime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updateTime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT '更新时间',

@@ -25,7 +25,7 @@ if (!$init && (!$seasonInfo || $seasonInfo['seasonStart'] != date('Y-m-d'))) {
     return;
 }
 
-$clubList = Model::clubs()->fetchAll([], 'clubId');
+$clubList = Model::clubs()->fetchAll(['ai' => 0], 'clubId');
 
 foreach ($clubList as $clubInfo) {
     Bll::club()->initPuzzle($clubInfo['clubId'], $id);

@@ -37,7 +37,7 @@ class ClubOptionBll extends Bll
     {
         $gameCycle = Config::get('club/common', 'gameCycle');
         $date = date('Y-m-d');
-        if($date < $gameCycle) {
+        if ($date < $gameCycle) {
             return [];
         }
         return ['startTime' => strtotime($date), 'endTime' => strtotime('+1days ' . $date) - 1];
@@ -239,5 +239,17 @@ class ClubOptionBll extends Bll
         $first = $sub * 2;
         $second = $first + 1;
         return [$machineList[$first], $machineList[$second] ?? $machineList[0]];
+    }
+
+    public function getAiCfg($dan, $actLv)
+    {
+        $cfg = Config::get('club/ai');
+        foreach ($cfg as $row) {
+            $id = $this->getDanIdByDanName($row['grade']);
+            if ($id == $dan && $row['level'] == $actLv) {
+                return $row;
+            }
+        }
+        return [];
     }
 }

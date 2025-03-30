@@ -1278,4 +1278,8 @@ class ClubBll
         $rewardTime = Bll::clubOption()->getClubRewardTime($type, $clubInfo['level']);
         return strtotime(date('Y-m-d')) + $rewardTime * 3600;
     }
+    public function isAiClub($clubId)
+    {
+        return $clubId < 10000;
+    }
 }
