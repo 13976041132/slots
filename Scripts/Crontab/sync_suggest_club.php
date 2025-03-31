@@ -14,7 +14,7 @@ if ($minuter % 10 != 0) {
     return;
 }
 
-$clubList = Model::clubs()->fetchAll(['status' => ClubBll::TYPE_PUBLIC, 'ai' => 0], 'clubId, level, memberCnt');
+$clubList = Model::clubs()->fetchAll(['type' => ClubBll::TYPE_PUBLIC, 'ai' => 0], 'clubId, level, memberCnt');
 foreach ($clubList as $key => $club) {
     $memLimit = Config::get('club/level', $club['level'] . '/member', false);
     if ($memLimit && $club['memberCnt'] >= $memLimit) {
