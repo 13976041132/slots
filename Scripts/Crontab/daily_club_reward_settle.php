@@ -34,16 +34,30 @@ function settleSeasonRank()
         $clubList = Model::clubs()->fetchAll(['clubId' => ['in', $clubIds], 'dan' => $gradeId], 'clubId,level');
         $clubList = array_column($clubList, null, 'clubId');
         $rank = 0;
+        $clubRankLog = [];
         foreach ($ranks as $clubId => $score) {
             if (!isset($clubList[$clubId])) {
                 continue;
             }
             ++$rank;
-            $leagueInfo = Bll::clubOption()->getLeagueInfo($gradeId, $rank);
+            if (Bll::club()->isAiClub($clubId)) {
+                continue;
+            }
 
+            $leagueInfo = Bll::clubOption()->getLeagueInfo($gradeId, $rank);
             if (!$leagueInfo) {
                 continue;
             }
+            $clubRankLog[] = [
+                'clubId' => $clubId,
+                'rank' => $rank,
+                'poins' => $score,
+                'season' => $seasonId,
+                'time' => now(),
+                'dan' => $gradeId,
+                'rewardCoins' => $leagueInfo['rewardProps']['count']
+            ];
+
             $danId = Bll::clubOption()->getDanIdByDanName($leagueInfo['rewardGrade']);
             if ($danId && $danId != $gradeId) {
                 Bll::clubCache()->updateData($clubId, ['dan' => $danId]);
@@ -54,7 +68,7 @@ function settleSeasonRank()
             $expireTime = strtotime(date('Y-m-d')) + $rewardTime * 3600;
             $rankType = Bll::rank()->getClubSeasonUserPointType($clubId, $seasonId);
             $userRanks = Bll::rank()->getList($rankType, 0, -1);
-            if(!$userRanks) {
+            if (!$userRanks) {
                 Log::error('club reward settle error, userRanks is empty, clubId: ' . $clubId, 'reward.log');
                 continue;
             }
@@ -77,13 +91,14 @@ function settleSeasonRank()
                     Log::error('club reward settle error, uid not in clubUsersList, clubId: ' . $clubId . ', uid: ' . $ruid, 'reward.log');
                     continue;
                 }
-                $coins = max(ceil($rewards['count'] * $userScore / $totalScore),10000);
+                $coins = max(ceil($rewards['count'] * $userScore / $totalScore), 10000);
                 $seasonRewardData[] = [
                     'set' => $set,
                     'clubId' => $clubId,
+                    'progress' => $rank,
                     'uid' => $ruid,
-                    'totalpoints'=> $totalScore,
-                    'points'=> $userScore,
+                    'totalpoints' => $totalScore,
+                    'points' => $userScore,
                     'type' => ClubBll::CLUB_REWARD_TYPE_RANK,
                     'totalCoin' => $rewards['count'],
                     'itemList' => json_encode([['id' => $rewards['itemId'], 'num' => $coins]]),
@@ -93,8 +108,13 @@ function settleSeasonRank()
             }
             Model::clubRewards()->insertMulti($seasonRewardData);
         }
+
+        if ($clubRankLog) {
+            Model::clubRankLog()->insertMulti($clubRankLog);
+        }
     }
 }
+
 function settleJackpot()
 {
     $start = yesterday();

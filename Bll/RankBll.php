@@ -58,7 +58,7 @@ class RankBll
 
     public function getClubEventType($clubId, $machineId)
     {
-        return 'ClubEvent:' . $clubId . ':' . $machineId . date('Ymd');
+        return 'ClubEvent:' . $clubId . ':' . $machineId .':'. date('Ymd');
     }
 
     public function getClubSeasonUserPointType($clubId, $seasonId = 0)
