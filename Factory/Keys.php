@@ -93,10 +93,12 @@ class Keys
     {
         return self::buildKey('SentFriendCoins', $uid, $type);
     }
+
     public static function sendFriendCoinsLock($uid, $fuid)
     {
         return self::buildKey('SendFriendCoinsLock', $uid, $fuid);
     }
+
     public static function awardFriendCoinsLock($uid)
     {
         return self::buildKey('AwardFriendCoinsLock', $uid);
@@ -114,10 +116,12 @@ class Keys
     {
         return self::buildKey('SentFriendStampLock', $uid, $fuid);
     }
+
     public static function awardFriendStampLock($uid)
     {
         return self::buildKey('AwardFriendStampLock', $uid);
     }
+
     public static function bllMessageQueue($uid)
     {
         return self::buildKey('BllMessageQueue', $uid);
@@ -132,10 +136,12 @@ class Keys
     {
         return self::buildKey('SuggestFriendSet');
     }
+
     public static function suggestClubSet()
     {
         return self::buildKey('SuggestClubSet');
     }
+
     public static function clubChatInfo($clubId)
     {
         return self::buildKey('ClubChatInfo');
@@ -143,7 +149,7 @@ class Keys
 
     public static function clubChatList($clubId)
     {
-        return self::buildKey('ClubChatList',$clubId);
+        return self::buildKey('ClubChatList', $clubId);
     }
 
     public static function rank($type)
@@ -165,6 +171,7 @@ class Keys
     {
         return self::buildKey('ClubPuzzle', $clubId, $seasonId);
     }
+
     public static function clubUserPuzzle($clubId, $seasonId, $node = null)
     {
         if (is_null($node)) {
@@ -212,6 +219,7 @@ class Keys
     {
         return self::buildKey('ClubUserJackpotStat', $date, $clubId);
     }
+
     public static function clubDanStat()
     {
         return self::buildKey('ClubDanStat');
@@ -219,7 +227,7 @@ class Keys
 
     public static function clubMachinePointData($clubId)
     {
-        return self::buildKey('ClubMachinePointData',$clubId, date('Ymd'));
+        return self::buildKey('ClubMachinePointData', $clubId, date('Ymd'));
     }
 
     public static function clubNodeCompList()
@@ -227,8 +235,12 @@ class Keys
         return self::buildKey('ClubNodeCompList');
     }
 
+    public static function shushuList($minute)
+    {
+        return self::buildKey('ShuShuList', $minute);
+    }
     public static function clubUserMachinePoint($clubId)
     {
-        return self::buildKey('ClubUserMachinePoint',$clubId, date('Ymd'));
+        return self::buildKey('ClubUserMachinePoint', $clubId, date('Ymd'));
     }
 }

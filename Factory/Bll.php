@@ -19,6 +19,7 @@ use FF\Bll\ClubCacheBll;
 use FF\Bll\UserRequestLastBll;
 use FF\Bll\ConfigBll;
 use FF\Bll\ClubOptionBll;
+use FF\Bll\ShuShuBll;
 use FF\Framework\Mode\Factory;
 
 class Bll extends Factory
@@ -133,5 +134,13 @@ class Bll extends Factory
     public static function clubOption()
     {
         return self::getInstance('FF\Bll\ClubOptionBll');
+    }
+
+    /**
+     * @return ShuShuBll
+     */
+    public static function shushu()
+    {
+        return self::getInstance('FF\Bll\ShuShuBll');
     }
 }

@@ -201,6 +201,7 @@ class ClubBll
 
         Bll::clubCache()->updateClubByInc($info['clubId'], 'memberCnt', -1);
         Dao::redis()->sRem(Keys::clubMember($info['clubId']), $uid);
+        Bll::shushu()->asyncReport('Club_Members_Quit', $uid, ['quit' => (int)$uid]);
     }
 
     //邀请进入俱乐部
@@ -297,6 +298,7 @@ class ClubBll
         Bll::clubCache()->updateClubByInc($info['clubId'], 'memberCnt', -1);
         Dao::redis()->sRem(Keys::clubMember($info['clubId']), $tuid);
         Bll::messageNotify()->kickOutClub($tuid, $uid);
+        Bll::shushu()->asyncReport('Club_Members_Delete', $uid, ['delete' => (int)$tuid]);
     }
 
     //解散俱乐部
@@ -332,6 +334,9 @@ class ClubBll
         }
         Model::clubUsers()->update(['muteStatus' => (int)(!$memberInfo['muteStatus'])], ['uid' => $tuid]);
         Bll::messageNotify()->clubMute($tuid, $uid, !$memberInfo['muteStatus']);
+        if (!$memberInfo['muteStatus']) {
+            Bll::shushu()->asyncReport('Club_Members_Ban', $uid, ['ban' => (int)$tuid]);
+        }
     }
 
     public function chat($uid, $content)
@@ -363,6 +368,7 @@ class ClubBll
 
         $this->cacheChat(array_merge($insert, ['chatId' => $chatId]));
         Bll::messageNotify()->clubBroadcast($info['clubId'], $uid, MessageIds::CLUB_CHAT_NOTIFY, ['chatId' => $chatId]);
+        Bll::shushu()->asyncReport('Club_Chat', $uid, ['player_id' => (int)$uid, 'club_id' => (int)$info['clubId'], 'information_type' => 1]);
     }
 
     public function cacheChat($chatData)
@@ -991,6 +997,7 @@ class ClubBll
                 Bll::messageNotify()->pushNotifyMsg($publishInfo['uid'], $publishInfo, MessageIds::CLUB_PUBLISH_HELP_FINISH_NOTIFY);
             }
         } while (0);
+        Bll::shushu()->clubHelp($publishInfo['clubId'], $publishInfo['uid'], $uid, $publishInfo['type']);
 
         $publishUserInfo = Bll::user()->getUserInfo($publishInfo['uid'], ['name', 'level', 'headId', 'headFrameId']);
         $helperList = Bll::user()->getUserInfoList($helpers, ['uid', 'name', 'headId', 'headFrameId']);
@@ -1273,11 +1280,13 @@ class ClubBll
         return $clubPublishHelpInfo['lastId'] ?? 0;
     }
 
-    public function getClubRewardExpireTime($clubId, $type){
+    public function getClubRewardExpireTime($clubId, $type)
+    {
         $clubInfo = $this->getInfo($clubId);
         $rewardTime = Bll::clubOption()->getClubRewardTime($type, $clubInfo['level']);
         return strtotime(date('Y-m-d')) + $rewardTime * 3600;
     }
+
     public function isAiClub($clubId)
     {
         return $clubId < 10000;
