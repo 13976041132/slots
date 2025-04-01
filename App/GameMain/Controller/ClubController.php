@@ -167,7 +167,7 @@ class ClubController extends BaseController
     {
         $uid = $this->getUid();
         $dan = (int)$this->getParam('dan', false,  0);
-        $rankList = Bll::rank()->getList(Bll::rank()->getClubType($dan), 0, 20);
+        $rankList = Bll::rank()->getList(Bll::rank()->getClubType($dan), 0, 99);
         $clubIds = array_keys($rankList);
         if (empty($clubIds)) {
             return [];
