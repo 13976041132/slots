@@ -27,6 +27,7 @@ class UserBll extends DBCacheBll
         'facebookId' => ['string', ''],
         'lastOnlineTime' => ['int', 0],
         'region' => ['string', ''],
+        'platform' => ['string', ''],
     );
 
     protected $updateFields = array(
@@ -180,4 +181,9 @@ class UserBll extends DBCacheBll
             'lastClubPublishId' => $clubId ? Bll::club()->getLastPublishId($clubId) : 0, //最后一条俱乐部发布帮助ID
         ];
     }
+    public function isIos($uid) {
+        $info = $this->getUserInfo($uid, 'platform');
+        return $info['platform'] == 'IPhonePlayer' || $info['platform'] == 'iOS';
+    }
+
 }

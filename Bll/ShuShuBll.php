@@ -15,7 +15,8 @@ use FF\Library\Utils\ApiRequester;
 class ShuShuBll
 {
     const REPORT_URL = 'https://global-receiver-ta.thinkingdata.cn/sync_json';
-    const APP_ID = 'b108b0aa3d7f496bb51d3986d54d8894';
+    const APP_ID_IOS = 'b108b0aa3d7f496bb51d3986d54d8894';
+    const APP_ID_ANDROID = '818ac10a12e946bf88479e38eba9055b';
 
     function batchReportWithRetry($data, $maxRetries = 2)
     {
@@ -37,7 +38,7 @@ class ShuShuBll
         $reportData = [];
         foreach ($data as $row) {
             $reportData[] = [
-                'appid' => self::APP_ID,
+                'appid' => $this->getAppId($row['#account_id"'] ?? ''),
                 'data' => $row
             ];
         }
@@ -80,5 +81,10 @@ class ShuShuBll
             'player_id' => (int)$uid
         ];
         Bll::shushu()->asyncReport('Club_Chat_Help', $helpUid, $reportData);
+    }
+
+    public function getAppId($uid) {
+        $flag = Bll::user()->isIos($uid);
+        return $flag ? self::APP_ID_IOS : self::APP_ID_ANDROID;
     }
 }
