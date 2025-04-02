@@ -16,7 +16,7 @@ if (!$seasonInfo) {
     return;
 }
 
-$leagueCd = strtotime('+1 days', $seasonInfo['seasonEnd']) - time() - 1;
+$leagueCd = strtotime($seasonInfo['seasonEnd']) - time() - 86399;
 $config = Config::get('club/grade');
 foreach ($config as $gradeId => $row) {
     $type = Bll::rank()->getClubType($gradeId, $seasonId);
