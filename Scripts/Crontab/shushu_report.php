@@ -23,9 +23,9 @@ while ($row = $redis->rpop($key)) {
     if ($len < 20) {
         continue;
     }
-    Bll::shushu()->batchReport($data);
+    Bll::shushu()->batchReportWithRetry($data);
     $len = 0;
     $data = [];
 }
 
-Bll::shushu()->batchReport($data);
+Bll::shushu()->batchReportWithRetry($data);

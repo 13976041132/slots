@@ -34,10 +34,13 @@ class ShuShuBll
         if (!$data) {
             return true;
         }
-        $reportData = [
-            'appid' => self::APP_ID,
-            'data' => $data
-        ];
+        $reportData = [];
+        foreach ($data as $row) {
+            $reportData[] = [
+                'appid' => self::APP_ID,
+                'data' => $row
+            ];
+        }
         $api = new ApiRequester(['format' => Format::JSON, 'url' => self::REPORT_URL, 'method' => 'POST']);
         $res = $api->requestData($reportData);
         if (!$res) {
@@ -56,12 +59,13 @@ class ShuShuBll
         $body = [
             "#account_id" => $uid,
             "#event_name" => $event,
+            "#type" => "track",
             "#time" => now(),
             "properties" => $data
         ];
-        $key = Keys::ShushuList(date('i'));
+        $key = Keys::shushuList(date('i'));
         $exists = Dao::redis()->exists($key);
-        Dao::redis()->lpush(Keys::ShushuList($key), json_encode($body));
+        Dao::redis()->lpush($key, json_encode($body));
         if (!$exists) {
             Dao::redis()->expire($key, 1800);
         }
