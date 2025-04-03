@@ -9,7 +9,7 @@ use FF\Framework\Utils\Log;
 
 include __DIR__ . '/../common.php';
 
-$minute = date('i', time() - 50);
+$minute = date('Hi', time() - 50);
 $key = Keys::shushuList($minute);
 $redis = Dao::redis();
 $data = [];

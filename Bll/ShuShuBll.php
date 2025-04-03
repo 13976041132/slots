@@ -45,6 +45,7 @@ class ShuShuBll
         $api = new ApiRequester(['format' => Format::JSON, 'url' => self::REPORT_URL, 'method' => 'POST']);
         $res = $api->requestData($reportData);
         if (!$res) {
+            Log::error('report shushu fail, res:' . $res);
             return false;
         }
         $result = json_decode($res, true);
@@ -64,7 +65,7 @@ class ShuShuBll
             "#time" => now(),
             "properties" => $data
         ];
-        $key = Keys::shushuList(date('i'));
+        $key = Keys::shushuList(date('Hi'));
         $exists = Dao::redis()->exists($key);
         Dao::redis()->lpush($key, json_encode($body));
         if (!$exists) {
