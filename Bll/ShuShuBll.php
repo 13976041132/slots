@@ -85,6 +85,7 @@ class ShuShuBll
     }
 
     public function getAppId($uid) {
+        return self::APP_ID_IOS;
         $flag = Bll::user()->isIos($uid);
         return $flag ? self::APP_ID_IOS : self::APP_ID_ANDROID;
     }
