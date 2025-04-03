@@ -22,6 +22,7 @@ while ($row = $redis->rpop($key)) {
         continue;
     }
     $data[] = $row;
+    Log::info("shushu_report msg: ". json_encode($row), 'shushu_report.log');
     ++$len;
     if ($len < 20) {
         continue;
