@@ -14,7 +14,7 @@ use FF\Library\Utils\ApiRequester;
 
 class ShuShuBll
 {
-    const REPORT_URL = 'https://global-receiver-ta.thinkingdata.cn/sync_json';
+    const REPORT_URL = 'https://www.shushudata.com/sync_json';
     const APP_ID_IOS = 'b108b0aa3d7f496bb51d3986d54d8894';
     const APP_ID_ANDROID = '818ac10a12e946bf88479e38eba9055b';
 
@@ -85,7 +85,6 @@ class ShuShuBll
     }
 
     public function getAppId($uid) {
-        return self::APP_ID_IOS;
         $flag = Bll::user()->isIos($uid);
         return $flag ? self::APP_ID_IOS : self::APP_ID_ANDROID;
     }

@@ -14,15 +14,12 @@ $key = Keys::shushuList($minute);
 $redis = Dao::redis();
 $data = [];
 $len = 0;
-$count = $redis->llen($key);
-Log::info("shushu_report msg num: {$count}, key: {$key}");
 while ($row = $redis->rpop($key)) {
     $row = json_decode($row, true);
     if (!$row) {
         continue;
     }
     $data[] = $row;
-    Log::info("shushu_report msg: ". json_encode($row), 'shushu_report.log');
     ++$len;
     if ($len < 20) {
         continue;
