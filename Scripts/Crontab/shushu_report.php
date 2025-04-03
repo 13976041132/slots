@@ -18,7 +18,7 @@ $count = $redis->llen($key);
 Log::info("shushu_report msg num: {$count}, key: {$key}");
 while ($row = $redis->rpop($key)) {
     $row = json_decode($row, true);
-    if ($row) {
+    if (!$row) {
         continue;
     }
     $data[] = $row;
