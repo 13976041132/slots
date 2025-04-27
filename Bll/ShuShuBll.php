@@ -9,6 +9,7 @@ use FF\Factory\Bll;
 use FF\Factory\Dao;
 use FF\Factory\Keys;
 use FF\Framework\Common\Format;
+use FF\Framework\Utils\Config;
 use FF\Framework\Utils\Log;
 use FF\Library\Utils\ApiRequester;
 
@@ -84,15 +85,16 @@ class ShuShuBll
         Bll::shushu()->asyncReport('Club_Chat_Help', $helpUid, $reportData);
     }
 
-    public function getAppId($uid) {
+    public function getAppId($uid)
+    {
         $flag = Bll::user()->isIos($uid);
         return $flag ? self::APP_ID_IOS : self::APP_ID_ANDROID;
     }
 
-    public function clubChat($clubId, $uid){
-
+    public function clubChat($clubId, $uid)
+    {
         $info = Bll::club()->getInfo($clubId);
-        if(!$info){
+        if (!$info) {
             return;
         }
         $report = [
@@ -107,5 +109,27 @@ class ShuShuBll
         ];
 
         Bll::shushu()->asyncReport('Club_Chat', $uid, $report);
+    }
+
+    public function clubAction($clubId, $uid, $tuid, $action)
+    {
+        $info = Bll::club()->getInfo($clubId);
+        if (!$info) {
+            return;
+        }
+        $memLimit = Config::get('club/level', $info['level'] . '/member', false);
+        $report = [
+            'player_id' => (int)$tuid,
+            'club_id' => (int)$clubId,
+            'club_name' => (int)$info['clubName'],
+            'club_level' => (int)$info['level'],
+            'club_num' => (int)$info['memberCnt'],
+            'club_condition' => (int)$info['vipLimit'],
+            'club_attribute' => (int)$info['type'],
+            'type' => $action,
+            'limit' => (int)$memLimit,
+        ];
+
+        Bll::shushu()->asyncReport('Club_Action', $uid, $report);
     }
 }

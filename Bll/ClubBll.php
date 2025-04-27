@@ -201,6 +201,7 @@ class ClubBll
 
         Bll::clubCache()->updateClubByInc($info['clubId'], 'memberCnt', -1);
         Dao::redis()->sRem(Keys::clubMember($info['clubId']), $uid);
+        Bll::shushu()->clubAction($info['clubId'], $uid, $uid, 'quit');
     }
 
     //邀请进入俱乐部
@@ -297,6 +298,7 @@ class ClubBll
         Bll::clubCache()->updateClubByInc($info['clubId'], 'memberCnt', -1);
         Dao::redis()->sRem(Keys::clubMember($info['clubId']), $tuid);
         Bll::messageNotify()->kickOutClub($tuid, $uid);
+        Bll::shushu()->clubAction($info['clubId'], $uid, $tuid, 'delete');
     }
 
     //解散俱乐部
@@ -332,6 +334,9 @@ class ClubBll
         }
         Model::clubUsers()->update(['muteStatus' => (int)(!$memberInfo['muteStatus'])], ['uid' => $tuid]);
         Bll::messageNotify()->clubMute($tuid, $uid, !$memberInfo['muteStatus']);
+        if (!$memberInfo['muteStatus']) {
+            Bll::shushu()->clubAction($info['clubId'], $uid, $tuid, 'ban');
+        }
     }
 
     public function chat($uid, $content)
