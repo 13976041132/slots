@@ -101,7 +101,11 @@ function pieceNodeSettle($row)
             ];
 
             $reportData = [
-                'club_information' => json_encode(['club_id' => $clubId, 'club_name' => $clubInfo['clubName']]),
+                'club_num' => (int)$clubInfo['memberCnt'],
+                'club_condition' => (int)$clubInfo['vipLimit'],
+                'club_attribute' => (int)$clubInfo['type'],
+                'club_name' => $clubInfo['clubName'],
+                'club_level' => (int)$clubInfo['level'],
                 'club_id' => (int)$clubId,
                 'chest_id' => (int)$row['node'],
                 'player_id' => (int)$ruid,
@@ -201,8 +205,12 @@ function machineNodeSettle($row)
             ];
 
             $reportData = [
-                'club_information' => json_encode(['club_id' => $clubId, 'club_name' => $clubInfo['clubName']]),
                 'club_id' => (int)$clubId,
+                'club_num' => (int)$clubInfo['memberCnt'],
+                'club_condition' => (int)$clubInfo['vipLimit'],
+                'club_attribute' => (int)$clubInfo['type'],
+                'club_name' => $clubInfo['clubName'],
+                'club_level' => (int)$clubInfo['level'],
                 'chest_id' => (int)$row['node'],
                 'player_id' => (int)$ruid,
                 'club_points' => (int)$pointRewards[$ruid] ?? 0,
@@ -290,12 +298,16 @@ function chestNodeSettle($row)
             ];
 
             $reportData = [
-                'club_information' => json_encode(['club_id' => $clubId, 'club_name' => $clubInfo['clubName']]),
+                'club_name' => $clubInfo['clubName'],
                 'club_id' => (int)$clubId,
                 'chest_id' => (int)$row['node'],
                 'player_id' => (int)$ruid,
                 'coins' => (int)$coins,
                 'coins_value' => (int)$coins,
+                'club_num' => (int)$clubInfo['memberCnt'],
+                'club_level' => (int)$clubInfo['level'],
+                'club_condition' => (int)$clubInfo['vipLimit'],
+                'club_attribute' => (int)$clubInfo['type']
             ];
             Bll::shushu()->asyncReport('Club_Center_Chest', $ruid, $reportData);
         }

@@ -201,7 +201,6 @@ class ClubBll
 
         Bll::clubCache()->updateClubByInc($info['clubId'], 'memberCnt', -1);
         Dao::redis()->sRem(Keys::clubMember($info['clubId']), $uid);
-        Bll::shushu()->asyncReport('Club_Members_Quit', $uid, ['quit' => (int)$uid]);
     }
 
     //邀请进入俱乐部
@@ -298,7 +297,6 @@ class ClubBll
         Bll::clubCache()->updateClubByInc($info['clubId'], 'memberCnt', -1);
         Dao::redis()->sRem(Keys::clubMember($info['clubId']), $tuid);
         Bll::messageNotify()->kickOutClub($tuid, $uid);
-        Bll::shushu()->asyncReport('Club_Members_Delete', $uid, ['delete' => (int)$tuid]);
     }
 
     //解散俱乐部
@@ -334,9 +332,6 @@ class ClubBll
         }
         Model::clubUsers()->update(['muteStatus' => (int)(!$memberInfo['muteStatus'])], ['uid' => $tuid]);
         Bll::messageNotify()->clubMute($tuid, $uid, !$memberInfo['muteStatus']);
-        if (!$memberInfo['muteStatus']) {
-            Bll::shushu()->asyncReport('Club_Members_Ban', $uid, ['ban' => (int)$tuid]);
-        }
     }
 
     public function chat($uid, $content)
@@ -368,7 +363,8 @@ class ClubBll
 
         $this->cacheChat(array_merge($insert, ['chatId' => $chatId]));
         Bll::messageNotify()->clubBroadcast($info['clubId'], $uid, MessageIds::CLUB_CHAT_NOTIFY, ['chatId' => $chatId]);
-        Bll::shushu()->asyncReport('Club_Chat', $uid, ['player_id' => (int)$uid, 'club_id' => (int)$info['clubId'], 'information_type' => 1]);
+
+        Bll::shushu()->clubChat($info['clubId'],$uid);
     }
 
     public function cacheChat($chatData)

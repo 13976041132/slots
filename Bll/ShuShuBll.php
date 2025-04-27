@@ -88,4 +88,24 @@ class ShuShuBll
         $flag = Bll::user()->isIos($uid);
         return $flag ? self::APP_ID_IOS : self::APP_ID_ANDROID;
     }
+
+    public function clubChat($clubId, $uid){
+
+        $info = Bll::club()->getInfo($clubId);
+        if(!$info){
+            return;
+        }
+        $report = [
+            'player_id' => (int)$uid,
+            'club_id' => (int)$clubId,
+            'information_type' => 1,
+            'club_name' => (int)$info['clubName'],
+            'club_level' => (int)$info['level'],
+            'club_num' => (int)$info['memberCnt'],
+            'club_condition' => (int)$info['vipLimit'],
+            'club_attribute' => (int)$info['type']
+        ];
+
+        Bll::shushu()->asyncReport('Club_Chat', $uid, $report);
+    }
 }

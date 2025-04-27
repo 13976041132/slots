@@ -38,14 +38,17 @@ foreach ($config as $gradeId => $row) {
         }
         $clubInfo = $clubList[$clubId];
         $reportData = [
-            'club_information' => json_encode(['club_id' => $clubId, 'club_name' => $clubInfo['clubName']]),
             'club_id' => (int)$clubId,
+            'club_name' => $clubInfo['clubName'],
             'club_level' => (int)$clubInfo['level'],
             'club_rank' => $gradeId + 1,
             'rank' => (int)$rank,
             'club_points' => (int)$score,
             'season' => $seasonId,
             'League_cd' => max(0, $leagueCd),
+            'club_num' => (int)$clubInfo['memberCnt'],
+            'club_condition' => (int)$clubInfo['vipLimit'],
+            'club_attribute' => (int)$clubInfo['type']
         ];
 
         Bll::shushu()->asyncReport('Club_Center_League', $clubId, $reportData);
